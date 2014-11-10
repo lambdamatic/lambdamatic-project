@@ -1,0 +1,25 @@
+package ${packageName};
+
+import com.mongodb.MongoClient;
+import javax.annotation.Generated;
+import javax.enterprise.inject.Produces;
+import javax.enterprise.context.ApplicationScoped;
+
+/**
+ * CDI Producer for ${dataStoreClassName}
+ * 
+ */
+@Generated(value="${processorClassName}")
+@ApplicationScoped
+public class ${dataStoreProducerClassName}  {
+	
+    /**
+     * //TODO: add some javadoc
+     *
+     */
+    @Produces
+    public ${dataStoreClassName} getDataStore(final MongoClient mongoClient) {
+    	return new ${dataStoreClassName}(mongoClient);
+    }
+
+}

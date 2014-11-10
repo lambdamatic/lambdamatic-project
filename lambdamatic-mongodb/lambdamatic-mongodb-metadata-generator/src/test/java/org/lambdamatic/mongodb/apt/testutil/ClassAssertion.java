@@ -1,0 +1,80 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Red Hat, Inc.
+ * Distributed under license by Red Hat, Inc. All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ ******************************************************************************/
+
+package org.lambdamatic.mongodb.apt.testutil;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.assertj.core.api.AbstractAssert;
+
+/**
+ * Specific assertJ {@link AbstractAssert} for {@link Type} objects
+ * 
+ * @author Xavier Coulon
+ *
+ */
+public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
+
+	protected ClassAssertion(final Class<?> actual) {
+		super(actual, ClassAssertion.class);
+	}
+
+	public static ClassAssertion assertThat(final Class<?> actual) {
+		return new ClassAssertion(actual);
+	}
+
+	public ClassAssertion isImplementing(final String expectedInterfaceName) {
+		isNotNull();
+		final List<String> interfaces = Arrays.asList(actual.getInterfaces()).stream().map(Class::getName).collect(Collectors.toList());
+		if (!interfaces.contains(expectedInterfaceName)) {
+			failWithMessage("Expected field <%s> to implement <%s> but it only implements <%s>.", actual.getName(), expectedInterfaceName, interfaces);
+		}
+		actual.getTypeParameters();
+		return this;
+	}
+
+	public ClassAssertion isImplementing(final String expectedGenericInterfaceName, final String parameterTypeName) {
+		isNotNull();
+		boolean match = Arrays.asList(actual.getGenericInterfaces()).stream()
+				.filter(i -> i instanceof ParameterizedType).map(i -> (ParameterizedType) i)
+				.filter(i -> i.getActualTypeArguments().length == 1).map(i -> i.getActualTypeArguments()[0])
+				.anyMatch(t -> t.getTypeName().equals(parameterTypeName));
+		if (!match) {
+			failWithMessage("Expected field <%s> to implement <%s> but it only implements <%s>.", actual.getName(), expectedGenericInterfaceName, actual.getGenericInterfaces());
+		}
+		actual.getTypeParameters();
+		return this;
+	}
+
+	public ClassAssertion hasMethod(final String methodName, final Class<?>... parameterTypes) {
+		isNotNull();
+		try {
+			actual.getMethod(methodName, parameterTypes);
+		} catch (NoSuchMethodException | SecurityException e) {
+			failWithMessage("Expected class <%s> to have method %s(%s), but it only containes %s", actual.getName(), methodName, (parameterTypes.length > 0 ? parameterTypes : ""), actual.getMethods());
+		}
+		return this;
+	}
+
+	public ClassAssertion hasField(final String fieldName) {
+		isNotNull();
+		try {
+			actual.getField(fieldName);
+		} catch (NoSuchFieldException | SecurityException e) {
+			failWithMessage("Expected class <%s> to have *public* field %s, but it only containes %s", actual.getName(), fieldName, actual.getFields());
+		}
+		
+		return this;
+	}
+
+}
+

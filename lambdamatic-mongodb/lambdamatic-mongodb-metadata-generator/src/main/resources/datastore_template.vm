@@ -1,0 +1,42 @@
+package ${packageName};
+
+import com.mongodb.MongoClient;
+import javax.annotation.Generated;
+import org.lambdamatic.mongodb.Collection;
+import org.lambdamatic.mongodb.CollectionImpl;
+
+
+#foreach( $key in $collections.keySet() )
+import $collections.get($key);
+import $collections.get($key)_;
+#end
+
+/**
+ * The generated {@link ${dataStoreClassName}} class that provides users with access to the declared MongoDB {@link Collection}s.
+ *
+ * 
+ */
+@Generated(value="${processorClassName}")
+public class ${dataStoreClassName}  {
+
+  /** The underlying MongoDB Client. */
+  private final MongoClient mongoClient;
+  
+  /**
+   * Constructor.
+   * @param mongoClient the underlying MongoDB Client
+   */
+  public ${dataStoreClassName}(final MongoClient mongoClient) {
+    this.mongoClient = mongoClient;
+  }
+  
+#foreach( $key in $collections.keySet() )
+  /**
+   * @return the $key Collection
+   */
+  public final Collection<$collections.get($key).getSimpleName(), $collections.get($key).getSimpleName()_> get$key() { 
+    return new CollectionImpl<$collections.get($key).getSimpleName(), $collections.get($key).getSimpleName()_>(mongoClient, "$databaseName", "$key", ${collections.get($key).getSimpleName()}.class, ${collections.get($key).getSimpleName()}_.class);
+  }
+
+#end
+}

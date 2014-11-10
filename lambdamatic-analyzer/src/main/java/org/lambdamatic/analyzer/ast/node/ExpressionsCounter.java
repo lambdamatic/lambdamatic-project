@@ -1,0 +1,66 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Red Hat, Inc.
+ * Distributed under license by Red Hat, Inc. All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ ******************************************************************************/
+
+package org.lambdamatic.analyzer.ast.node;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
+
+/**
+ * {@link Expression} visitor that will count the {@link Expression}s or counters in an {@link InfixExpression}.
+ * 
+ * @author Xavier Coulon <xcoulon@redhat.com>
+ *
+ */
+public class ExpressionsCounter extends ExpressionVisitor {
+	
+	/** Count of each operand found in the root {@link Expression} being visited. */
+	private Map<Expression, AtomicInteger> counters = new HashMap<>();
+	
+	/**
+	 * @return the counters index by <strong>absolute</strong> form of expression.
+	 */
+	public Map<Expression, AtomicInteger> getCounters() {
+		return counters;
+	}
+	
+	/**
+	 * Adds or increments the counter for the <strong>absolute</strong> version of the given {@link Expression}.
+	 * @param expr the expression to count.
+	 * 
+	 * @see Expression#getAbsolute()
+	 */
+	private void count(final Expression expr) {
+		final Expression absolute = expr.getAbsolute();
+		if(!counters.containsKey(absolute)) {
+			counters.put(absolute, new AtomicInteger());
+		}
+		counters.get(absolute).incrementAndGet();
+	}
+	
+	@Override
+	public boolean visit(final Expression expr) {
+		// for anything except Infix Expression, just count the expression itself. 
+		if(expr.getExpressionType() != ExpressionType.INFIX) {
+			count(expr);
+		}
+		return super.visit(expr);
+	}
+
+	@Override
+	public boolean visitMethodInvocationExpression(final MethodInvocation expr) {
+		// don't count anything, the 'expr' itself was already counted during the call to visit(final Expression expr) above. 
+		// don't visit source expression and arguments, it makes no sense in this context.
+		return false;
+	}
+	
+}
+

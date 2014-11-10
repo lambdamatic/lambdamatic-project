@@ -7,8 +7,8 @@
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>lambdamatic-analyzer</artifactId>
-	<description>Lambda Expression parser</description>
-
+	<name>Lambda Expression parser</name>
+  
 	<dependencies>
 		<dependency>
 			<groupId>org.ow2.asm</groupId>
@@ -39,3 +39,4 @@
 		</dependency>
 	</dependencies>
 </project>
+

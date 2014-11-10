@@ -1,52 +1,30 @@
-= Backyard Roadmap
+= Lambdamatic: Query MongoDB with Lambda Expressions
 
-== Lambda Expression parsing
+== Status
 
-Need to implement support for:
+Prototype (with its share of missing features and bugs)
 
-* Other forms of expression (ie: >, <, >=, etc.)
-* Expression with external parameter
-* Expression with external parameter on which a method is called
+== Build
 
-== Query API
+run
 
-* Build metaclasses with Annotation Processing Tool ?
-* Define Query API:
-** Support search/load queries
-** Support insert/upsert/delete queries
-** Support Aggregator Framework
-* BSON <-> Annotated Java classes
-* Provide a @DocumentManager with:
-** save(Object)
-** load(ObjectId/Long)
-** query()
-** ...
-
-== Usage in CDI application
-
-* Inject a @Collection as CDI Bean ?
-* Type-safe API -> @Collection as a meta-annotation:
-
-[code, java]
+[code]
 ----
-@Retention(value=RetentionPolicy.RUNTIME)
-@Target(value=ElementType.?)
-@Collection("Photo")
-public @interface PhotoCollection {
+mvn clean install
 ----
 
--> does this means that a @Producer should be generated from the APT, too ?
--> "Collection" interface and APT generated implementation ?
+(requires a mongod running and listening on default port 27017)
 
-== Integration
+or 
 
-* Wildfly ?
-* Vert.x ?
-* Netty ?
-* Undertow ?
+[code]
+----
+mvn clean install -DskiptTests=true
+----
 
+if you don't want to run the tests
 
-== Reactive Programming
+== License
 
-* Non blocking I/O
-* MongoDB capped collections
+This program is made available under the terms of the Eclipse Public License v1.0 which accompanies this distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
+

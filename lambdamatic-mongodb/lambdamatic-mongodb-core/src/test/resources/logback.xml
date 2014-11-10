@@ -1,4 +1,5 @@
 <configuration>
+
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <!-- encoders are assigned the type
          ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
@@ -8,6 +9,7 @@
   </appender>
   
   <logger name="org.lambdamatic" level="TRACE"/>
+  <logger name="org.arquillian" level="TRACE"/>
   
   <root level="warn">
     <appender-ref ref="STDOUT" />
