@@ -3,6 +3,7 @@
 .classpath
 _tmp
 .project
+.externalToolBuilders
 target
 
 _bin
