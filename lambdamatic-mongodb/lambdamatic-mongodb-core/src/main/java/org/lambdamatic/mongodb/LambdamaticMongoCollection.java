@@ -17,20 +17,21 @@ import com.mongodb.WriteConcern;
  * Database Collection for a given type of element (along with its associated metadata)
  * 
  * @author Xavier Coulon
+ * @param <T>
  *
  */
-public interface Collection<T, M extends Metadata<T>> {
+public interface DBCollection<T, T_ extends Metadata<T>> {
 
 	/**
 	 * Finds a single document in MongoDB, and returns the match element of type T
 	 * @param expression the lambda expression that provides with search criteria
 	 * @return the first matching document.
 	 */
-	public T findOne(final FilterExpression<M> expression);
+	public T findOne(final FilterExpression<T_> expression);
 	
 	/**
-	 * Inserts the given {@code transientInstance} in this {@link Collection}, using the default {@link WriteConcern}
-	 * configured for this {@link Collection}. If the given {@code transientInstance} has no {@code id} before the
+	 * Inserts the given {@code transientInstance} in this {@link DBCollection}, using the default {@link WriteConcern}
+	 * configured for this {@link DBCollection}. If the given {@code transientInstance} has no {@code id} before the
 	 * operation, a value will be set.
 	 * 
 	 * @param transientInstance

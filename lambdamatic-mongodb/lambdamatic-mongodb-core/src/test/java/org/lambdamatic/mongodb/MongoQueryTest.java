@@ -71,6 +71,16 @@ public class MongoQueryTest {
 		assertThat(bikeStation).isNotNull();
 	}
 	
+	@Test
+	public void shouldFindOneBikeStationWithAvailableDocks2() throws IOException {
+		// when
+		final UsersCollection users = new UsersCollection();
+		users.findOne(u -> u.firstName == null);
+		final BikeStation bikeStation = datastore.getBikeStations().findOne(s -> s.availableDocks >= 1);
+		// then
+		assertThat(bikeStation).isNotNull();
+	}
+	
 
 }
 

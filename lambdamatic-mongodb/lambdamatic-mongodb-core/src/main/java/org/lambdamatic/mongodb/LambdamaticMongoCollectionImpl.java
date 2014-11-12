@@ -16,7 +16,6 @@ import org.lambdamatic.mongodb.metadata.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 
@@ -26,12 +25,12 @@ import com.mongodb.MongoClient;
  * @author Xavier Coulon
  *
  */
-public class CollectionImpl<T, M extends Metadata<T>> implements Collection<T, M>{
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(CollectionImpl.class);
+public abstract class DBCollectionImpl<T, M extends Metadata<T>> implements DBCollection<T, M>{
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(DBCollectionImpl.class);
 
 	/** The underlying MongoDB Collection. */
-	private final DBCollection dbCollection;
+	private final com.mongodb.DBCollection dbCollection;
 
 	/** The user-defined domain class associated with this Collection. */
 	private final Class<T> targetClass;
@@ -45,7 +44,7 @@ public class CollectionImpl<T, M extends Metadata<T>> implements Collection<T, M
 	 * @param mongoClient
 	 *            the underlying MongoDB Client
 	 */
-	public CollectionImpl(final MongoClient mongoClient, final String databaseName, final String collectionName,
+	public DBCollectionImpl(final MongoClient mongoClient, final String databaseName, final String collectionName,
 			final Class<T> targetClass, final Class<M> metadataClass) {
 		this.dbCollection = mongoClient.getDB(databaseName).getCollection(collectionName);
 		this.targetClass = targetClass;

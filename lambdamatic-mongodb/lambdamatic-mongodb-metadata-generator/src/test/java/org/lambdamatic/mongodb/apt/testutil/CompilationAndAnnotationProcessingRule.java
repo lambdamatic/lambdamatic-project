@@ -149,7 +149,7 @@ public class CompilationAndAnnotationProcessingRule implements MethodRule {
 				LOGGER.warn("{}: {} at line {}", diagnostic.getKind(), diagnostic.getMessage(null), diagnostic.getLineNumber());
 				break;
 			case ERROR:
-				LOGGER.error("{}: {} at {}:{}", diagnostic.getKind(), diagnostic.getMessage(null), diagnostic.getSource().getName(), diagnostic.getLineNumber());
+				LOGGER.error("{}: {} at {}:{}", diagnostic.getKind(), diagnostic.getMessage(null), (diagnostic.getSource() != null ? diagnostic.getSource().getName() : "unknown source"), diagnostic.getLineNumber());
 				break;
 			default:
 				LOGGER.info("{}: {} at line {}", diagnostic.getKind(), diagnostic.getMessage(null), diagnostic.getLineNumber());

@@ -32,6 +32,7 @@ import javax.tools.JavaFileObject;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.lambdamatic.mongodb.DBCollection;
 import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.FetchType;
@@ -41,6 +42,7 @@ import org.lambdamatic.mongodb.metadata.LocationField;
 import org.lambdamatic.mongodb.metadata.Metadata;
 import org.lambdamatic.mongodb.metadata.ObjectIdField;
 import org.lambdamatic.mongodb.metadata.StringField;
+
 
 /**
  * Processor for classes annotated with {@code Document}. Generates their associated metadata Java classes in the target folder given in the
@@ -53,24 +55,15 @@ import org.lambdamatic.mongodb.metadata.StringField;
 @SupportedAnnotationTypes("org.lambdamatic.mongodb.annotations.Document")
 public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 
-	/** Name of the template file for metadata classes. */
+	/** Name of the template file for {@link Metadata} classes. */
 	private static final String METADATA_TEMPLATE = "metadata_template.vm";
 
-	/** Name of the template file for the datastore class. */
-	private static final String DATASTORE_TEMPLATE = "datastore_template.vm";
+	/** Name of the template file for the {@link DBCollection} implementation classes. */
+	private static final String DBCOLLECTION_TEMPLATE = "dbcollection_template.vm";
 
-	/** Name of the template file for the datastore producer class. */
-	private static final String DATASTORE_PRODUCER_TEMPLATE = "datastore_producer_template.vm";
-
-	/** Target package for the DataStore and its provider classes. */
-	private static final String ORG_LAMBDAMATIC_MONGODB = "org.lambdamatic.mongodb";
-
-	/** Name of the datastore class. */
-	private static final String DATA_STORE = "DataStore";
-
-	/** Name of the datastore provider class. */
-	private static final String DATA_STORE_PRODUCER = "DataStoreProducer";
-
+	/** Name of the template file for the {@link DBCollection} producer classes. */
+	private static final String DBCOLLECTION_PRODUCER_TEMPLATE = "dbcollection_producer_template.vm";
+	
 	/** Suffix to use for the generated metadata classes. */
 	private static String METACLASS_SUFFIX = "_";
 
@@ -80,18 +73,23 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	/** Velocity template for the metadata classes. */
 	private Template metadataTemplate;
 
-	/** Velocity template for the datastore class. */
-	private Template datastoreTemplate;
+	/** Velocity template for the {@link DBCollection} implementation classes. */
+	private Template dbCollectionTemplate;
 
-	/** Velocity template for the datastore producer class. */
-	private Template datastoreProducerTemplate;
+	/** Velocity template for {@link DBCollection} producer classes. */
+	private Template dbCollectionProducerTemplate;
 
+	/**
+	 * Constructor
+	 */
 	public LambdamaticAnnotationsProcessor() {
 		loadVelocityContext();
 	}
 
+	/**
+	 * Loads the Velocity context and all templates
+	 */
 	private void loadVelocityContext() {
-		System.err.println("Initializing " + getClass().getName());
 		if (this.velocityEngine == null) {
 			try {
 				final Properties props = new Properties();
@@ -102,8 +100,8 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 				this.velocityEngine = new VelocityEngine(props);
 				velocityEngine.init();
 				this.metadataTemplate = velocityEngine.getTemplate(METADATA_TEMPLATE);
-				this.datastoreTemplate = velocityEngine.getTemplate(DATASTORE_TEMPLATE);
-				this.datastoreProducerTemplate = velocityEngine.getTemplate(DATASTORE_PRODUCER_TEMPLATE);
+				this.dbCollectionTemplate = velocityEngine.getTemplate(DBCOLLECTION_TEMPLATE);
+				this.dbCollectionProducerTemplate = velocityEngine.getTemplate(DBCOLLECTION_PRODUCER_TEMPLATE);
 			} catch (IOException e) {
 				processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
 						"Failed to initialize Velocity Engine, Context or Template: " + e.getMessage());
@@ -113,35 +111,38 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 
 	@Override
 	public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
-		final Map<String, TypeElement> collections = new HashMap<String, TypeElement>();
 		for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(Document.class)) {
 			if (annotatedElement instanceof TypeElement) {
 				try {
-					final TypeElement typeElement = (TypeElement) annotatedElement;
-					final PackageElement packageElement = (PackageElement) typeElement.getEnclosingElement();
-					processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "annotated class: " + typeElement.getQualifiedName(),
-							typeElement);
-					generateMetadataSourceCode(packageElement, typeElement);
-					// keep the name of the collection defined in the @Document annotation
-					final Document documentAnnotation = typeElement.getAnnotation(Document.class);
-					collections.put(capitalize(documentAnnotation.collection()), typeElement);
+					final TypeElement domainElement = (TypeElement) annotatedElement;
+					processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "annotated class: " + domainElement.getQualifiedName(),
+							domainElement);
+					final Map<String, Object> templateContextProperties = initializeTemplateContextProperties(domainElement);
+					generateMetadataSourceCode(templateContextProperties);
+					generateDBCollectionSourceCode(templateContextProperties);
+					generateDBCollectionProducerSourceCode(templateContextProperties);
 				} catch (IOException e) {
 					processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
 							"Failed to process annotated element '" + annotatedElement.getSimpleName() + "': " + e.getMessage());
 				}
 			}
 		}
-		if (!collections.isEmpty()) {
-			try {
-				generateDatastoreSourceCode(ORG_LAMBDAMATIC_MONGODB, collections);
-				generateDatastoreProviderSourceCode(ORG_LAMBDAMATIC_MONGODB);
-			} catch (IOException e) {
-				processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-						"Failed to generate DataStore or DataStoreProvider class: " + e.getMessage());
-			}
-			return true; // no further processing of this annotation type
-		}
 		return false;
+	}
+	
+	private Map<String, Object> initializeTemplateContextProperties(final TypeElement domainElement) {
+		final Map<String, Object> properties = new HashMap<String, Object>();
+		final PackageElement packageElement = (PackageElement) domainElement.getEnclosingElement();
+		final Document documentAnnotation = domainElement.getAnnotation(Document.class);
+		final String collectionClassName = capitalize(documentAnnotation.collection()).concat("Collection");
+		properties.put("processorClassName", LambdamaticAnnotationsProcessor.class.getName());
+		properties.put("packageName", packageElement.getQualifiedName().toString());
+		properties.put("domainClassName", domainElement.getSimpleName().toString());
+		properties.put("fields", getFields(domainElement));
+		properties.put("metadataDomainClassName", generateMetadataSimpleClassName(domainElement));
+		properties.put("dbCollectionClassName", collectionClassName);
+		properties.put("dbCollectionProducerClassName", collectionClassName.concat("Producer"));
+		return properties; 
 	}
 
 	/**
@@ -158,28 +159,23 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	/**
 	 * Generates the metadata source code for the given {@code classElement} in the given target {@code packageElement}.
 	 * 
-	 * @param packageElement
-	 *            the package of the domain class element
-	 * @param classElement
-	 *            the domain class element
+	 * @param allContextProperties
+	 *            all {@link VelocityContext} properties to use when running the engine to generate the source code.
 	 * 
 	 * @throws IOException
 	 */
-	private void generateMetadataSourceCode(final PackageElement packageElement, final TypeElement classElement) throws IOException {
+	private void generateMetadataSourceCode(final Map<String, Object> allContextProperties) throws IOException {
 		if (this.metadataTemplate == null) {
 			processingEnv.getMessager().printMessage(
 					Diagnostic.Kind.WARNING,
-					"Could not create the metadata class for the given '" + packageElement.getQualifiedName().toString() + "."
-							+ classElement + "' class");
+					"Could not create the metadata class for the given '" + allContextProperties.get("packageName") + "."
+							+ allContextProperties.get("domainClassName") + "' class");
 			return;
 		}
 		final VelocityContext velocityContext = new VelocityContext();
-		velocityContext.put("processorClassName", LambdamaticAnnotationsProcessor.class.getName());
-		velocityContext.put("packageName", packageElement.getQualifiedName().toString());
-		velocityContext.put("metadataDomainClassName", generateMetadataClassName(classElement));
-		velocityContext.put("domainClassName", classElement.getSimpleName().toString());
-		velocityContext.put("fields", getFields(classElement));
-		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(classElement.getQualifiedName().toString() + METACLASS_SUFFIX);
+		// fill the velocity context with all the properties (even if we don't need them all)
+		allContextProperties.keySet().stream().forEach(k -> velocityContext.put(k, allContextProperties.get(k)));
+		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(allContextProperties.get("packageName").toString() + "." + allContextProperties.get("metadataDomainClassName").toString());
 		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
 		final Writer writer = jfo.openWriter();
 		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying velocity template: " + metadataTemplate.getName());
@@ -188,63 +184,59 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	}
 
 	/**
-	 * Generates the {@code DataStore} source code for the given MongoDB {@code collections}, in the target {@code packageElement}.
+	 * Generates the {@code DBCollection} implementation source code for the underlying MongoDB collection.
 	 * 
-	 * @param packageElement
-	 *            the target package for the generated source code.
-	 * @param collections
-	 *            the names of the MongoDB collections that the generated DataStore will provide.
+	 * @param allContextProperties
+	 *            all {@link VelocityContext} properties to use when running the engine to generate the source code.
 	 * 
 	 * @throws IOException
 	 */
-	private void generateDatastoreSourceCode(final String packageName, final Map<String, TypeElement> collections) throws IOException {
-		if (this.datastoreTemplate == null) {
-			processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
-					"Could not create the '" + packageName + "." + DATA_STORE + "' class.");
+	private void generateDBCollectionSourceCode(final Map<String, Object> allContextProperties) throws IOException {
+		if (this.dbCollectionTemplate == null) {
+			processingEnv.getMessager().printMessage(
+					Diagnostic.Kind.WARNING,
+					"Could not create the DBCollection implementation class for the given '" + allContextProperties.get("packageName") + "."
+							+ allContextProperties.get("domainClassName") + "' class");
 			return;
 		}
 		final VelocityContext velocityContext = new VelocityContext();
-		velocityContext.put("processorClassName", LambdamaticAnnotationsProcessor.class.getName());
-		velocityContext.put("packageName", packageName);
-		velocityContext.put("dataStoreClassName", DATA_STORE);
-		velocityContext.put("collections", collections);
-		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(packageName + "." + DATA_STORE);
+		// fill the velocity context with all the properties (even if we don't need them all)
+		allContextProperties.keySet().stream().forEach(k -> velocityContext.put(k, allContextProperties.get(k)));
+		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(allContextProperties.get("packageName").toString() + "." + allContextProperties.get("dbCollectionClassName").toString());
 		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
 		final Writer writer = jfo.openWriter();
-		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying velocity template: " + datastoreTemplate.getName());
-		this.datastoreTemplate.merge(velocityContext, writer);
+		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying velocity template: " + this.dbCollectionTemplate.getName());
+		this.dbCollectionTemplate.merge(velocityContext, writer);
 		writer.close();
 	}
 
 	/**
-	 * Generates the {@code DataStoreProvider} source code for the (already) generated {@code DataStore}, in the target
-	 * {@code packageElement}.
+	 * Generates the CDI Producer for the {@code DBCollection} implementation.
 	 * 
-	 * @param packageElement
-	 *            the target package for the generated source code.
+	 * @param allContextProperties
+	 *            all {@link VelocityContext} properties to use when running the engine to generate the source code.
 	 * 
 	 * @throws IOException
 	 */
-	private void generateDatastoreProviderSourceCode(final String packageName) throws IOException {
-		if (this.datastoreProducerTemplate == null) {
-			processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
-					"Could not create the '" + packageName + "." + DATA_STORE_PRODUCER + "' class.");
+	private void generateDBCollectionProducerSourceCode(final Map<String, Object> allContextProperties) throws IOException {
+		if (this.dbCollectionProducerTemplate == null) {
+			processingEnv.getMessager().printMessage(
+					Diagnostic.Kind.WARNING,
+					"Could not create the DBCollection implementation class for the given '" + allContextProperties.get("packageName") + "."
+							+ allContextProperties.get("domainClassName") + "' class");
 			return;
 		}
 		final VelocityContext velocityContext = new VelocityContext();
-		velocityContext.put("processorClassName", LambdamaticAnnotationsProcessor.class.getName());
-		velocityContext.put("packageName", packageName);
-		velocityContext.put("dataStoreProducerClassName", DATA_STORE_PRODUCER);
-		velocityContext.put("dataStoreClassName", DATA_STORE);
-		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(packageName + "." + DATA_STORE_PRODUCER);
+		// fill the velocity context with all the properties (even if we don't need them all)
+		allContextProperties.keySet().stream().forEach(k -> velocityContext.put(k, allContextProperties.get(k)));
+		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(allContextProperties.get("packageName").toString() + "." + allContextProperties.get("dbCollectionClassName").toString());
 		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
 		final Writer writer = jfo.openWriter();
-		processingEnv.getMessager()
-				.printMessage(Diagnostic.Kind.NOTE, "applying velocity template: " + datastoreProducerTemplate.getName());
-		this.datastoreProducerTemplate.merge(velocityContext, writer);
+		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying velocity template: " + this.dbCollectionProducerTemplate.getName());
+		this.dbCollectionProducerTemplate.merge(velocityContext, writer);
 		writer.close();
 	}
-
+	
 	/**
 	 * Returns a {@link Map} of the type of the fields of the given classElement, indexed by their name.
 	 * 
@@ -276,7 +268,7 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	 *            the type element from which the name will be generated
 	 * @return the simple name of the given type element, followed by {@link LambdamaticAnnotationsProcessor#METACLASS_SUFFIX}.
 	 */
-	public static String generateMetadataClassName(final TypeElement typeElement) {
+	public static String generateMetadataSimpleClassName(final TypeElement typeElement) {
 		return typeElement.getSimpleName().toString() + METACLASS_SUFFIX;
 	}
 

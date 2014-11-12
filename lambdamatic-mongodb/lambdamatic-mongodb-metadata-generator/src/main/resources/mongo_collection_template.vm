@@ -1,0 +1,21 @@
+package ${packageName};
+
+import javax.annotation.Generated;
+
+import org.lambdamatic.mongodb.DBCollection;
+import org.lambdamatic.mongodb.DBCollectionImpl;
+
+import com.mongodb.MongoClient;
+
+/**
+ * The {@link DBCollection} implementation associated with the {@link ${domainClassName}} domain class.
+ *
+ */
+@Generated(value="${processorClassName}")
+public class ${dbCollectionClassName} extends DBCollectionImpl<${domainClassName}, ${metadataDomainClassName}> {
+
+	public ${dbCollectionClassName}(final MongoClient mongoClient, final String databaseName) {
+		super(mongoClient, databaseName, ${dbCollectionName}, ${domainClassName}.class, ${metadataDomainClassName}.class);
+	}
+
+}
