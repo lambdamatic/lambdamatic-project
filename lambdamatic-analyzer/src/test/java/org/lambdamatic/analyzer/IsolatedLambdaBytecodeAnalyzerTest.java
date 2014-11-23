@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.lambdamatic.FilterExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;

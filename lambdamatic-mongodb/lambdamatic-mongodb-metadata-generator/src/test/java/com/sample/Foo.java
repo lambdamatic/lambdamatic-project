@@ -9,15 +9,16 @@
 package com.sample;
 
 import org.lambdamatic.mongodb.annotations.Document;
-import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.DocumentField;
+import org.lambdamatic.mongodb.annotations.DocumentId;
+import org.lambdamatic.mongodb.types.geospatial.Point;
 
 /**
  * @author Xavier Coulon
  *
  */
-@Document(collection="mainCollection")
-public class MainEntity {
+@Document(collection="foos")
+public class Foo {
 
 	@DocumentId 
 	private String id;
@@ -49,6 +50,10 @@ public class MainEntity {
 	@DocumentField
 	private char primitiveCharField;
 	
+	@DocumentField
+	private EnumFoo enumFoo;
+	
+	@DocumentField
+	private Point location;
 	
 }
-

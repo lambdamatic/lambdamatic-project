@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bson.types.ObjectId;
-import org.lambdamatic.analyzer.FilterExpression;
+import org.lambdamatic.FilterExpression;
 import org.lambdamatic.analyzer.LambdaExpressionAnalyzer;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.mongodb.annotations.DocumentField;
@@ -59,8 +59,7 @@ public class DBObjectConverter {
 	 * @return a {@link DBObject} document to submit to MongoDB
 	 * @throws ConversionException
 	 */
-	public static <T, M extends Metadata<T>> DBObject convert(final FilterExpression<M> filterExpression,
-			final Class<M> metadataClass) throws ConversionException {
+	public static <T, M extends Metadata<T>> DBObject convert(final FilterExpression<M> filterExpression, final Class<M> metadataClass) throws ConversionException {
 		final LambdaExpressionAnalyzer analyzer = new LambdaExpressionAnalyzer();
 		final Expression astRoot = analyzer.analyzeLambdaExpression(filterExpression);
 		final ExpressionConverter<M> expressionConverter = new ExpressionConverter<M>(metadataClass);

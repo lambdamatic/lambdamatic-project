@@ -1,4 +1,4 @@
-package org.lambdamatic.analyzer;
+package org.lambdamatic;
 
 import java.io.Serializable;
 
@@ -6,5 +6,6 @@ import java.io.Serializable;
 public interface FilterExpression<T> extends Serializable {
 
     public boolean test(T t);
+    
 }
 

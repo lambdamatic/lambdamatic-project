@@ -17,7 +17,7 @@ public class User_ implements Metadata<User> {
   public org.lambdamatic.mongodb.metadata.ObjectIdField id;
   
   @DocumentField(name="", fetch=FetchType.EAGER)
-  public org.lambdamatic.mongodb.metadata.StringField username;
+  public org.lambdamatic.mongodb.metadata.StringField userName;
   
   @DocumentField(name="", fetch=FetchType.EAGER)
   public org.lambdamatic.mongodb.metadata.StringField firstName;

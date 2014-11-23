@@ -7,11 +7,11 @@ import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.FetchType;
 
 /**
- * The {@link Metadata} class associated with the {@link MainEntity} domain class.
+ * The {@link Metadata} class associated with the {@link Foo} domain class.
  *
  */
 @Generated(value="org.lambdamatic.mongodb.apt.LambdamaticAnnotationsProcessor")
-public class MainEntity_ implements Metadata<MainEntity> {
+public class Foo_ implements Metadata<Foo> {
 
   @DocumentField(name="id", fetch=FetchType.EAGER)
   public org.lambdamatic.mongodb.metadata.StringField id;
@@ -42,5 +42,11 @@ public class MainEntity_ implements Metadata<MainEntity> {
   
   @DocumentField(name="", fetch=FetchType.EAGER)
   public char primitiveCharField;
+  
+  @DocumentField(name="", fetch=FetchType.EAGER)
+  public com.sample.EnumFoo enumFoo;
+  
+  @DocumentField(name="", fetch=FetchType.EAGER)
+  public org.lambdamatic.mongodb.metadata.LocationField location;
   
 }

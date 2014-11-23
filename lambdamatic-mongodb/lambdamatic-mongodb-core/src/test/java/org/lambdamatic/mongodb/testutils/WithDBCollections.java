@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 
 
 /**
- * Containing annotation to indicate the MongoDB Collections that should be processed by the {@link CleanDBCollectionsRule}
+ * Containing annotation to indicate the MongoDB Collections that should be processed by the {@link CleanMongoCollectionsRule}
  * 
  * @author Xavier Coulon
  *

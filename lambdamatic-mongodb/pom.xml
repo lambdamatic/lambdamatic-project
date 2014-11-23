@@ -9,11 +9,11 @@
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>lambdamatic-mongodb</artifactId>
-  <name>Lambdamatic for MongoDB</name>
+	<name>Lambdamatic for MongoDB</name>
 	<packaging>pom</packaging>
 
 	<properties>
-		<mongodb.driver.version>2.12.2</mongodb.driver.version>
+		<mongodb.driver.version>3.0.0-SNAPSHOT</mongodb.driver.version>
 		<jackson.version>2.4.0</jackson.version>
 		<bson4jackson.version>2.4.0</bson4jackson.version>
 	</properties>
@@ -64,8 +64,13 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
+			<dependency>
+				<groupId>org.skyscreamer</groupId>
+				<artifactId>jsonassert</artifactId>
+				<version>1.2.3</version>
+				<scope>test</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
 </project>
 

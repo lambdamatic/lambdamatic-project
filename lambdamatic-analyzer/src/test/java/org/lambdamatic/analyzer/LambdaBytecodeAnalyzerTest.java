@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.lambdamatic.FilterExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;

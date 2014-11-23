@@ -8,10 +8,12 @@
 
 package org.lambdamatic.mongodb;
 
-import org.lambdamatic.analyzer.FilterExpression;
+import org.lambdamatic.FilterExpression;
+import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.metadata.Metadata;
 
-import com.mongodb.WriteConcern;
+import com.mongodb.WriteConcernResult;
+import com.mongodb.client.FindFluent;
 
 /**
  * Database Collection for a given type of element (along with its associated metadata)
@@ -20,24 +22,25 @@ import com.mongodb.WriteConcern;
  * @param <T>
  *
  */
-public interface DBCollection<T, T_ extends Metadata<T>> {
+public interface LambdamaticMongoCollection<T, M extends Metadata<T>> {
 
 	/**
-	 * Finds a single document in MongoDB, and returns the match element of type T
-	 * @param expression the lambda expression that provides with search criteria
-	 * @return the first matching document.
+	 * Finds one or many documents matching the given lambda {@link FilterExpression}.
+	 * @param expression the query in the form of a lambda expression 
+	 * @return the {@link FindFluent} element to carry on with the query
 	 */
-	public T findOne(final FilterExpression<T_> expression);
-	
+	public FindFluent<T> find(final FilterExpression<M> expression);
+
 	/**
-	 * Inserts the given {@code transientInstance} in this {@link DBCollection}, using the default {@link WriteConcern}
-	 * configured for this {@link DBCollection}. If the given {@code transientInstance} has no {@code id} before the
-	 * operation, a value will be set.
+	 * Insert the given {@code domainObject} in the underlying MongoDB
+	 * Collection. If no {@code id} attribute (ie, annotated with
+	 * {@link DocumentId}) was not set, a random value will be provided.
 	 * 
-	 * @param transientInstance
-	 *            the instance to store
+	 * @param domainObject
+	 *            the object to convert into a BSON document
+	 * @return the {@link WriteConcernResult} for details on the insert operation that occurred.
 	 */
-	public void insert(final T transientInstance);
-
+	public WriteConcernResult insertOne(T domainObject);
+	
 }
 

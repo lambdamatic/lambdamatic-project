@@ -8,34 +8,42 @@
 
 package org.lambdamatic.mongodb;
 
+import java.util.Arrays;
 
-import org.bson.types.ObjectId;
-import org.lambdamatic.analyzer.FilterExpression;
+import org.bson.codecs.configuration.RootCodecRegistry;
+import org.lambdamatic.FilterExpression;
 import org.lambdamatic.mongodb.converters.DBObjectConverter;
+import org.lambdamatic.mongodb.converters.LambdamaticDocumentCodecProvider;
+import org.lambdamatic.mongodb.converters.LambdamaticFilterExpressionCodecProvider;
 import org.lambdamatic.mongodb.metadata.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.DBObject;
+import com.mongodb.DBObjectCodecProvider;
 import com.mongodb.MongoClient;
+import com.mongodb.WriteConcernResult;
+import com.mongodb.client.FindFluent;
+import com.mongodb.client.MongoCollectionOptions;
 
 /**
- * Database Collection for a given type of element (along with its associated metadata)
+ * Database Collection for a given type of element (along with its associated
+ * metadata)
  * 
  * @author Xavier Coulon
  *
  */
-public abstract class DBCollectionImpl<T, M extends Metadata<T>> implements DBCollection<T, M>{
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(DBCollectionImpl.class);
+public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements LambdamaticMongoCollection<T, M> {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticMongoCollectionImpl.class);
 
 	/** The underlying MongoDB Collection. */
-	private final com.mongodb.DBCollection dbCollection;
+	private final com.mongodb.client.MongoCollection<T> mongoCollection;
 
 	/** The user-defined domain class associated with this Collection. */
 	private final Class<T> targetClass;
 
-	/** The generated metadata class associated user-defined domain class. */
+	/** The metadata class associated with the user-defined domain class. */
 	private final Class<M> metadataClass;
 
 	/**
@@ -44,9 +52,17 @@ public abstract class DBCollectionImpl<T, M extends Metadata<T>> implements DBCo
 	 * @param mongoClient
 	 *            the underlying MongoDB Client
 	 */
-	public DBCollectionImpl(final MongoClient mongoClient, final String databaseName, final String collectionName,
-			final Class<T> targetClass, final Class<M> metadataClass) {
-		this.dbCollection = mongoClient.getDB(databaseName).getCollection(collectionName);
+	public LambdamaticMongoCollectionImpl(final MongoClient mongoClient, final String databaseName,
+			final String collectionName, final Class<T> targetClass, final Class<M> metadataClass) {
+		// final RootCodecRegistry codecRegistry =
+		// MongoClient.getDefaultCodecRegistry().withCodec(new
+		// LambdamaticCodec<T>(targetClass));
+		final RootCodecRegistry codecRegistry = new RootCodecRegistry(Arrays.asList(
+				new LambdamaticDocumentCodecProvider(), new LambdamaticFilterExpressionCodecProvider(), new DBObjectCodecProvider()));
+
+		final MongoCollectionOptions options = MongoCollectionOptions.builder().codecRegistry(codecRegistry).build();
+		this.mongoCollection = mongoClient.getDatabase(databaseName)
+				.getCollection(collectionName, targetClass, options);
 		this.targetClass = targetClass;
 		this.metadataClass = metadataClass;
 	}
@@ -55,26 +71,16 @@ public abstract class DBCollectionImpl<T, M extends Metadata<T>> implements DBCo
 	 * {@inheritDoc}
 	 */
 	@Override
-	public T findOne(final FilterExpression<M> expression) {
-		// convert the given expression in a MongoDB DBObject (a JSON document)
-		final DBObject query = DBObjectConverter.convert(expression, metadataClass);
-		LOGGER.debug("Requested: {}", query.toString());
-		// submit the request and retrieve a result as an instance of DBObject (provided by MongoDB Driver)
-		final DBObject dbObjectResult = dbCollection.findOne(query);
-		LOGGER.debug("Responded: {}", dbObjectResult.toString());
-		return DBObjectConverter.convert(dbObjectResult, this.targetClass);
+	public FindFluent<T> find(final FilterExpression<M> expression) {
+		// FIXME: the conversion should be performed by the LambdamaticFilterExpressionCodec
+		final DBObject filter = DBObjectConverter.convert(expression, metadataClass);
+		LOGGER.debug("Running find with filter: {}", filter);
+		return mongoCollection.find(filter);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public void insert(final T transientInstance) {
-		final DBObject dbObject = DBObjectConverter.convert(transientInstance);
-		LOGGER.debug("About to insert: {}", dbObject);
-		dbCollection.insert(dbObject);
-		final ObjectId objectId = (ObjectId) dbObject.get(DBObjectConverter.MONGOBD_DOCUMENT_ID);
-		DBObjectConverter.setDocumentId(transientInstance, objectId);
+	public WriteConcernResult insertOne(T domainObject) {
+		return mongoCollection.insertOne(domainObject);
 	}
 
 	/**
@@ -86,4 +92,3 @@ public abstract class DBCollectionImpl<T, M extends Metadata<T>> implements DBCo
 	}
 
 }
-

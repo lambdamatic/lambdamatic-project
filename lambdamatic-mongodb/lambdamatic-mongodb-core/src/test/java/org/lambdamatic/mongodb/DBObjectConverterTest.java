@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import org.bson.types.ObjectId;
 import org.junit.Test;
-import org.lambdamatic.analyzer.FilterExpression;
+import org.lambdamatic.FilterExpression;
 import org.lambdamatic.mongodb.converters.DBObjectConverter;
 
 import com.mongodb.BasicDBObject;

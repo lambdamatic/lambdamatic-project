@@ -42,7 +42,7 @@ public class FileAssertion extends AbstractAssert<FileAssertion, File>{
 	
 	public FileAssertion doesNotContain(final String unwantedContent) {
 		isNotNull();
-		if (!content.contains(unwantedContent)) {
+		if (content.contains(unwantedContent)) {
 			failWithMessage("Did not want file <%s> to contain <%s> but it did.", actual.getAbsolutePath(), unwantedContent);
 		}
 		return this;

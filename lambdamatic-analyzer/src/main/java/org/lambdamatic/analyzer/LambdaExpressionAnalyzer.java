@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.lambdamatic.FilterExpression;
 import org.lambdamatic.analyzer.ast.ExpressionRewriter;
 import org.lambdamatic.analyzer.ast.LambdaExpressionReader;
 import org.lambdamatic.analyzer.ast.ReturnTruePathFilter;

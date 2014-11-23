@@ -8,7 +8,7 @@
 	</parent>
 	<artifactId>lambdamatic-mongodb-core</artifactId>
 	<name>Lambdamatic API and Runtime for MongoDB</name>
- 
+
 	<dependencies>
 		<dependency>
 			<groupId>org.lambdamatic</groupId>
@@ -49,10 +49,6 @@
 			<artifactId>assertj-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.arquillian.junit</groupId>
-			<artifactId>arquillian-junit-container</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.jboss.shrinkwrap.resolver</groupId>
 			<artifactId>shrinkwrap-resolver-impl-maven-archive</artifactId>
 		</dependency>
@@ -61,7 +57,10 @@
 			<artifactId>logback-classic</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+		<dependency>
+			<groupId>org.skyscreamer</groupId>
+			<artifactId>jsonassert</artifactId>
+		</dependency>
 	</dependencies>
 
 	<profiles>

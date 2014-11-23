@@ -12,22 +12,31 @@ import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class CleanDBCollectionsRule implements MethodRule {
+public class CleanMongoCollectionsRule implements MethodRule {
+
+	private final MongoCollection<?> collection;
+
+	public CleanMongoCollectionsRule(final MongoClient mongoClient, final String databaseName, final String collectionName) {
+		this.collection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
+	}
 
 	@Override
 	public Statement apply(Statement base, FrameworkMethod method, Object target) {
 		return new Statement() {
 			@Override
 			public void evaluate() throws Throwable {
-				// TODO: clean the databse collections provided by the WithDBCollection annotation(s)
+				// clean the collection
+				collection.dropCollection();
 				base.evaluate();
 			}
 		};
 	}
 
 }
-

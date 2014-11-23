@@ -32,11 +32,11 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
 		return new ClassAssertion(actual);
 	}
 
-	public ClassAssertion isImplementing(final String expectedInterfaceName) {
+	public ClassAssertion isImplementing(final String expectedInterface) {
 		isNotNull();
 		final List<String> interfaces = Arrays.asList(actual.getInterfaces()).stream().map(Class::getName).collect(Collectors.toList());
-		if (!interfaces.contains(expectedInterfaceName)) {
-			failWithMessage("Expected field <%s> to implement <%s> but it only implements <%s>.", actual.getName(), expectedInterfaceName, interfaces);
+		if (!interfaces.contains(expectedInterface)) {
+			failWithMessage("Expected class <%s> to implement <%s> but it only implements <%s>.", actual.getName(), expectedInterface, interfaces);
 		}
 		actual.getTypeParameters();
 		return this;
@@ -54,6 +54,29 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
 		actual.getTypeParameters();
 		return this;
 	}
+	
+	public ClassAssertion isExtending(final String expectedSuperClass) {
+		isNotNull();
+		if (actual.getSuperclass() == null || !expectedSuperClass.equals(actual.getSuperclass().getName())) {
+			failWithMessage("Expected class <%s> to implement <%s> but it only extends <%s>.", actual.getName(), expectedSuperClass, actual.getSuperclass());
+		}
+		actual.getTypeParameters();
+		return this;
+	}
+
+	public ClassAssertion isExtending(final Class<?> expectedSuperClass, final Class<?>... parameterTypes) {
+		isNotNull();
+		final ParameterizedType genericSuperclass = (ParameterizedType) actual.getGenericSuperclass();
+		if (genericSuperclass == null || !expectedSuperClass.getName().equals(genericSuperclass.getRawType().getTypeName())) {
+			failWithMessage("Expected class <%s> to extend <%s> but it only extends <%s>.", actual.getName(), expectedSuperClass, actual.getSuperclass());
+		}
+		if (!Arrays.deepEquals(genericSuperclass.getActualTypeArguments(), parameterTypes)) {
+			failWithMessage("Expected class <%s> to have types <%s> but it only has <%s>.", actual.getName(), parameterTypes, genericSuperclass.getActualTypeArguments());
+		}
+		return this;
+	}
+
+	
 
 	public ClassAssertion hasMethod(final String methodName, final Class<?>... parameterTypes) {
 		isNotNull();

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.lambdamatic.analyzer.FilterExpression;
+import org.lambdamatic.FilterExpression;
 import org.lambdamatic.analyzer.ast.node.ASTNode;
 import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
@@ -128,7 +128,7 @@ public class LambdaExpressionReader {
 		final Map<String, AbstractInsnNode> labels = desugaredExpressionVisitor.getLabels();
 		return readStatementSubTree(instructions.getFirst(), new Stack<>(), capturedArgs, localVariables, labels);
 	}
-
+	
 	/**
 	 * 
 	 * @param expression
