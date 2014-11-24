@@ -26,7 +26,9 @@ public class LambdamaticDocumentCodecProvider implements CodecProvider {
 	@Override
 	public <T> Codec<T> get(final Class<T> clazz, final CodecRegistry registry) {
 		if(clazz != null && clazz.getAnnotation(Document.class) != null) {
-			return new LambdamaticDocumentCodec<T>(clazz);
+			//FIXME: the mappings should not be computed each time, so they need to be pulled out of the LambdamaticDocumentCodec class
+			final LambdamaticDocumentCodec<T> lambdamaticDocumentCodec = new LambdamaticDocumentCodec<T>(clazz);
+			return lambdamaticDocumentCodec;
 		}
 		return null;
 	}

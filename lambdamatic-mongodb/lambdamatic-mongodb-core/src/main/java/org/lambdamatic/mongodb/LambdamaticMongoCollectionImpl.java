@@ -12,19 +12,18 @@ import java.util.Arrays;
 
 import org.bson.codecs.configuration.RootCodecRegistry;
 import org.lambdamatic.FilterExpression;
-import org.lambdamatic.mongodb.converters.DBObjectConverter;
 import org.lambdamatic.mongodb.converters.LambdamaticDocumentCodecProvider;
 import org.lambdamatic.mongodb.converters.LambdamaticFilterExpressionCodecProvider;
 import org.lambdamatic.mongodb.metadata.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.DBObject;
-import com.mongodb.DBObjectCodecProvider;
 import com.mongodb.MongoClient;
 import com.mongodb.WriteConcernResult;
 import com.mongodb.client.FindFluent;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCollectionOptions;
+import com.mongodb.client.MongoDatabase;
 
 /**
  * Database Collection for a given type of element (along with its associated
@@ -43,14 +42,23 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 	/** The user-defined domain class associated with this Collection. */
 	private final Class<T> targetClass;
 
-	/** The metadata class associated with the user-defined domain class. */
-	private final Class<M> metadataClass;
-
 	/**
 	 * Constructor.
 	 * 
 	 * @param mongoClient
-	 *            the underlying MongoDB Client
+	 *            the underlying MongoDB Client.
+	 * @param databaseName
+	 *            the name of the underlying {@link MongoDatabase} to use with
+	 *            the given client.
+	 * @param collectionName
+	 *            the name of the {@link MongoCollection} to use in the given
+	 *            database.
+	 * @param targetClass
+	 *            the Java type associated with the documents in the
+	 *            {@link MongoCollection}.
+	 * @param metadataClass
+	 *            the generated Java class carrying the metadata for the given
+	 *            {@code targetClass}.
 	 */
 	public LambdamaticMongoCollectionImpl(final MongoClient mongoClient, final String databaseName,
 			final String collectionName, final Class<T> targetClass, final Class<M> metadataClass) {
@@ -58,24 +66,20 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 		// MongoClient.getDefaultCodecRegistry().withCodec(new
 		// LambdamaticCodec<T>(targetClass));
 		final RootCodecRegistry codecRegistry = new RootCodecRegistry(Arrays.asList(
-				new LambdamaticDocumentCodecProvider(), new LambdamaticFilterExpressionCodecProvider(), new DBObjectCodecProvider()));
-
+				new LambdamaticDocumentCodecProvider(), new LambdamaticFilterExpressionCodecProvider<M>(metadataClass)));
 		final MongoCollectionOptions options = MongoCollectionOptions.builder().codecRegistry(codecRegistry).build();
 		this.mongoCollection = mongoClient.getDatabase(databaseName)
 				.getCollection(collectionName, targetClass, options);
 		this.targetClass = targetClass;
-		this.metadataClass = metadataClass;
+		LOGGER.debug("Initialized MongoCollection for documents of class '{}'", targetClass);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public FindFluent<T> find(final FilterExpression<M> expression) {
-		// FIXME: the conversion should be performed by the LambdamaticFilterExpressionCodec
-		final DBObject filter = DBObjectConverter.convert(expression, metadataClass);
-		LOGGER.debug("Running find with filter: {}", filter);
-		return mongoCollection.find(filter);
+	public FindFluent<T> find(final FilterExpression<M> filterExpression) {
+		return mongoCollection.find(filterExpression);
 	}
 
 	@Override

@@ -45,7 +45,8 @@ public class LambdaExpressionAnalyzer {
 	 * @return an {@link Expression} based on the bytecode generated to execute the given {@link FilterExpression}.
 	 * @throws AnalyzeException
 	 */
-	public <T> Expression analyzeLambdaExpression(FilterExpression<T> filterExpression) throws AnalyzeException {
+	//FIXME: provide similar method with SerializedLambda as an input parameter (see LambdamaticFilterExpressionCodec)
+	public <T> Expression analyzeLambdaExpression(final FilterExpression<T> filterExpression) throws AnalyzeException {
 		try {
 			final Statement statement = new LambdaExpressionReader().readBytecodeStatement(filterExpression);
 			final Expression thinedOutExpression = thinOut(statement);

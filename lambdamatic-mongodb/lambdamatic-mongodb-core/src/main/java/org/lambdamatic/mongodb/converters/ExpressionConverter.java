@@ -3,6 +3,8 @@ package org.lambdamatic.mongodb.converters;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bson.BsonWriter;
+import org.lambdamatic.FilterExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
@@ -25,25 +27,31 @@ import com.mongodb.DBObject;
  *
  * @param <M>
  */
-class ExpressionConverter<M> extends ExpressionVisitor {
+class ExpressionConverter extends ExpressionVisitor {
 
 	/** the usual logger. */
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExpressionConverter.class);
 	
-	/** The {@link Metadata} associated with the domain class being queried. */
-	private final Class<M> metadataClass;
+	/** The {@link Metadata} class associated with the domain class being queried. */
+	private final Class<?> metadataClass;
 
 	/** the result {@link DBObject}. */
 	private BasicDBObject resultDbObject;
 
+	private final BsonWriter writer;
+	
 	/**
 	 * Full constructor
 	 * 
 	 * @param metadataClass
 	 *            the {@link Class} linked to the {@link Expression} to visit.
+	 * @param writer
+	 *            the {@link BsonWriter} in which the {@link FilterExpression}
+	 *            representation will be written.
 	 */
-	ExpressionConverter(final Class<M> metadataClass) {
+	ExpressionConverter(final Class<?> metadataClass, final BsonWriter writer) {
 		this.metadataClass = metadataClass;
+		this.writer = writer;
 	}
 
 	/**
@@ -63,7 +71,7 @@ class ExpressionConverter<M> extends ExpressionVisitor {
 	public boolean visitInfixExpression(final InfixExpression expr) {
 		final List<DBObject> operandsDbObjects = new ArrayList<>();
 		for (Expression operand : expr.getOperands()) {
-			final ExpressionConverter<M> operandConverter = new ExpressionConverter<>(metadataClass);
+			final ExpressionConverter operandConverter = new ExpressionConverter(metadataClass, this.writer);
 			operand.accept(operandConverter);
 			operandsDbObjects.add(operandConverter.getResult());
 		}

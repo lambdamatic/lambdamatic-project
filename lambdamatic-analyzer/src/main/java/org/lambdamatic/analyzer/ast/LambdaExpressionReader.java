@@ -99,7 +99,7 @@ public class LambdaExpressionReader {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LambdaExpressionReader.class);
 
 	/**
-	 * Reads the given {@link List} of (bytecode) {@link AbstractInsnNode}s and computes a simplified {@link Statement} based tree
+	 * Reads the given {@link List} of (bytecode) {@link AbstractInsnNode} and computes a simplified {@link Statement} based tree
 	 * representing the initial lambda expression.
 	 * 
 	 * @param instructions
@@ -137,7 +137,7 @@ public class LambdaExpressionReader {
 	 * @see http://docs.oracle.com/javase/8/docs/api/java/lang/invoke/SerializedLambda.html
 	 * @see http ://stackoverflow.com/questions/21860875/printing-debug-info-on-errors-with-java-8-lambda-expressions/21879031 #21879031
 	 */
-	private static <T> SerializedLambda getSerializedLambda(final FilterExpression<T> expression) {
+	public static <T> SerializedLambda getSerializedLambda(final FilterExpression<T> expression) {
 		final Class<?> cl = expression.getClass();
 		try {
 			final Method m = cl.getDeclaredMethod("writeReplace");

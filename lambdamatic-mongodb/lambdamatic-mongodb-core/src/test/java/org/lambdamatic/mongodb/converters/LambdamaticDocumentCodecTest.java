@@ -28,7 +28,7 @@ public class LambdamaticDocumentCodecTest {
 		final Writer stringWriter = new StringWriter();
 		final BsonWriter bsonWriter = new JsonWriter(stringWriter); 
 		// when
-		new LambdamaticFilterExpressionCodec().encode(bsonWriter, expr, null); 
+		new LambdamaticFilterExpressionCodec(expr.getClass()).encode(bsonWriter, expr, null); 
 		// then
 		
 		

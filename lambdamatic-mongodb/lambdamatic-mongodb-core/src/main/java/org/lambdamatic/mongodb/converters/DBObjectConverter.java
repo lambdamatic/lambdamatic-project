@@ -35,6 +35,7 @@ import com.mongodb.DBObject;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
+@Deprecated
 public class DBObjectConverter {
 
 	/** The logger. */
@@ -62,9 +63,10 @@ public class DBObjectConverter {
 	public static <T, M extends Metadata<T>> DBObject convert(final FilterExpression<M> filterExpression, final Class<M> metadataClass) throws ConversionException {
 		final LambdaExpressionAnalyzer analyzer = new LambdaExpressionAnalyzer();
 		final Expression astRoot = analyzer.analyzeLambdaExpression(filterExpression);
-		final ExpressionConverter<M> expressionConverter = new ExpressionConverter<M>(metadataClass);
-		astRoot.accept(expressionConverter);
-		return expressionConverter.getResult();
+		//final ExpressionConverter expressionConverter = new ExpressionConverter(metadataClass);
+		//astRoot.accept(expressionConverter);
+		//return expressionConverter.getResult();
+		return null;
 	}
 
 	/**
