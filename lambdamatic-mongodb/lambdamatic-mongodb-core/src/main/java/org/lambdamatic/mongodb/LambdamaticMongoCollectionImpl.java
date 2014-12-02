@@ -12,8 +12,8 @@ import java.util.Arrays;
 
 import org.bson.codecs.configuration.RootCodecRegistry;
 import org.lambdamatic.FilterExpression;
-import org.lambdamatic.mongodb.converters.LambdamaticDocumentCodecProvider;
-import org.lambdamatic.mongodb.converters.LambdamaticFilterExpressionCodecProvider;
+import org.lambdamatic.mongodb.codecs.LambdamaticDocumentCodecProvider;
+import org.lambdamatic.mongodb.codecs.LambdamaticFilterExpressionCodecProvider;
 import org.lambdamatic.mongodb.metadata.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +60,10 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 	 *            the generated Java class carrying the metadata for the given
 	 *            {@code targetClass}.
 	 */
+	//TODO: if we don't need the metadataClass argument here, can we manage to have something like:
+	// new LambdamaticMongoCollectionImpl<T>(MongoClient, String) 
+	// and retrieve the collection name from <T> ?
+	// this would avoid the need to subclass LambdamaticMongoCollectionImpl :-)
 	public LambdamaticMongoCollectionImpl(final MongoClient mongoClient, final String databaseName,
 			final String collectionName, final Class<T> targetClass, final Class<M> metadataClass) {
 		// final RootCodecRegistry codecRegistry =

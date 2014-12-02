@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 import org.lambdamatic.FilterExpression;
+import org.lambdamatic.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
@@ -36,7 +37,7 @@ public class IsolatedLambdaBytecodeAnalyzerTest {
 		// given
 		final FilterExpression<TestPojo> expression = (TestPojo t) -> (t.equals("foo") && t.equals("bar")) || !t.equals("baz");
 		// when
-		final Expression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		LOGGER.info("Number of InfixExpressions used during the process: {}",
 				(new InfixExpression(InfixOperator.CONDITIONAL_AND).getId() - 1));
@@ -47,7 +48,7 @@ public class IsolatedLambdaBytecodeAnalyzerTest {
 		final Expression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod), equalsBazMethod);
 		// verification
-		assertThat(resultExpression).isEqualTo(expectedExpression);
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
 }
 

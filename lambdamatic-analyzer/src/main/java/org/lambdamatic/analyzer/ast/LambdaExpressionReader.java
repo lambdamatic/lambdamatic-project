@@ -111,8 +111,7 @@ public class LambdaExpressionReader {
 	 * @return the {@link Statement}-based tree
 	 * @throws IOException
 	 */
-	public <T> Statement readBytecodeStatement(final FilterExpression<T> expression) throws IOException {
-		final SerializedLambda serializedLambda = getSerializedLambda(expression);
+	public <T> Statement readBytecodeStatement(final SerializedLambda serializedLambda) throws IOException {
 		final List<Object> capturedArgs = new ArrayList<>();
 		for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
 			capturedArgs.add(serializedLambda.getCapturedArg(i));

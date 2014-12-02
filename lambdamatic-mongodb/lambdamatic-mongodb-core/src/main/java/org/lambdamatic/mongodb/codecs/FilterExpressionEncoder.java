@@ -1,8 +1,12 @@
-package org.lambdamatic.mongodb.converters;
+package org.lambdamatic.mongodb.codecs;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bson.BsonDocument;
+import org.bson.BsonDocumentReader;
+import org.bson.BsonDocumentWriter;
+import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.lambdamatic.FilterExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
@@ -17,27 +21,22 @@ import org.lambdamatic.mongodb.metadata.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-
 /**
- * Converts a given {@link Expression} into a MongoDB {@link DBObject}.
+ * Writes a given {@link Expression} into a MongoDB {@link BsonWriter}.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  * @param <M>
  */
-class ExpressionConverter extends ExpressionVisitor {
+class FilterExpressionEncoder extends ExpressionVisitor {
 
 	/** the usual logger. */
-	private static final Logger LOGGER = LoggerFactory.getLogger(ExpressionConverter.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(FilterExpressionEncoder.class);
 	
 	/** The {@link Metadata} class associated with the domain class being queried. */
 	private final Class<?> metadataClass;
 
-	/** the result {@link DBObject}. */
-	private BasicDBObject resultDbObject;
-
+	/** The {@link BsonWriter} to use. */
 	private final BsonWriter writer;
 	
 	/**
@@ -49,42 +48,38 @@ class ExpressionConverter extends ExpressionVisitor {
 	 *            the {@link BsonWriter} in which the {@link FilterExpression}
 	 *            representation will be written.
 	 */
-	ExpressionConverter(final Class<?> metadataClass, final BsonWriter writer) {
+	FilterExpressionEncoder(final Class<?> metadataClass, final BsonWriter writer) {
 		this.metadataClass = metadataClass;
 		this.writer = writer;
 	}
 
-	/**
-	 * @return the {@link DBObject} built after this visitor visited an {@link Expression}.
-	 */
-	public DBObject getResult() {
-		return this.resultDbObject;
-	}
-
 	@Override
 	public boolean visit(Expression expr) {
-		this.resultDbObject = new BasicDBObject();
 		return super.visit(expr);
 	}
 
 	@Override
 	public boolean visitInfixExpression(final InfixExpression expr) {
-		final List<DBObject> operandsDbObjects = new ArrayList<>();
-		for (Expression operand : expr.getOperands()) {
-			final ExpressionConverter operandConverter = new ExpressionConverter(metadataClass, this.writer);
-			operand.accept(operandConverter);
-			operandsDbObjects.add(operandConverter.getResult());
-		}
 		switch (expr.getOperator()) {
 		case CONDITIONAL_AND:
-			for (DBObject operandDbObject : operandsDbObjects) {
-				for (String key : operandDbObject.keySet()) {
-					this.resultDbObject.append(key, operandDbObject.get(key));
-				}
+			for (Expression operand : expr.getOperands()) {
+				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(metadataClass, writer);
+				operand.accept(operandEncoder);
 			}
 			break;
 		case CONDITIONAL_OR:
-			this.resultDbObject.append("$or", operandsDbObjects.toArray(new DBObject[operandsDbObjects.size()]));
+			writer.writeStartArray("$or");
+			for (Expression operand : expr.getOperands()) {
+				final BsonDocument operandDocument = new BsonDocument(); 
+				final BsonWriter operandBsonWriter = new BsonDocumentWriter(operandDocument);
+				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(metadataClass, operandBsonWriter);
+				operandBsonWriter.writeStartDocument();
+				operand.accept(operandEncoder);
+				operandBsonWriter.writeEndDocument();
+				final BsonReader operandBsonReader = new BsonDocumentReader(operandDocument);
+				writer.pipe(operandBsonReader);
+			}
+			writer.writeEndArray();
 			break;
 		default:
 			break;
@@ -99,23 +94,11 @@ class ExpressionConverter extends ExpressionVisitor {
 		for (Expression argumentExpr : expr.getArguments()) {
 			values.add(extractValue(argumentExpr));
 		}
+		// FIXME: support other methods here
 		if (expr.getMethodName().equals("equals")) {
-			resultDbObject.put(key, values.get(0));
+			BsonWriterUtil.write(writer, key, values.get(0));
 		}
 		return false;
-	}
-
-	private String extractValue(final Expression expr) {
-		switch (expr.getExpressionType()) {
-		case STRING_LITERAL:
-			return extractValue((StringLiteral) expr);
-		default:
-			return null;
-		}
-	}
-
-	private String extractValue(final StringLiteral expr) {
-		return expr.getValue();
 	}
 
 	private String extractKey(final Expression expr) {
@@ -131,14 +114,14 @@ class ExpressionConverter extends ExpressionVisitor {
 
 	private String extractKey(final LocalVariable expr) {
 		if (expr.getType().equals(metadataClass)) {
-			LOGGER.trace("Skipping variable '{} ({})", expr.getName(), expr.getJavaType().getName());
+			LOGGER.trace("Skipping variable '{}' ({})", expr.getName(), expr.getJavaType().getName());
 			return null;
 		}
 		return expr.getName();
 	}
 
 	private String extractKey(final FieldAccess expr) {
-		final StringBuilder builder = new StringBuilder();
+ 		final StringBuilder builder = new StringBuilder();
 		final String target = extractKey(expr.getSourceExpression());
 		if (target != null) {
 			builder.append(target).append('.');
@@ -149,7 +132,12 @@ class ExpressionConverter extends ExpressionVisitor {
 			if (field != null) {
 				final DocumentField fieldAnnotation = field.getAnnotation(DocumentField.class);
 				if (fieldAnnotation != null) {
-					builder.append(fieldAnnotation.name());
+					final String annotatedFieldName = fieldAnnotation.name();
+					if(annotatedFieldName != null&& !annotatedFieldName.isEmpty()) {
+						builder.append(annotatedFieldName);
+					} else {
+						builder.append(field.getName());
+					}
 				}
 			}
 		} catch (NoSuchFieldException | SecurityException cause) {
@@ -157,6 +145,19 @@ class ExpressionConverter extends ExpressionVisitor {
 					+ metadataClass.getName() + "'", cause);
 		}
 		return builder.toString();
+	}
+	
+	private String extractValue(final Expression expr) {
+		switch (expr.getExpressionType()) {
+		case STRING_LITERAL:
+			return extractValue((StringLiteral) expr);
+		default:
+			return null;
+		}
+	}
+
+	private String extractValue(final StringLiteral expr) {
+		return expr.getValue();
 	}
 
 }

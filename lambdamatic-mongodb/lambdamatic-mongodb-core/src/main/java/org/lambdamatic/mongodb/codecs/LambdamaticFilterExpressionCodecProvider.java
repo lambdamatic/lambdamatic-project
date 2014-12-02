@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  ******************************************************************************/
 
-package org.lambdamatic.mongodb.converters;
+package org.lambdamatic.mongodb.codecs;
 
 import java.util.Arrays;
 
@@ -43,7 +43,7 @@ public class LambdamaticFilterExpressionCodecProvider<M> implements CodecProvide
 	public <E> Codec<E> get(final Class<E> clazz, final CodecRegistry registry) {
 		try {
 			if(Arrays.stream(clazz.getInterfaces()).anyMatch(i -> i.equals(FilterExpression.class))) {
-				return new LambdamaticFilterExpressionCodec<E>(clazz);
+				return (Codec<E>) new LambdamaticFilterExpressionCodec();
 			}
 		} catch (SecurityException | IllegalArgumentException e) {
 			LOGGER.error("Failed to check if class '{}' is an instance of ''", e, clazz.getName(), FilterExpression.class.getName());

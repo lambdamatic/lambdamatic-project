@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  ******************************************************************************/
 
-package org.lambdamatic.mongodb;
+package org.lambdamatic.mongodb.codecs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,7 +15,7 @@ import java.io.IOException;
 import org.bson.types.ObjectId;
 import org.junit.Test;
 import org.lambdamatic.FilterExpression;
-import org.lambdamatic.mongodb.converters.DBObjectConverter;
+import org.lambdamatic.mongodb.codecs.DBObjectConverter;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;

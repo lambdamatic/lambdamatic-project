@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  ******************************************************************************/
 
-package org.lambdamatic.mongodb.converters;
+package org.lambdamatic.mongodb.codecs;
 
 import java.lang.reflect.Field;
 import java.text.ParseException;
@@ -17,8 +17,8 @@ import java.util.Map.Entry;
 
 import org.bson.types.ObjectId;
 import org.lambdamatic.FilterExpression;
+import org.lambdamatic.LambdaExpression;
 import org.lambdamatic.analyzer.LambdaExpressionAnalyzer;
-import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.metadata.Metadata;
@@ -62,7 +62,7 @@ public class DBObjectConverter {
 	 */
 	public static <T, M extends Metadata<T>> DBObject convert(final FilterExpression<M> filterExpression, final Class<M> metadataClass) throws ConversionException {
 		final LambdaExpressionAnalyzer analyzer = new LambdaExpressionAnalyzer();
-		final Expression astRoot = analyzer.analyzeLambdaExpression(filterExpression);
+		final LambdaExpression astRoot = analyzer.analyzeLambdaExpression(filterExpression);
 		//final ExpressionConverter expressionConverter = new ExpressionConverter(metadataClass);
 		//astRoot.accept(expressionConverter);
 		//return expressionConverter.getResult();

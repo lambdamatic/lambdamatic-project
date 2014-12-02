@@ -6,20 +6,8 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  ******************************************************************************/
 
-package org.lambdamatic.mongodb.converters;
-
-
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class ConversionException extends RuntimeException {
-	/** serialVersionUID */
-	private static final long serialVersionUID = 7216008533037657142L;
-
-	public ConversionException(final String message, final Exception cause) {
-		super(message, cause);
-	}
-	
-}
-
+package org.lambdamatic.mongodb.codecs;

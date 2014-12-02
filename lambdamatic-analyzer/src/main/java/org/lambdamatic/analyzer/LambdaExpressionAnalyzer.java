@@ -4,11 +4,13 @@
 package org.lambdamatic.analyzer;
 
 import java.io.IOException;
+import java.lang.invoke.SerializedLambda;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.lambdamatic.FilterExpression;
+import org.lambdamatic.LambdaExpression;
 import org.lambdamatic.analyzer.ast.ExpressionRewriter;
 import org.lambdamatic.analyzer.ast.LambdaExpressionReader;
 import org.lambdamatic.analyzer.ast.ReturnTruePathFilter;
@@ -23,6 +25,7 @@ import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.Statement;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
+import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,22 +48,33 @@ public class LambdaExpressionAnalyzer {
 	 * @return an {@link Expression} based on the bytecode generated to execute the given {@link FilterExpression}.
 	 * @throws AnalyzeException
 	 */
-	//FIXME: provide similar method with SerializedLambda as an input parameter (see LambdamaticFilterExpressionCodec)
-	public <T> Expression analyzeLambdaExpression(final FilterExpression<T> filterExpression) throws AnalyzeException {
+	public <T> LambdaExpression analyzeLambdaExpression(final FilterExpression<T> filterExpression) throws AnalyzeException {
 		try {
-			final Statement statement = new LambdaExpressionReader().readBytecodeStatement(filterExpression);
+			final SerializedLambda serializedLambda = LambdaExpressionReader.getSerializedLambda(filterExpression);
+			final Type[] argumentTypes = Type.getArgumentTypes(serializedLambda.getImplMethodSignature());
+			final String argumentClassName = argumentTypes[0].getClassName();
+			final Class<?> argumentClass = Class.forName(argumentClassName);
+			final Statement statement = new LambdaExpressionReader().readBytecodeStatement(serializedLambda);
 			final Expression thinedOutExpression = thinOut(statement);
 			final Expression processedExpression = processMethodCalls(thinedOutExpression);
-			if (processedExpression.getExpressionType() == ExpressionType.INFIX) {
-				final InfixExpression infixExpression = (InfixExpression) processedExpression;
-				final Expression simplifiedExpression = infixExpression.simplify();
-				return simplifiedExpression;
-
-			}
-			return processedExpression;
-		} catch (IOException e) {
+			final Expression resultExpression = simplifyExpression(processedExpression);
+			return new LambdaExpression(resultExpression, argumentClass);
+		} catch (IOException | ClassNotFoundException e) {
 			throw new AnalyzeException("Failed to analyze lambda expression", e);
 		}
+	}
+
+	/**
+	 * @param processedExpression
+	 * @return
+	 */
+	private Expression simplifyExpression(final Expression processedExpression) {
+		if (processedExpression.getExpressionType() == ExpressionType.INFIX) {
+			final InfixExpression infixExpression = (InfixExpression) processedExpression;
+			final Expression simplifiedExpression = infixExpression.simplify();
+			return simplifiedExpression;
+		}
+		return processedExpression;
 	}
 
 	/**

@@ -1,36 +1,83 @@
-/*******************************************************************************
- * Copyright (c) 2014 Red Hat, Inc.
- * Distributed under license by Red Hat, Inc. All rights reserved.
- * This program is made available under the terms of the
- * Eclipse Public License v1.0 which accompanies this distribution,
- * and is available at http://www.eclipse.org/legal/epl-v10.html
- ******************************************************************************/
-
-package org.lambdamatic.mongodb.converters;
+/**
+ * 
+ */
+package org.lambdamatic.mongodb.codecs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Date;
 
+import org.apache.commons.io.IOUtils;
+import org.bson.BsonWriter;
+import org.bson.codecs.EncoderContext;
+import org.bson.json.JsonWriter;
+import org.bson.types.ObjectId;
+import org.json.JSONException;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.lambdamatic.mongodb.annotations.DocumentField;
-import org.lambdamatic.mongodb.converters.ConversionException;
-import org.lambdamatic.mongodb.converters.DBObjectConverter;
+import org.lambdamatic.mongodb.codecs.ConversionException;
+import org.lambdamatic.mongodb.codecs.DBObjectConverter;
+import org.lambdamatic.mongodb.codecs.LambdamaticDocumentCodec;
+import org.lambdamatic.mongodb.codecs.LambdamaticFilterExpressionCodec;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.sample.BikeStation;
 import com.sample.BikeStationStatus;
+import com.sample.User;
 
 /**
- * @author Xavier Coulon <xcoulon@redhat.com>
+ * Testing the {@link LambdamaticFilterExpressionCodec}
+ * @author xcoulon
  *
  */
-public class DbObjectConverterTest {
+public class LambdamaticDocumentCodecTest {
+	
+	/** The usual Logger.*/
+	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticDocumentCodecTest.class);
+	
+	@Test
+	public void shouldEncodeUserDocumentWithId() throws IOException, JSONException {
+		// given
+		final User user = new User(new ObjectId("5459fed60986a72813eb2d59"), "jdoe", "John", "Doe");
+		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8")); 
+		final EncoderContext context = EncoderContext.builder().isEncodingCollectibleDocument(true).build();
+		// when
+		new LambdamaticDocumentCodec<User>(User.class).encode(bsonWriter, user, context); 
+		// then
+		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
+		LOGGER.debug("Output JSON: {}", actual);
+		final String expected = "{_id: '5459fed60986a72813eb2d59', _targetClass:'com.sample.User', userName:'jdoe', firstName:'John', lastName:'Doe'}";
+		JSONAssert.assertEquals(expected, actual, true);
+	}
 
+	@Test
+	public void shouldGenerateDocumentIdWhileEncoding() throws IOException, JSONException {
+		// given
+		final User user = new User("jdoe", "John", "Doe");
+		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8")); 
+		final EncoderContext context = EncoderContext.builder().isEncodingCollectibleDocument(true).build();
+		// when
+		new LambdamaticDocumentCodec<User>(User.class).encode(bsonWriter, user, context); 
+		// then
+		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
+		LOGGER.debug("Output JSON: {}", actual);
+		assertThat(user.getId()).isNotNull();
+		final String expected = "{_id: '" + user.getId() + "', _targetClass:'com.sample.User', userName:'jdoe', firstName:'John', lastName:'Doe'}";
+		JSONAssert.assertEquals(expected, actual, true);
+	}
+	
 	final static Date now = new Date();
-
+	
 	private BasicDBObject generateDBObjectWithPrimitiveTypes() {
 		return new BasicDBObject().append("booleanField", true).append("shortField", (short) 1).append("intField", 2)
 				.append("longField", 3l).append("doubleField", 4.4d).append("floatField", 5.5f)
@@ -232,5 +279,5 @@ public class DbObjectConverterTest {
 		@DocumentField(name = "dateField")
 		private Date _dateField;
 	}
+	
 }
-
