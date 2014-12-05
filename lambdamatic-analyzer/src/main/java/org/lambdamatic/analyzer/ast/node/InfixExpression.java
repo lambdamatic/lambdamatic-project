@@ -90,11 +90,21 @@ public class InfixExpression extends ComplexExpression {
 		 * @param opcode
 		 *            the opcode
 		 */
+		@Deprecated
 		public static InfixOperator from(final int opcode) {
 			switch (opcode) {
+			case Opcodes.LCMP:
+				// Takes two two-word long integers off the stack and compares them. If
+				// the two integers are the same, the int 0 is pushed onto the stack. If
+				// value2 is greater than value1, the int 1 is pushed onto the stack. If
+				// value1 is greater than value2, the int -1 is pushed onto the stack.
+				// FIXME need to compare with second operand
+				break;
 			case Opcodes.IF_ACMPEQ:
+			case Opcodes.IF_ICMPEQ:
 				return InfixOperator.NOT_EQUALS;
 			case Opcodes.IF_ACMPNE:
+			case Opcodes.IF_ICMPNE:
 				return InfixOperator.EQUALS;
 			case Opcodes.IF_ICMPLE:
 			case Opcodes.IFLE:

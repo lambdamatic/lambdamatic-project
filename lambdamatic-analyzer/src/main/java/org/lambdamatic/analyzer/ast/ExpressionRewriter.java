@@ -12,8 +12,8 @@ import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
+import org.lambdamatic.analyzer.ast.node.LiteralFactory;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
-import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,7 @@ public class ExpressionRewriter extends ExpressionVisitor {
 				final Object replacement = m.invoke(source, args.toArray());
 				final ComplexExpression parentExpression = methodInvocation.getParent();
 				if (parentExpression != null) {
-					parentExpression.replaceElement(methodInvocation, getLiteral(replacement));
+					parentExpression.replaceElement(methodInvocation, LiteralFactory.getLiteral(replacement));
 				}
 				// no further visiting on this (obsolete) branch of the expression tree.
 				return false;
@@ -81,7 +81,7 @@ public class ExpressionRewriter extends ExpressionVisitor {
 				final Object replacement = f.get(source);
 				final ComplexExpression parentExpression = fieldAccess.getParent();
 				if (parentExpression != null) {
-					parentExpression.replaceElement(fieldAccess, getLiteral(replacement));
+					parentExpression.replaceElement(fieldAccess, LiteralFactory.getLiteral(replacement));
 				}
 				// no further visiting on this (obsolete) branch of the expression tree.
 				return false;
@@ -146,26 +146,13 @@ public class ExpressionRewriter extends ExpressionVisitor {
 	}
 
 	/**
-	 * @return a literal Expression for the given value, depending on its type.
-	 * @param value
-	 *            the literal value to examine and wrap into an Expression
-	 */
-	private Expression getLiteral(final Object value) {
-		if (value instanceof String) {
-			return new StringLiteral((String) value);
-		}
-		// FIXME: complete with other value types (number, null, etc.).
-		return null;
-	}
-
-	/**
 	 * Occurs when the {@link CapturedArgument} is not the source expression of a {@link MethodInvocation}. {@inheritDoc}
 	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.ExpressionVisitor#visitCapturedArgument(org.lambdamatic.analyzer.ast.node.CapturedArgument)
 	 */
 	@Override
 	public boolean visitCapturedArgument(final CapturedArgument capturedArgument) {
-		capturedArgument.getParent().replaceElement(capturedArgument, getLiteral(capturedArgument.getValue()));
+		capturedArgument.getParent().replaceElement(capturedArgument, LiteralFactory.getLiteral(capturedArgument.getValue()));
 		// no need to keep on visiting the current branch after the replacement with a literal.
 		return false;
 	}

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.lambdamatic.FilterExpression;
@@ -122,121 +123,383 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionWithPrimitiveIntGreaterThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() > 1);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() > 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
 
 	@Test
-	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntGreaterThanNumberConstantValue() throws IOException {
+	public void shouldParseLambdaExpressionWithPrimitiveIntAsVariableGreaterThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() > 1;
+		final int value = 42;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() > value);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntEqualsNumberConstantValue() throws IOException {
+		// given
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() == 42;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.EQUALS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
 
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableEqualsNumberConstantValue() throws IOException {
+		// given
+		final int value = 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() == value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.EQUALS, getIntValueMethod, new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntNotEqualsNumberConstantValue() throws IOException {
+		// given
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() != 42;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.NOT_EQUALS, getIntValueMethod, new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableNotEqualsNumberConstantValue() throws IOException {
+		// given
+		final int value = 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() != value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.NOT_EQUALS, getIntValueMethod, new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntGreaterThanNumberConstantValue() throws IOException {
+		// given
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() > 42;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableGreaterThanNumberConstantValue() throws IOException {
+		// given
+		final int value = 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() > value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
 	@Test
 	public void shouldParseLambdaExpressionWithPrimitiveIntGreaterOrEqualThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() >= 1);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() >= 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
-				new NumberLiteral(1));
+				new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
 
 	@Test
+	public void shouldParseLambdaExpressionWithPrimitiveIntAsVariableGreaterOrEqualThanNumberConstantValue() throws IOException {
+		// given
+		final int value = 42;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() >= value);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
+				new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntGreaterOrEqualThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() >= 1;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() >= 42;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
-				new NumberLiteral(1));
+				new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
 
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableGreaterOrEqualThanNumberConstantValue() throws IOException {
+		// given
+		final int value = 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() >= value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
+				new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
 	@Test
 	public void shouldParseLambdaExpressionWithPrimitiveIntLessThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() < 1);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() < 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
 
 	@Test
+	public void shouldParseLambdaExpressionWithPrimitiveIntAsVariableLessThanNumberConstantValue() throws IOException {
+		// given
+		final int value = 42;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() < value);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntLessThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() < 1;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() < 42;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
 
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableLessThanNumberConstantValue() throws IOException {
+		// given
+		final int value = 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() < value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
 	@Test
 	public void shouldParseLambdaExpressionWithPrimitiveIntLessOrEqualThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() <= 1);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() <= 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
 
 	@Test
+	public void shouldParseLambdaExpressionWithPrimitiveIntAsVariableLessOrEqualThanNumberConstantValue() throws IOException {
+		// given
+		final int value = 42;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() <= value);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntLessOrEqualThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() <= 1;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() <= 42;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
 
 	@Test
+	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableLessOrEqualThanNumberConstantValue() throws IOException {
+		// given
+		final int value = 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() <= value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
 	public void shouldParseLambdaExpressionWithLongGreaterThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() > 1);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() > 42L);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionWithLongGreaterThanNumberAsPrimitiveVariable() throws IOException {
+		// given
+		final long value = 42L;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() > value);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionWithLongGreaterThanNumberAsLongVariable() throws IOException {
+		// given
+		final Long value = new Long(42L);
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() > value);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithLongEqualsNumberConstantValue() throws IOException {
+		// given
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() == 42L;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.EQUALS, getIntValueMethod, new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithLongEqualsNumberAsVariable() throws IOException {
+		// given
+		final Long value = new Long(42L);
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() == value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.EQUALS, getIntValueMethod, new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithLongNotEqualsNumberConstantValue() throws IOException {
+		// given
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() != 42L;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.NOT_EQUALS, getIntValueMethod, new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithLongNotEqualsNumberAsVariable() throws IOException {
+		// given
+		final long value = 42L; 
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() != value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.NOT_EQUALS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -244,13 +507,28 @@ public class LambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseLambdaExpressionAsVariableWithLongGreaterThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() > 1;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() > 42L;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithLongGreaterThanNumberAsVariable() throws IOException {
+		// given
+		final long value = 42L; 
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() > value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -259,12 +537,27 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionWithLongGreaterOrEqualThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() >= 1);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() >= 42L);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
-				new NumberLiteral(1));
+				new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionWithLongGreaterOrEqualThanNumberAsVariable() throws IOException {
+		// given
+		final Long value = new Long(42L);
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() >= value);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
+				new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -272,14 +565,30 @@ public class LambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseLambdaExpressionAsVariableWithLongGreaterOrEqualThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() >= 1;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() >= 42L;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
-				new NumberLiteral(1));
+				new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithLongGreaterOrEqualThanNumberAsVariable() throws IOException {
+		// given
+		final Long value = new Long(42L); 
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() >= value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
+				new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -288,11 +597,25 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionWithLongLessThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() < 1);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() < 42L);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionWithLongLessThanNumberAsVariable() throws IOException {
+		// given
+		final long value = 42L; 
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() < value);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -300,13 +623,28 @@ public class LambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseLambdaExpressionAsVariableWithLongLessThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() < 1;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() < 42L;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithLongLessThanNumberAsVariable() throws IOException {
+		// given
+		final Long value = new Long(42L); 
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() < value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -315,11 +653,25 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionWithLongLessOrEqualThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() <= 1);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() <= 42L);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionWithLongLessOrEqualThanNumberAsPrimitiveVariable() throws IOException {
+		// given
+		final long value = 42L; 
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() <= value);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -327,13 +679,28 @@ public class LambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseLambdaExpressionAsVariableWithLongLessOrEqualThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() <= 1;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() <= 42L;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(1));
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42L));
+		// verification
+		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldParseLambdaExpressionAsVariableWithLongLessOrEqualThanNumberAsPrimitiveVariable() throws IOException {
+		// given
+		final long value = 42L; 
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getLongValue() <= value;
+		// when
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
+		// then
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -577,7 +944,7 @@ public class LambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseLambdaExpressionWithStringNotEqualsValueOperand() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> (t.field != "foo");
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.field != "foo";
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -606,5 +973,20 @@ public class LambdaBytecodeAnalyzerTest {
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
 
+	public void shouldVerifyWithBoolean() {
+		Assert.fail("Not implemented yet...");
+	}
+	public void shouldVerifyWithFloat() {
+		Assert.fail("Not implemented yet...");
+	}
+	public void shouldVerifyWithDouble() {
+		Assert.fail("Not implemented yet...");
+	}
+	public void shouldVerifyWithCharacter() {
+		Assert.fail("Not implemented yet...");
+	}
+	public void shouldVerifyWithDate() {
+		Assert.fail("Not implemented yet...");
+	}
 }
 

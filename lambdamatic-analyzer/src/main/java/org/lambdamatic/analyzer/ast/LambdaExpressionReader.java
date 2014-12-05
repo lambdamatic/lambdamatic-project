@@ -24,12 +24,12 @@ import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.IfStatement;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
+import org.lambdamatic.analyzer.ast.node.LiteralFactory;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.Statement;
-import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
@@ -40,6 +40,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
@@ -190,9 +191,7 @@ public class LambdaExpressionReader {
 				// let's move this instruction on top of the stack until it
 				// is used as an argument during a method call
 				final LdcInsnNode ldcInsnNode = (LdcInsnNode) currentInstruction;
-				// FIXME: use whatever possible to determine the type of literal
-				// to instantiate
-				final StringLiteral constant = new StringLiteral((String) ldcInsnNode.cst);
+				final Expression constant = LiteralFactory.getLiteral(ldcInsnNode.cst);
 				LOGGER.trace("Stacking constant {}", constant);
 				expressionStack.add(constant);
 				break;
@@ -236,8 +235,14 @@ public class LambdaExpressionReader {
 				break;
 			case AbstractInsnNode.JUMP_INSN:
 				return readJumpInstruction(currentInstruction, expressionStack, capturedArgs, localVariables, labels);
+			case AbstractInsnNode.INT_INSN:
+				final Statement intInstructionStmt = readInstruction((IntInsnNode)currentInstruction, expressionStack, localVariables, labels);
+				if (intInstructionStmt != null) {
+					return intInstructionStmt;
+				}
+				break;
 			case AbstractInsnNode.INSN:
-				final Statement instructionStmt = readInstruction(currentInstruction, expressionStack, localVariables, labels);
+				final Statement instructionStmt = readInstruction((InsnNode)currentInstruction, expressionStack, localVariables, labels);
 				if (instructionStmt != null) {
 					return instructionStmt;
 				}
@@ -266,10 +271,10 @@ public class LambdaExpressionReader {
 	}
 
 	/**
-	 * Reads the current {@link AbstractInsnNode} instruction and returns a {@link Statement} or {@code null} if the instruction is not a
+	 * Reads the current {@link InsnNode} instruction and returns a {@link Statement} or {@code null} if the instruction is not a
 	 * full statement (in that case, the instruction is stored in the given Expression {@link Stack}).
 	 * 
-	 * @param instruction
+	 * @param insnNode
 	 *            the instruction to read
 	 * @param expressionStack
 	 *            the expression stack to put on or pop from.
@@ -279,16 +284,15 @@ public class LambdaExpressionReader {
 	 *            the labels
 	 * @return a {@link Statement} or {@code null}
 	 */
-	private Statement readInstruction(final AbstractInsnNode instruction, final Stack<Expression> expressionStack,
+	private Statement readInstruction(final InsnNode insnNode, final Stack<Expression> expressionStack,
 			final List<LocalVariableNode> localVariables, final Map<String, AbstractInsnNode> labels) {
-		final InsnNode insnNode = (InsnNode) instruction;
 		switch (insnNode.getOpcode()) {
 		case Opcodes.IRETURN:
 			// here, we know that the return value should be a boolean literal
 			// or an expression whose result will be a boolean, no matter what's
 			// on the ExpressionStack (it should be converted)
-			final Expression returnValue = convert(expressionStack.pop());
-			return new ReturnStatement(returnValue);
+			final Expression returnExpression = convert(expressionStack.pop());
+			return new ReturnStatement(returnExpression);
 		case Opcodes.ICONST_0:
 		case Opcodes.LCONST_0:
 		case Opcodes.FCONST_0:
@@ -301,6 +305,13 @@ public class LambdaExpressionReader {
 		case Opcodes.DCONST_1:
 			expressionStack.add(new NumberLiteral(1));
 			break;
+		case Opcodes.LCMP:
+			final Expression rightOperand = expressionStack.pop();
+			final Expression leftOperand = expressionStack.pop();
+			final InfixOperator operator = extractComparisonOperator(insnNode);
+			final Expression comparisonExpression = new InfixExpression(operator, leftOperand, rightOperand);
+			expressionStack.add(comparisonExpression);
+			break;
 		default:
 			LOGGER.warn("Instruction with OpCode {} was ignored.", insnNode.getOpcode());
 		}
@@ -309,6 +320,90 @@ public class LambdaExpressionReader {
 		return null;
 	}
 
+	/**
+	 * Extracts the comparison {@link InfixOperator} from the given
+	 * {@link InsnNode}. This requires to look at the <strong>next</strong>
+	 * instructions to see how the result of the comparison will be processed.
+	 * 
+	 * @param currentComparisonInstruction the comparison instruction
+	 * @return the corresponding {@link InfixOperator} 
+	 */
+	private InfixOperator extractComparisonOperator(final InsnNode currentComparisonInstruction) {
+		final AbstractInsnNode nextInstruction = currentComparisonInstruction.getNext();
+		switch(nextInstruction.getOpcode()) {
+		case Opcodes.IFNE:
+			return InfixOperator.EQUALS;
+		case Opcodes.IFEQ:
+				return InfixOperator.NOT_EQUALS;
+		case Opcodes.IFLE:
+			return InfixOperator.GREATER;
+		case Opcodes.IFLT:
+			return InfixOperator.GREATER_EQUALS;
+		case Opcodes.IFGE:
+			return InfixOperator.LESS;
+		case Opcodes.IFGT:
+			return InfixOperator.LESS_EQUALS;
+		default:
+			throw new AnalyzeException("Failed to retrieve the operator for the current comparison instruction (" + currentComparisonInstruction + ")");
+		}
+	}
+
+	/**
+	 * Extracts the comparison {@link InfixOperator} from the given
+	 * {@link JumpInsnNode}. 
+	 * 
+	 * @param currentComparisonInstruction the comparison instruction
+	 * @return the corresponding {@link InfixOperator} 
+	 */
+	private InfixOperator extractComparisonOperator(final JumpInsnNode currentComparisonInstruction) {
+		switch(currentComparisonInstruction.getOpcode()) {
+		case Opcodes.IF_ACMPNE:
+		case Opcodes.IF_ICMPNE:
+			return InfixOperator.EQUALS;
+		case Opcodes.IF_ACMPEQ:
+		case Opcodes.IF_ICMPEQ:
+			return InfixOperator.NOT_EQUALS;
+		case Opcodes.IF_ICMPLE:
+			return InfixOperator.GREATER;
+		case Opcodes.IF_ICMPLT:
+			return InfixOperator.GREATER_EQUALS;
+		case Opcodes.IF_ICMPGE:
+			return InfixOperator.LESS;
+		case Opcodes.IF_ICMPGT:
+			return InfixOperator.LESS_EQUALS;
+		default:
+			throw new AnalyzeException("Failed to retrieve the operator for the current comparison instruction (" + currentComparisonInstruction + ")");
+		}
+	}
+
+	/**
+	 * Reads the current {@link IntInsnNode} instruction and returns a {@link Statement} or {@code null} if the instruction is not a
+	 * full statement (in that case, the instruction is stored in the given Expression {@link Stack}).
+	 * 
+	 * @param intInsnNode
+	 *            the instruction to read
+	 * @param expressionStack
+	 *            the expression stack to put on or pop from.
+	 * @param localVariables
+	 *            the local variables
+	 * @param labels
+	 *            the labels
+	 * @return a {@link Statement} or {@code null}
+	 */
+	private Statement readInstruction(final IntInsnNode intInsnNode, final Stack<Expression> expressionStack,
+			final List<LocalVariableNode> localVariables, final Map<String, AbstractInsnNode> labels) {
+		switch (intInsnNode.getOpcode()) {
+		case Opcodes.BIPUSH:
+			expressionStack.add(new NumberLiteral(intInsnNode.operand));
+			break;
+		default:
+			LOGGER.warn("Instruction with OpCode {} was ignored.", intInsnNode.getOpcode());
+		}
+		// no statement to return for now, instruction was put on top of
+		// ExpressionStack for further usage
+		return null;
+	}
+	
 	/**
 	 * Converter Constructor: attempts to convert the given value {@link Expression} into a {@link BooleanLiteral} or a
 	 * {@link MethodInvocation}, or throws an {@link IllegalArgumentException} if the conversion was not possible.
@@ -353,10 +448,17 @@ public class LambdaExpressionReader {
 		final JumpInsnNode jumpInsnNode = (JumpInsnNode) instruction;
 		final LabelNode jumpLabel = jumpInsnNode.label;
 		final AbstractInsnNode jumpInstruction = labels.get(jumpLabel.getLabel().toString());
+		//FIXME: add support for LCMP:
+		// Takes two two-word long integers off the stack and compares them. If
+		// the two integers are the same, the int 0 is pushed onto the stack. If
+		// value2 is greater than value1, the int 1 is pushed onto the stack. If
+		// value1 is greater than value2, the int -1 is pushed onto the stack.
 		switch (jumpInsnNode.getOpcode()) {
 		case Opcodes.IFEQ:
 		case Opcodes.IFNE:
 			return buildEqualityStatement(jumpInsnNode, expressionStack, capturedArgs, localVariables, labels);
+		case Opcodes.IF_ICMPEQ:
+		case Opcodes.IF_ICMPNE:
 		case Opcodes.IF_ICMPLE:
 		case Opcodes.IF_ICMPLT:
 		case Opcodes.IF_ICMPGE:
@@ -373,7 +475,6 @@ public class LambdaExpressionReader {
 		default:
 			throw new AnalyzeException("Unexpected JumpInsnNode OpCode: " + jumpInsnNode.getOpcode());
 		}
-
 	}
 
 	/**
@@ -389,15 +490,34 @@ public class LambdaExpressionReader {
 			final List<Object> capturedArgs, final List<LocalVariableNode> localVariables, final Map<String, AbstractInsnNode> labels) {
 		final LabelNode jumpLabel = jumpInsnNode.label;
 		final AbstractInsnNode jumpInstruction = labels.get(jumpLabel.getLabel().toString());
-		final Expression compareRightSideExpression = expressionStack.pop();
-		final Expression compareLeftSideExpression = expressionStack.pop();
-		final InfixExpression comparisonExpression = new InfixExpression(InfixOperator.from(jumpInsnNode.getOpcode()), Arrays.asList(
-				compareLeftSideExpression, compareRightSideExpression));
+		final InfixExpression comparisonExpression = getComparisonExpression(jumpInsnNode, expressionStack);
 		final Statement elseStatement = (Statement) readStatementSubTree(jumpInstruction, expressionStack, capturedArgs, localVariables,
 				labels);
 		final Statement thenStatement = (Statement) readStatementSubTree(jumpInsnNode.getNext(), expressionStack, capturedArgs,
 				localVariables, labels);
 		return new IfStatement(comparisonExpression.inverse(), thenStatement, elseStatement);
+	}
+
+	/**
+	 * Returns the {@link InfixExpression} from the current {@link Expression}
+	 * {@link Stack}, depending on the current context (i.e., the current
+	 * {@link JumpInsnNode} and its previous {@link AbstractInsnNode}.
+	 * 
+	 * @param jumpInsnNode the current instruction 
+	 * @param expressionStack the stack of expressions
+	 * @return the comparison expression
+	 */
+	private InfixExpression getComparisonExpression(final JumpInsnNode jumpInsnNode,
+			final Stack<Expression> expressionStack) {
+		// the stack already contains the InfixExpression to return if the previous node was an 'LCMP' instruction.
+		if(jumpInsnNode.getPrevious().getOpcode() == Opcodes.LCMP) {
+			return (InfixExpression) expressionStack.pop();
+		} 
+		final Expression compareRightSideExpression = expressionStack.pop();
+		final Expression compareLeftSideExpression = expressionStack.pop();
+		final InfixExpression comparisonExpression = new InfixExpression(extractComparisonOperator(jumpInsnNode), Arrays.asList(
+				compareLeftSideExpression, compareRightSideExpression));
+		return comparisonExpression;
 	}
 
 	/**
@@ -409,7 +529,6 @@ public class LambdaExpressionReader {
 	 * @param labels the labels, used to find the instruction to jump to if necessary. 
 	 * @return an {@link IfStatement}.
 	 */
-	//TODO: can't we just use buildComparisonStatement() instead ?
 	private IfStatement buildEqualityStatement(final JumpInsnNode jumpInsnNode, final Stack<Expression> expressionStack,
 			final List<Object> capturedArgs, final List<LocalVariableNode> localVariables, final Map<String, AbstractInsnNode> labels) {
 		final LabelNode jumpLabel = jumpInsnNode.label;

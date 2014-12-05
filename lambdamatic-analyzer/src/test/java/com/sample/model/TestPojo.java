@@ -6,13 +6,13 @@ public class TestPojo {
 	
 	public String field = "bar";
 
-	private String stringValue = "foo";
+	public String stringValue = "foo";
 
-	private Date dateValue = new Date();
+	public Date dateValue = new Date();
 
-	private int intValue = 0;
+	public int intValue = 0;
 	
-	private Long longValue = new Long("1");
+	public Long longValue = new Long("1");
 
 	public String getStringValue() {
 		return stringValue;

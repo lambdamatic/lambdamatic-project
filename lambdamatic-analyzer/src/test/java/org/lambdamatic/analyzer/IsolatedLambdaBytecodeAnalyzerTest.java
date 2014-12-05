@@ -8,10 +8,12 @@ import org.junit.Test;
 import org.lambdamatic.FilterExpression;
 import org.lambdamatic.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
+import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
+import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,20 +37,17 @@ public class IsolatedLambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseExpression() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> (t.equals("foo") && t.equals("bar")) || !t.equals("baz");
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.intValue == 42;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		LOGGER.info("Number of InfixExpressions used during the process: {}",
 				(new InfixExpression(InfixOperator.CONDITIONAL_AND).getId() - 1));
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz")).inverse();
-		final Expression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod), equalsBazMethod);
+		final FieldAccess testPojoField = new FieldAccess(testPojo, "intValue");
+		final InfixExpression equals42Expression = new InfixExpression(InfixOperator.EQUALS, testPojoField, new NumberLiteral(42));
 		// verification
-		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
+		assertThat(resultExpression.getExpression()).isEqualTo(equals42Expression);
 	}
 }
 
