@@ -20,7 +20,8 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sample.User_;
+import com.sample.EnumFoo;
+import com.sample.Foo_;
 
 /**
  * Testing the {@link LambdamaticFilterExpressionCodec}
@@ -44,93 +45,93 @@ public class LambdamaticFilterExpressionCodecTest {
 	}
 	
 	@Test
-	public void shouldConvertExpressionWithSingleOperand() throws IOException, JSONException {
+	public void shouldConvertExpressionWithSingleOperand_StringEquals() throws IOException, JSONException {
 		// given
-		final FilterExpression<User_> expression = (User_ u) -> u.userName.equals("jdoe");
+		final FilterExpression<Foo_> expression = (Foo_ foo) -> foo.stringField.equals("john");
 		// when
 		new LambdamaticFilterExpressionCodec().encode(bsonWriter, expression, context); 
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
 		LOGGER.debug("Output JSON: {}", actual);
-		final String expected = "{userName: 'jdoe'}";
+		final String expected = "{stringField: 'john'}";
 		JSONAssert.assertEquals(expected, actual, true);
 	}
 
 	@Test
 	public void shouldConvertExpressionWithConditionalOR() throws IOException, JSONException {
 		// given
-		final FilterExpression<User_> expression = (User_ u) -> u.firstName.equals("john") || u.lastName.equals("doe") || u.userName.equals("jdoe");
+		final FilterExpression<Foo_> expression = (Foo_ foo) -> foo.stringField.equals("john") || foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO;
 		// when
 		new LambdamaticFilterExpressionCodec().encode(bsonWriter, expression, context); 
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
 		LOGGER.debug("Output JSON: {}", actual);
-		final String expected = "{$or: [{firstName: 'john'}, {lastName:'doe'}, {userName: 'jdoe'}]}";
+		final String expected = "{$or: [{primitiveIntField: 42}, {enumFoo: 'FOO'}, {stringField: 'john'}]}";
 		JSONAssert.assertEquals(expected, actual, false);
 	}
 
 	@Test
 	public void shouldConvertInfixORWithTwoArguments() throws IOException, JSONException {
 		// given
-		final FilterExpression<User_> expression = ((User_ u) -> u.firstName.equals("john")
-				|| u.lastName.equals("doe"));
+		final FilterExpression<Foo_> expression = ((Foo_ foo) -> foo.primitiveIntField == 42
+				|| foo.enumFoo == EnumFoo.FOO);
 		// when
 		new LambdamaticFilterExpressionCodec().encode(bsonWriter, expression, context);
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
-		final String expected = "{$or: [{firstName: 'john'}, {lastName:'doe'}]}";
+		final String expected = "{$or: [{primitiveIntField: 42}, {enumFoo: 'FOO'}]}";
 		JSONAssert.assertEquals(expected, actual, false);
 	}
 
 	@Test
 	public void shouldConvertInfixANDWithTwoArguments() throws IOException, JSONException {
 		// given
-		final FilterExpression<User_> expression = ((User_ u) -> u.firstName.equals("john")
-				&& u.lastName.equals("doe"));
+		final FilterExpression<Foo_> expression = ((Foo_ foo) -> foo.primitiveIntField == 42
+				&& foo.enumFoo == EnumFoo.FOO);
 		// when
 		new LambdamaticFilterExpressionCodec().encode(bsonWriter, expression, context);
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
-		final String expected = "{firstName: 'john', lastName:'doe'}";
+		final String expected = "{primitiveIntField: 42, enumFoo: 'FOO'}";
 		JSONAssert.assertEquals(expected, actual, false);
 	}
 
 	@Test
 	public void shouldConvertInfixANDWithThreeArguments() throws IOException, JSONException {
 		// given
-		final FilterExpression<User_> expression = ((User_ u) -> u.firstName.equals("john")
-				&& u.lastName.equals("doe") && u.userName.equals("jdoe"));
+		final FilterExpression<Foo_> expression = ((Foo_ foo) -> foo.primitiveIntField == 42
+				&& foo.enumFoo == EnumFoo.FOO && foo.stringField.equals("john"));
 		// when
 		new LambdamaticFilterExpressionCodec().encode(bsonWriter, expression, context);
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
-		final String expected = "{firstName: 'john', lastName:'doe', userName: 'jdoe'}";
+		final String expected = "{primitiveIntField: 42, enumFoo: 'FOO', stringField: 'john'}";
 		JSONAssert.assertEquals(expected, actual, false);
 	}
 
 	@Test
 	public void shouldConvertInfixORWithThreeArguments() throws IOException, JSONException {
 		// given
-		final FilterExpression<User_> expression = ((User_ u) -> u.firstName.equals("john")
-				|| u.lastName.equals("doe") || u.userName.equals("jdoe"));
+		final FilterExpression<Foo_> expression = ((Foo_ foo) -> foo.primitiveIntField == 42
+				|| foo.enumFoo == EnumFoo.FOO || foo.stringField.equals("john"));
 		// when
 		new LambdamaticFilterExpressionCodec().encode(bsonWriter, expression, context);
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
-		final String expected = "{$or: [{firstName: 'john'}, {lastName:'doe'}, {userName: 'jdoe'}]}";
+		final String expected = "{$or: [{primitiveIntField: 42}, {enumFoo: 'FOO'}, {stringField: 'john'}]}";
 		JSONAssert.assertEquals(expected, actual, false);
 	}
 	
 	@Test
 	public void shouldConvertMixOfInfixANDWithInfixOR() throws IOException, JSONException {
 		// given
-		final FilterExpression<User_> expression = ((User_ u) -> (u.firstName.equals("john") && u.lastName
-				.equals("doe")) || u.userName.equals("jdoe"));
+		final FilterExpression<Foo_> expression = ((Foo_ foo) -> (foo.primitiveIntField == 42 && 
+				foo.enumFoo == EnumFoo.FOO) || foo.stringField.equals("john"));
 		// when
 		new LambdamaticFilterExpressionCodec().encode(bsonWriter, expression, context);
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
-		final String expected = "{$or: [{firstName: 'john', lastName:'doe'}, {userName: 'jdoe'}]}";
+		final String expected = "{$or: [{primitiveIntField: 42, enumFoo: 'FOO'}, {stringField: 'john'}]}";
 		JSONAssert.assertEquals(expected, actual, false);
 	}
 	

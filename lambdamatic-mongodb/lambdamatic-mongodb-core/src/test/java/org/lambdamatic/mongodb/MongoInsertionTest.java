@@ -17,9 +17,9 @@ import org.junit.Test;
 import org.lambdamatic.mongodb.testutils.CleanMongoCollectionsRule;
 
 import com.mongodb.MongoClient;
-import com.sample.BikeStation;
-import com.sample.BikeStationCollection;
-import com.sample.BikeStationStatus;
+import com.sample.EnumFoo;
+import com.sample.Foo;
+import com.sample.FooCollection;
 
 
 /**
@@ -36,18 +36,14 @@ public class MongoInsertionTest {
 	public CleanMongoCollectionsRule collectionCleaning = new CleanMongoCollectionsRule(mongoClient, "lambdamatic-tests", "users");
 	
 	@Test
-	public void shouldInsertOneBikeStation() throws IOException {
+	public void shouldInsertOneFoo() throws IOException {
 		// given
-		final BikeStationCollection bikeStationCollection = new BikeStationCollection(mongoClient, "lambdamatic-tests");
-		final BikeStation bikeStation = new BikeStation();
-		bikeStation.setAvailableBikes(10);
-		bikeStation.setAvailableDocks(20);
-		bikeStation.setTotalDocks(30);
-		bikeStation.setStatus(BikeStationStatus.IN_SERVICE);
+		final FooCollection FooCollection = new FooCollection(mongoClient, "lambdamatic-tests");
+		final Foo foo = new Foo("john", 42, EnumFoo.FOO);
 		// when
-		bikeStationCollection.insertOne(bikeStation);
+		FooCollection.insertOne(foo);
 		// then
-		assertThat(bikeStation.getId()).isNotNull();
+		assertThat(foo.getId()).isNotNull();
 	}
 	
 }

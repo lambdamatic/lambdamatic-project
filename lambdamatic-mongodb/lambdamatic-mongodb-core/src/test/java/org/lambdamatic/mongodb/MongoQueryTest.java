@@ -14,14 +14,16 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 import org.assertj.core.api.Condition;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.lambdamatic.mongodb.testutils.CleanMongoCollectionsRule;
 
 import com.mongodb.MongoClient;
-import com.sample.User;
-import com.sample.UserCollection;
+import com.sample.EnumFoo;
+import com.sample.Foo;
+import com.sample.FooCollection;
 
 
 /**
@@ -37,24 +39,25 @@ public class MongoQueryTest {
 	@Rule
 	public CleanMongoCollectionsRule collectionCleaning = new CleanMongoCollectionsRule(mongoClient, "lambdamatic-tests", "users");
 	
-	private UserCollection userCollection;
+	private FooCollection fooCollection;
 	
 	@Before
 	public void setup() throws UnknownHostException {
-		this.userCollection = new UserCollection(mongoClient, "lambdamatic-tests");
+		this.fooCollection = new FooCollection(mongoClient, "lambdamatic-tests");
 		// insert test data
-		this.userCollection.insertOne(new User("Xavier", "Coulon", "xcoulon"));
+		this.fooCollection.insertOne(new Foo("john", 42, EnumFoo.FOO));
 	}
 	
 	@Test
 	public void shouldFindOneUser() throws IOException {
+		Assert.fail("Should add logs to driver requests/responses");
 		// when
-		final User user = userCollection.find(u -> u.userName.equals("xcoulon")).first();
+		final Foo foo = fooCollection.find(f -> f.stringField.equals("john")).first();
 		// then
-		assertThat(user).isNotNull().has(new Condition<User>() {
+		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override
-			public boolean matches(final User value) {
-				return "xcoulon".equals(value.getUserName()) && "Xavier".equals(value.getFirstName());
+			public boolean matches(final Foo value) {
+				return value.getStringField().equals("john") && value.getPrimitiveIntField() == 42;
 			}
 		});
 	}

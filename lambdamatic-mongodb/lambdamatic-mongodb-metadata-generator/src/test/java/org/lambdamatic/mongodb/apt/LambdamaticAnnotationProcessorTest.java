@@ -23,11 +23,8 @@ import org.lambdamatic.mongodb.metadata.Metadata;
 import org.lambdamatic.mongodb.metadata.StringField;
 
 import com.mongodb.MongoClient;
-import com.sample.BikeStation;
-import com.sample.BikeStationStatus;
 import com.sample.EnumFoo;
 import com.sample.Foo;
-import com.sample.User;
 
 /**
  * @author Xavier Coulon
@@ -78,7 +75,7 @@ public class LambdamaticAnnotationProcessorTest {
 
 	@Ignore
 	@Test
-	@WithDomainClass(BikeStation.class)
+	//@WithDomainClass(BikeStation.class)
 	public void shouldAllowOnlyStringOrObjectIdForDocumentId() {
 		fail("Not implemented yet");
 	}

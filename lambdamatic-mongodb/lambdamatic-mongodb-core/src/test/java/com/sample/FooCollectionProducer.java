@@ -6,23 +6,23 @@ import javax.enterprise.inject.Produces;
 import javax.enterprise.context.ApplicationScoped;
 
 /**
- * CDI Producer for BikeStationCollection
+ * CDI Producer for FooCollection
  * 
  */
 @Generated(value="org.lambdamatic.mongodb.apt.LambdamaticAnnotationsProcessor")
 @ApplicationScoped
-public class BikeStationCollectionProducer  {
+public class FooCollectionProducer  {
 	
     /**
-     * Creates and returns a new instance of BikeStationCollection
+     * Creates and returns a new instance of FooCollection
      *
      * @param mongoClient the {@link MongoClient}.
      * @param databaseName the the name of the database to connect to.
-     * @return a new instance of BikeStationCollection 
+     * @return a new instance of FooCollection 
      */
     @Produces
-    public BikeStationCollection getBikeStationCollection(final MongoClient mongoClient, final String databaseName) {
-    	return new BikeStationCollection(mongoClient, databaseName);
+    public FooCollection getFooCollection(final MongoClient mongoClient, final String databaseName) {
+    	return new FooCollection(mongoClient, databaseName);
     }
 
 }
