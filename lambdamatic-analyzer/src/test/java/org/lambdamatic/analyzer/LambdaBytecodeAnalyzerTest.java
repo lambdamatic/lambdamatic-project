@@ -7,6 +7,9 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.lambdamatic.FilterExpression;
 import org.lambdamatic.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
@@ -30,6 +33,7 @@ public class LambdaBytecodeAnalyzerTest {
 
 	private final LambdaExpressionAnalyzer analyzer = new LambdaExpressionAnalyzer();
 
+	
 	@Rule
 	public TestWatcher watcher = new TestWatcher();
 
