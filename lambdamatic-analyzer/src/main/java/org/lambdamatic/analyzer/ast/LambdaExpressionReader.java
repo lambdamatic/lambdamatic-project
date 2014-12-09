@@ -294,16 +294,30 @@ public class LambdaExpressionReader {
 			final Expression returnExpression = convert(expressionStack.pop());
 			return new ReturnStatement(returnExpression);
 		case Opcodes.ICONST_0:
-		case Opcodes.LCONST_0:
-		case Opcodes.FCONST_0:
-		case Opcodes.DCONST_0:
+			// applies for byte, short, int
 			expressionStack.add(new NumberLiteral(0));
 			break;
+		case Opcodes.LCONST_0:
+			expressionStack.add(new NumberLiteral(0l));
+			break;
+		case Opcodes.FCONST_0:
+			expressionStack.add(new NumberLiteral(0f));
+			break;
+		case Opcodes.DCONST_0:
+			expressionStack.add(new NumberLiteral(0d));
+			break;
 		case Opcodes.ICONST_1:
-		case Opcodes.LCONST_1:
-		case Opcodes.FCONST_1:
-		case Opcodes.DCONST_1:
+			// applies for byte, short, int
 			expressionStack.add(new NumberLiteral(1));
+			break;
+		case Opcodes.LCONST_1:
+			expressionStack.add(new NumberLiteral(1l));
+			break;
+		case Opcodes.FCONST_1:
+			expressionStack.add(new NumberLiteral(1f));
+			break;
+		case Opcodes.DCONST_1:
+			expressionStack.add(new NumberLiteral(1d));
 			break;
 		case Opcodes.LCMP:
 			final Expression rightOperand = expressionStack.pop();

@@ -7,9 +7,6 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.lambdamatic.FilterExpression;
 import org.lambdamatic.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
@@ -127,7 +124,7 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionWithPrimitiveIntGreaterThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() > 42);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() > 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
@@ -141,7 +138,7 @@ public class LambdaBytecodeAnalyzerTest {
 		// given
 		final int value = 42;
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() > value);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() > value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
@@ -153,7 +150,7 @@ public class LambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntEqualsNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() == 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() == 42;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -168,7 +165,7 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableEqualsNumberConstantValue() throws IOException {
 		// given
 		final int value = 42;
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() == value;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() == value;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -182,7 +179,7 @@ public class LambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntNotEqualsNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() != 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() != 42;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -197,7 +194,7 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableNotEqualsNumberConstantValue() throws IOException {
 		// given
 		final int value = 42;
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() != value;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() != value;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -211,7 +208,7 @@ public class LambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntGreaterThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() > 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() > 42;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -226,7 +223,7 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableGreaterThanNumberConstantValue() throws IOException {
 		// given
 		final int value = 42;
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() > value;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() > value;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -241,7 +238,7 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionWithPrimitiveIntGreaterOrEqualThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() >= 42);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() >= 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
@@ -256,7 +253,7 @@ public class LambdaBytecodeAnalyzerTest {
 		// given
 		final int value = 42;
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() >= value);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() >= value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
@@ -269,7 +266,7 @@ public class LambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntGreaterOrEqualThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() >= 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() >= 42;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -285,7 +282,7 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableGreaterOrEqualThanNumberConstantValue() throws IOException {
 		// given
 		final int value = 42;
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() >= value;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() >= value;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -301,7 +298,7 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionWithPrimitiveIntLessThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() < 42);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() < 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
@@ -315,7 +312,7 @@ public class LambdaBytecodeAnalyzerTest {
 		// given
 		final int value = 42;
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() < value);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() < value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
@@ -327,7 +324,7 @@ public class LambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntLessThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() < 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() < 42;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -342,7 +339,7 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableLessThanNumberConstantValue() throws IOException {
 		// given
 		final int value = 42;
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() < value;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() < value;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -357,7 +354,7 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionWithPrimitiveIntLessOrEqualThanNumberConstantValue() throws IOException {
 		// given
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() <= 42);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() <= 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
@@ -371,7 +368,7 @@ public class LambdaBytecodeAnalyzerTest {
 		// given
 		final int value = 42;
 		// when
-		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getIntValue() <= value);
+		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() <= value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
@@ -383,7 +380,7 @@ public class LambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntLessOrEqualThanNumberConstantValue() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() <= 42;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() <= 42;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
@@ -398,7 +395,7 @@ public class LambdaBytecodeAnalyzerTest {
 	public void shouldParseLambdaExpressionAsVariableWithPrimitiveIntAsVariableLessOrEqualThanNumberConstantValue() throws IOException {
 		// given
 		final int value = 42;
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getIntValue() <= value;
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.getPrimitiveIntValue() <= value;
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then

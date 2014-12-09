@@ -70,7 +70,7 @@ public class InfixExpression extends ComplexExpression {
 	 */
 	public enum InfixOperator {
 		TIMES("*"), DIVIDE("/"), REMAINDER("%"), PLUS("+"), MINUS("-"), LESS("<"), GREATER(">"), LESS_EQUALS("<="), GREATER_EQUALS(">="), EQUALS(
-				"=="), NOT_EQUALS("!-"), XORE("^"), AND("&"), OR("|"), CONDITIONAL_AND("&&"), CONDITIONAL_OR("||"), LEFT_SHIFT("<<"), RIGHT_SHIFT(
+				"=="), NOT_EQUALS("!="), XORE("^"), AND("&"), OR("|"), CONDITIONAL_AND("&&"), CONDITIONAL_OR("||"), LEFT_SHIFT("<<"), RIGHT_SHIFT(
 				">>"), RIGHT_SHIFT_UNSIGNED(">>>");
 
 		private final String value;

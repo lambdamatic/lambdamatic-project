@@ -62,8 +62,28 @@ public class ExpressionRewriter extends ExpressionVisitor {
 				LOGGER.error("Failed to execute method '{}' on captured argument '{}'", methodName, capturedSourceArgument.getValue());
 			}
 		} 
+		// drop invocation of Boolean#booleanValue() method
+		else if(methodInvocation.getSourceExpression().getJavaType().equals(Boolean.class) && methodInvocation.getMethodName().equals("booleanValue")) {
+			methodInvocation.delete();
+		}
+		// drop invocation of Byte#byteValue() method
+		else if(methodInvocation.getSourceExpression().getJavaType().equals(Byte.class) && methodInvocation.getMethodName().equals("byteValue")) {
+			methodInvocation.delete();
+		}
+		// drop invocation of Short#shortValue() method
+		else if(methodInvocation.getSourceExpression().getJavaType().equals(Short.class) && methodInvocation.getMethodName().equals("shortValue")) {
+			methodInvocation.delete();
+		}
+		// drop invocation of Integer#intValue() method
+		else if(methodInvocation.getSourceExpression().getJavaType().equals(Integer.class) && methodInvocation.getMethodName().equals("intValue")) {
+			methodInvocation.delete();
+		}
 		// drop invocation of Long#longValue() method
-		else if(methodInvocation.getMethodName().equals("longValue") && methodInvocation.getSourceExpression().getJavaType().equals(Long.class)) {
+		else if(methodInvocation.getSourceExpression().getJavaType().equals(Long.class) && methodInvocation.getMethodName().equals("longValue")) {
+			methodInvocation.delete();
+		}
+		// drop invocation of Double#doubleValue() method
+		else if(methodInvocation.getSourceExpression().getJavaType().equals(Double.class) && methodInvocation.getMethodName().equals("doubleValue")) {
 			methodInvocation.delete();
 		}
 		return true;
