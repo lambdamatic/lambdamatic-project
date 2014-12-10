@@ -41,8 +41,8 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getStringValue().equals("foo"));
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -55,8 +55,8 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -69,8 +69,8 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getStringValue().equals(value));
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -84,8 +84,8 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -99,8 +99,8 @@ public class LambdaBytecodeAnalyzerTest {
 				anotherPojo.getStringValue()));
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -114,8 +114,8 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -127,7 +127,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() > 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -141,7 +141,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() > value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -155,7 +155,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.EQUALS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -170,7 +170,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.EQUALS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -184,7 +184,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.NOT_EQUALS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -199,7 +199,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.NOT_EQUALS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -213,7 +213,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -228,7 +228,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -241,7 +241,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() >= 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
 				new NumberLiteral(42));
 		// verification
@@ -256,7 +256,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() >= value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
 				new NumberLiteral(42));
 		// verification
@@ -271,7 +271,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
 				new NumberLiteral(42));
 		// verification
@@ -287,7 +287,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
 				new NumberLiteral(42));
 		// verification
@@ -301,7 +301,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() < 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -315,7 +315,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() < value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -329,7 +329,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -344,7 +344,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -357,7 +357,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() <= 42);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -371,7 +371,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getPrimitiveIntValue() <= value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -385,7 +385,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -400,7 +400,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getIntValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -413,7 +413,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() > 42L);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -427,7 +427,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() > value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -441,7 +441,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() > value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -455,7 +455,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.EQUALS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -470,7 +470,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.EQUALS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -484,7 +484,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.NOT_EQUALS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -499,7 +499,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.NOT_EQUALS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -513,7 +513,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -528,7 +528,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -541,7 +541,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() >= 42L);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
 				new NumberLiteral(42L));
 		// verification
@@ -556,7 +556,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() >= value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
 				new NumberLiteral(42L));
 		// verification
@@ -571,7 +571,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
 				new NumberLiteral(42L));
 		// verification
@@ -587,7 +587,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.GREATER_EQUALS, getIntValueMethod,
 				new NumberLiteral(42L));
 		// verification
@@ -601,7 +601,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() < 42L);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -615,7 +615,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() < value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -629,7 +629,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -644,7 +644,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -657,7 +657,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() <= 42L);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -671,7 +671,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression((TestPojo t) -> t.getLongValue() <= value);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -685,7 +685,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -700,7 +700,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue");
+		final MethodInvocation getIntValueMethod = new MethodInvocation(testPojo, "getLongValue", Long.class);
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.LESS_EQUALS, getIntValueMethod, new NumberLiteral(42L));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -714,10 +714,10 @@ public class LambdaBytecodeAnalyzerTest {
 				|| t.getStringValue().equals("bar") || t.getStringValue().equals("baz")));
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation ifEqualsFooExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
-		final MethodInvocation ifEqualsBarExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("bar"));
-		final MethodInvocation ifEqualsBazExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("baz"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation ifEqualsFooExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation ifEqualsBarExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation ifEqualsBazExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("baz"));
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, ifEqualsFooExpression,
 				ifEqualsBarExpression, ifEqualsBazExpression);
 		// verification
@@ -733,10 +733,10 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation ifEqualsFooExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
-		final MethodInvocation ifEqualsBarExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("bar"));
-		final MethodInvocation ifEqualsBazExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("baz"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation ifEqualsFooExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation ifEqualsBarExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation ifEqualsBazExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("baz"));
 		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, ifEqualsFooExpression,
 				ifEqualsBarExpression, ifEqualsBazExpression);
 		// verification
@@ -750,8 +750,8 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(buildLambdaExpression("foo"));
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -764,8 +764,8 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -788,8 +788,8 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(staticBuildLambdaExpression("foo"));
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -802,8 +802,8 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue");
-		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", new StringLiteral("foo"));
+		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
+		final MethodInvocation expectedExpression = new MethodInvocation(getStringValueMethod, "equals", Boolean.class,  new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
 	}
@@ -827,7 +827,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation expectedExpression = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals",
+		final MethodInvocation expectedExpression = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class, 
 				new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(expectedExpression);
@@ -842,11 +842,11 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsBazMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", new StringLiteral(
+		final MethodInvocation equalsBazMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class,  new StringLiteral(
 				"baz"));
-		final MethodInvocation equalsFooMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", new StringLiteral(
+		final MethodInvocation equalsFooMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class,  new StringLiteral(
 				"foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", new StringLiteral(
+		final MethodInvocation equalsBarMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class,  new StringLiteral(
 				"bar"));
 		final Expression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsBazMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod));
@@ -863,11 +863,11 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", new StringLiteral(
+		final MethodInvocation equalsFooMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class,  new StringLiteral(
 				"foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", new StringLiteral(
+		final MethodInvocation equalsBarMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class,  new StringLiteral(
 				"bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", new StringLiteral(
+		final MethodInvocation equalsBazMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class,  new StringLiteral(
 				"baz"));
 		final Expression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod), equalsBazMethod);
@@ -884,11 +884,11 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", new StringLiteral(
+		final MethodInvocation equalsFooMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class,  new StringLiteral(
 				"foo")).inverse();
-		final MethodInvocation equalsBarMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", new StringLiteral(
+		final MethodInvocation equalsBarMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class,  new StringLiteral(
 				"bar")).inverse();
-		final MethodInvocation equalsBazMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", new StringLiteral(
+		final MethodInvocation equalsBazMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class,  new StringLiteral(
 				"baz"));
 		final Expression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod), equalsBazMethod);
@@ -905,9 +905,9 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz")).inverse();
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz")).inverse();
 		final Expression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod), equalsBazMethod);
 		// verification
@@ -922,7 +922,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(equalsFooMethod);
 	}
@@ -965,9 +965,9 @@ public class LambdaBytecodeAnalyzerTest {
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		final LocalVariable testPojo = new LocalVariable("u", User.class);
-		final MethodInvocation firstNameEqualsJohn = new MethodInvocation(new FieldAccess(testPojo, "firstName"), "equals",
+		final MethodInvocation firstNameEqualsJohn = new MethodInvocation(new FieldAccess(testPojo, "firstName"), "equals", Boolean.class, 
 				new StringLiteral("john"));
-		final MethodInvocation lastNameEqualsDoe = new MethodInvocation(new FieldAccess(testPojo, "lastName"), "equals", new StringLiteral(
+		final MethodInvocation lastNameEqualsDoe = new MethodInvocation(new FieldAccess(testPojo, "lastName"), "equals", Boolean.class,  new StringLiteral(
 				"doe"));
 		final Expression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, firstNameEqualsJohn, lastNameEqualsDoe);
 		// verification

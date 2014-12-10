@@ -4,6 +4,8 @@
 package org.lambdamatic.analyzer.ast.node;
 
 /**
+ * A fully qualified Java Type.
+ * 
  * @author xcoulon
  *
  */

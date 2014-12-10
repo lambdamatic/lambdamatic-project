@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Creates a new {@link Expression} where any method on a {@link CapturedArgument} is converted to its actual literal value.
- * Also, method calls such as {@link Long#longValue()} are removed because they are not relevant in our case (these are underlying conversion methods)
+ * Also, method calls such as {@link Long#longValue()}, etc. are removed because they are not relevant in our case (these are underlying conversion methods)
  * 
  * @author xcoulon
  *
@@ -37,8 +37,8 @@ public class ExpressionRewriter extends ExpressionVisitor {
 	@Override
 	public boolean visitMethodInvocationExpression(final MethodInvocation methodInvocation) {
 		if (methodInvocation.getSourceExpression().getExpressionType() == ExpressionType.CAPTURED_ARGUMENT) {
-			final CapturedArgument capturedSourceArgument = (CapturedArgument) methodInvocation.getSourceExpression();
 			final String methodName = methodInvocation.getMethodName();
+			final CapturedArgument capturedSourceArgument = (CapturedArgument) methodInvocation.getSourceExpression();
 			try {
 				final Object source = capturedSourceArgument.getValue();
 				final List<Object> args = new ArrayList<>();
@@ -61,30 +61,36 @@ public class ExpressionRewriter extends ExpressionVisitor {
 					| InvocationTargetException e) {
 				LOGGER.error("Failed to execute method '{}' on captured argument '{}'", methodName, capturedSourceArgument.getValue());
 			}
-		} 
-		// drop invocation of Boolean#booleanValue() method
-		else if(methodInvocation.getSourceExpression().getJavaType().equals(Boolean.class) && methodInvocation.getMethodName().equals("booleanValue")) {
-			methodInvocation.delete();
-		}
-		// drop invocation of Byte#byteValue() method
-		else if(methodInvocation.getSourceExpression().getJavaType().equals(Byte.class) && methodInvocation.getMethodName().equals("byteValue")) {
-			methodInvocation.delete();
-		}
-		// drop invocation of Short#shortValue() method
-		else if(methodInvocation.getSourceExpression().getJavaType().equals(Short.class) && methodInvocation.getMethodName().equals("shortValue")) {
-			methodInvocation.delete();
-		}
-		// drop invocation of Integer#intValue() method
-		else if(methodInvocation.getSourceExpression().getJavaType().equals(Integer.class) && methodInvocation.getMethodName().equals("intValue")) {
-			methodInvocation.delete();
-		}
-		// drop invocation of Long#longValue() method
-		else if(methodInvocation.getSourceExpression().getJavaType().equals(Long.class) && methodInvocation.getMethodName().equals("longValue")) {
-			methodInvocation.delete();
-		}
-		// drop invocation of Double#doubleValue() method
-		else if(methodInvocation.getSourceExpression().getJavaType().equals(Double.class) && methodInvocation.getMethodName().equals("doubleValue")) {
-			methodInvocation.delete();
+		} else {
+			final Class<?> sourceType = methodInvocation.getSourceExpression().getJavaType();
+			final String methodName = methodInvocation.getMethodName();
+			if(sourceType.equals(Boolean.class) && methodName.equals("booleanValue")) {
+				methodInvocation.delete();
+			}
+			// drop invocation of Byte#byteValue() method
+			else if(sourceType.equals(Byte.class) && methodName.equals("byteValue")) {
+				methodInvocation.delete();
+			}
+			// drop invocation of Short#shortValue() method
+			else if(sourceType.equals(Short.class) && methodName.equals("shortValue")) {
+				methodInvocation.delete();
+			}
+			// drop invocation of Integer#intValue() method
+			else if(sourceType.equals(Integer.class) && methodName.equals("intValue")) {
+				methodInvocation.delete();
+			}
+			// drop invocation of Long#longValue() method
+			else if(sourceType.equals(Long.class) && methodName.equals("longValue")) {
+				methodInvocation.delete();
+			}
+			// drop invocation of Double#doubleValue() method
+			else if(sourceType.equals(Double.class) && methodName.equals("doubleValue")) {
+				methodInvocation.delete();
+			}
+			// drop invocation of Character#charValue() method
+			else if(sourceType.equals(Character.class) && methodName.equals("charValue")) {
+				methodInvocation.delete();
+			}
 		}
 		return true;
 	}

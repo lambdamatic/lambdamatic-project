@@ -209,13 +209,14 @@ public class LambdaExpressionReader {
 				}
 				// arguments appear in reverse order in the bytecode
 				Collections.reverse(args);
+				final Class<?> returnType = getReturnType(methodInsnNode);
 				switch (methodInsnNode.getOpcode()) {
 				case Opcodes.INVOKEVIRTUAL:
-					final MethodInvocation invokedVirtualMethod = new MethodInvocation(expressionStack.pop(), methodInsnNode.name, args);
+					final MethodInvocation invokedVirtualMethod = new MethodInvocation(expressionStack.pop(), methodInsnNode.name, args, returnType);
 					expressionStack.add(invokedVirtualMethod);
 					break;
 				case Opcodes.INVOKESPECIAL:
-					final MethodInvocation invokedSpecialMethod = new MethodInvocation(expressionStack.pop(), methodInsnNode.name, args);
+					final MethodInvocation invokedSpecialMethod = new MethodInvocation(expressionStack.pop(), methodInsnNode.name, args, returnType);
 					expressionStack.add(invokedSpecialMethod);
 					break;
 				case Opcodes.INVOKESTATIC:
@@ -223,7 +224,7 @@ public class LambdaExpressionReader {
 					final Type type = Type.getType(var.desc);
 					try {
 						final MethodInvocation invokedStaticMethod = new MethodInvocation(new CapturedArgument(Class.forName(type
-								.getClassName())), methodInsnNode.name, args);
+								.getClassName())), methodInsnNode.name, args, returnType);
 						expressionStack.add(invokedStaticMethod);
 					} catch (ClassNotFoundException e) {
 						LOGGER.error("Failed to retrieve class for " + var.name, e);
@@ -255,6 +256,39 @@ public class LambdaExpressionReader {
 
 		}
 		return null;
+	}
+
+	/**
+	 * @param methodInsnNode the method to analyze
+	 * @return the returned Java type.
+	 * @throws AnalyzeException if the Class could not be found
+	 */
+	private Class<?> getReturnType(final MethodInsnNode methodInsnNode) {
+		final String returnTypeName = Type.getReturnType(methodInsnNode.desc).getClassName();
+		try {
+			switch(returnTypeName) {
+			case "boolean":
+				return boolean.class;
+			case "byte":
+				return byte.class;
+			case "short":
+				return short.class;
+			case "int":
+				return int.class;
+			case "long":
+				return long.class;
+			case "float":
+				return float.class;
+			case "double":
+				return double.class;
+			case "char":
+				return char.class;
+			default:
+				return Class.forName(returnTypeName);
+			}
+		} catch (ClassNotFoundException e) {
+			throw new AnalyzeException("Failed to retrieve return type for method " + methodInsnNode.name + " with return type: " + returnTypeName, e);
+		}
 	}
 
 	/**
@@ -408,7 +442,7 @@ public class LambdaExpressionReader {
 			final List<LocalVariableNode> localVariables, final Map<String, AbstractInsnNode> labels) {
 		switch (intInsnNode.getOpcode()) {
 		case Opcodes.BIPUSH:
-			expressionStack.add(new NumberLiteral(intInsnNode.operand));
+			expressionStack.add(LiteralFactory.getLiteral(intInsnNode.operand, expressionStack.peek()));
 			break;
 		default:
 			LOGGER.warn("Instruction with OpCode {} was ignored.", intInsnNode.getOpcode());

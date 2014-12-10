@@ -25,11 +25,11 @@ public class InfixExpressionSimplificationMonitorTest {
 	public void shouldRecognizeForm() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals",
+		final MethodInvocation equalsFooMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class, 
 				new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals",
+		final MethodInvocation equalsBarMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class, 
 				new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals",
+		final MethodInvocation equalsBazMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class, 
 				new StringLiteral("baz"));
 		final InfixExpression expression = new InfixExpression(1, InfixOperator.CONDITIONAL_OR, new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsFooMethod, equalsBarMethod), equalsBazMethod);

@@ -68,36 +68,36 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 		final String stringValue_bar = "bar";
 		final String stringValue_null = null;
 		final LocalVariable var_t = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation t_dot_getPrimitiveBooleanValue = new MethodInvocation(var_t, "getPrimitiveBooleanValue");
-		final MethodInvocation t_dot_getBooleanValue = new MethodInvocation(var_t, "getBooleanValue");
-		final MethodInvocation t_dot_getPrimitiveByteValue = new MethodInvocation(var_t, "getPrimitiveByteValue");
-		final MethodInvocation t_dot_getByteValue = new MethodInvocation(var_t, "getByteValue");
-		final MethodInvocation t_dot_getPrimitiveShortValue = new MethodInvocation(var_t, "getPrimitiveShortValue");
-		final MethodInvocation t_dot_getShortValue = new MethodInvocation(var_t, "getShortValue");
-		final MethodInvocation t_dot_getPrimitiveIntValue = new MethodInvocation(var_t, "getPrimitiveIntValue");
-		final MethodInvocation t_dot_getIntegerValue = new MethodInvocation(var_t, "getIntegerValue");
-		final MethodInvocation t_dot_getPrimitiveLongValue = new MethodInvocation(var_t, "getPrimitiveLongValue");
-		final MethodInvocation t_dot_getLongValue = new MethodInvocation(var_t, "getLongValue");
-		final MethodInvocation t_dot_getPrimitiveCharValue = new MethodInvocation(var_t, "getPrimitiveCharValue");
-		final MethodInvocation t_dot_getCharacterValue = new MethodInvocation(var_t, "getCharacterValue");
-		final MethodInvocation t_dot_getPrimitiveFloatValue = new MethodInvocation(var_t, "getPrimitiveFloatValue");
-		final MethodInvocation t_dot_getFloatValue = new MethodInvocation(var_t, "getFloatValue");
-		final MethodInvocation t_dot_getPrimitiveDoubleValue = new MethodInvocation(var_t, "getPrimitiveDoubleValue");
-		final MethodInvocation t_dot_getDoubleValue = new MethodInvocation(var_t, "getDoubleValue");
-		final MethodInvocation t_dot_getStringValue = new MethodInvocation(var_t, "getStringValue");
+		final MethodInvocation t_dot_getPrimitiveBooleanValue = new MethodInvocation(var_t, "getPrimitiveBooleanValue", int.class);
+		final MethodInvocation t_dot_getBooleanValue = new MethodInvocation(var_t, "getBooleanValue", Boolean.class);
+		final MethodInvocation t_dot_getPrimitiveByteValue = new MethodInvocation(var_t, "getPrimitiveByteValue", byte.class);
+		final MethodInvocation t_dot_getByteValue = new MethodInvocation(var_t, "getByteValue", Byte.class);
+		final MethodInvocation t_dot_getPrimitiveShortValue = new MethodInvocation(var_t, "getPrimitiveShortValue", short.class);
+		final MethodInvocation t_dot_getShortValue = new MethodInvocation(var_t, "getShortValue", Short.class);
+		final MethodInvocation t_dot_getPrimitiveIntValue = new MethodInvocation(var_t, "getPrimitiveIntValue", int.class);
+		final MethodInvocation t_dot_getIntegerValue = new MethodInvocation(var_t, "getIntegerValue", Integer.class);
+		final MethodInvocation t_dot_getPrimitiveLongValue = new MethodInvocation(var_t, "getPrimitiveLongValue", long.class);
+		final MethodInvocation t_dot_getLongValue = new MethodInvocation(var_t, "getLongValue", Long.class);
+		final MethodInvocation t_dot_getPrimitiveCharValue = new MethodInvocation(var_t, "getPrimitiveCharValue", char.class);
+		final MethodInvocation t_dot_getCharacterValue = new MethodInvocation(var_t, "getCharacterValue", Character.class);
+		final MethodInvocation t_dot_getPrimitiveFloatValue = new MethodInvocation(var_t, "getPrimitiveFloatValue", float.class);
+		final MethodInvocation t_dot_getFloatValue = new MethodInvocation(var_t, "getFloatValue", Float.class);
+		final MethodInvocation t_dot_getPrimitiveDoubleValue = new MethodInvocation(var_t, "getPrimitiveDoubleValue", double.class);
+		final MethodInvocation t_dot_getDoubleValue = new MethodInvocation(var_t, "getDoubleValue", Double.class);
+		final MethodInvocation t_dot_getStringValue = new MethodInvocation(var_t, "getStringValue", String.class);
 		final MethodInvocation t_dot_getStringValue_dot_equals_foo = new MethodInvocation(t_dot_getStringValue,
-				"equals", new StringLiteral("foo"));
+				"equals", Boolean.class, new StringLiteral("foo"));
 		final MethodInvocation t_dot_getStringValue_dot_equals_bar = new MethodInvocation(t_dot_getStringValue,
-				"equals", new StringLiteral("bar"));
+				"equals", Boolean.class, new StringLiteral("bar"));
 		final MethodInvocation t_dot_getStringValue_dot_equals_baz = new MethodInvocation(t_dot_getStringValue,
-				"equals", new StringLiteral("baz"));
+				"equals", Boolean.class, new StringLiteral("baz"));
 		final FieldAccess t_dot_field = new FieldAccess(var_t, "field");
-		final MethodInvocation t_dot_field_dot_equals_foo = new MethodInvocation(t_dot_field, "equals",
+		final MethodInvocation t_dot_field_dot_equals_foo = new MethodInvocation(t_dot_field, "equals",Boolean.class,
 				new StringLiteral("foo"));
 		final MethodInvocation t_dot_field_dot_equals_bar = new MethodInvocation(t_dot_field, "equals",
-				new StringLiteral("bar"));
+				Boolean.class, new StringLiteral("bar"));
 		final MethodInvocation t_dot_field_dot_equals_baz = new MethodInvocation(t_dot_field, "equals",
-				new StringLiteral("baz"));
+				Boolean.class, new StringLiteral("baz"));
 		final InfixExpression t_dot_field_equals_foo = new InfixExpression(InfixOperator.EQUALS, t_dot_field,
 				new StringLiteral("foo"));
 		final InfixExpression t_dot_field_not_equals_foo = new InfixExpression(InfixOperator.NOT_EQUALS, t_dot_field,
@@ -405,11 +405,11 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.getStringValue().equals("foo")),
 						t_dot_getStringValue_dot_equals_foo },
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.getStringValue().equals(stringValue_bar)),
-						new MethodInvocation(t_dot_getStringValue, "equals", new StringLiteral(stringValue_bar)) },
+						new MethodInvocation(t_dot_getStringValue, "equals", Boolean.class, new StringLiteral(stringValue_bar)) },
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.getStringValue().equals(null)),
-						new MethodInvocation(t_dot_getStringValue, "equals", new NullLiteral()) },
+						new MethodInvocation(t_dot_getStringValue, "equals", Boolean.class, new NullLiteral()) },
 				new Object[] { (FilterExpression<TestPojo>) (t -> !t.getStringValue().equals(stringValue_null)),
-						new MethodInvocation(t_dot_getStringValue, "equals", new NullLiteral()).inverse() },
+						new MethodInvocation(t_dot_getStringValue, "equals", Boolean.class, new NullLiteral()).inverse() },
 				new Object[] {
 						(FilterExpression<TestPojo>) (t -> t.getStringValue().equals(anotherPojo.getStringValue())),
 						t_dot_getStringValue_dot_equals_foo },

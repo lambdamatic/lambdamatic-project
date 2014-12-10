@@ -25,9 +25,9 @@ public class ExpressionTest {
 	public void infixExpressionsWithSameOrderShouldBeEqual() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
 		// when
 		final Expression expressionA = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod, equalsBazMethod);
 		final Expression expressionB = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod, equalsBazMethod);
@@ -40,9 +40,9 @@ public class ExpressionTest {
 	public void infixExpressionsWithDifferentOrderShouldBeEqual() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
 		// when
 		final Expression expressionA = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod, equalsBazMethod);
 		final Expression expressionB = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsBazMethod, equalsFooMethod, equalsBarMethod);
@@ -55,10 +55,10 @@ public class ExpressionTest {
 	public void infixExpressionsShouldNotBeEqual() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz"));
-		final MethodInvocation equalsBazzMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bazz"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
+		final MethodInvocation equalsBazzMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bazz"));
 		// when
 		final Expression expressionA = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod, equalsBazMethod);
 		final Expression expressionB = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsBarMethod, equalsFooMethod,
@@ -72,9 +72,9 @@ public class ExpressionTest {
 	public void infixExpressionsWithNestedInfixShouldBeEqual() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
 		// when
 		final Expression expressionA = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsFooMethod, equalsBarMethod), equalsBazMethod);
@@ -89,10 +89,10 @@ public class ExpressionTest {
 	public void infixExpressionsNestedInfixShouldNotBeEqual() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz"));
-		final MethodInvocation equalsBazzMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bazz"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
+		final MethodInvocation equalsBazzMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bazz"));
 		// when
 		final Expression expressionA = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsFooMethod, equalsBarMethod), equalsBazMethod);
@@ -108,8 +108,8 @@ public class ExpressionTest {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		// when
-		final MethodInvocation expressionA = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation expressionB = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
+		final MethodInvocation expressionA = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation expressionB = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		// then
 		assertThat(expressionA).isEqualTo(expressionB);
 		assertThat(expressionA.hashCode()).isEqualTo(expressionB.hashCode());
@@ -120,8 +120,8 @@ public class ExpressionTest {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		// when
-		final MethodInvocation expressionA = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation expressionB = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
+		final MethodInvocation expressionA = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation expressionB = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
 		// then
 		assertThat(expressionA).isNotEqualTo(expressionB);
 		assertThat(expressionA.hashCode()).isNotEqualTo(expressionB.hashCode());
@@ -132,8 +132,8 @@ public class ExpressionTest {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		// when
-		final MethodInvocation expressionA = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation expressionB = new MethodInvocation(testPojo, "equals", new StringLiteral("foo")).inverse();
+		final MethodInvocation expressionA = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation expressionB = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo")).inverse();
 		// then
 		assertThat(expressionA).isNotEqualTo(expressionB);
 		assertThat(expressionA.hashCode()).isNotEqualTo(expressionB.hashCode());
@@ -143,9 +143,9 @@ public class ExpressionTest {
 	public void infixExpressionShouldBeFurtherSimplifiable() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
 		// when
 		final Expression operandExpressionA = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod, equalsBazMethod);
 		final Expression operandExpressionB = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod, equalsBazMethod);
@@ -158,9 +158,9 @@ public class ExpressionTest {
 	public void infixExpressionShouldNotBeFurtherSimplifiable() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
 		// when
 		final InfixExpression operandExpression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod);
 		final Expression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, operandExpression, equalsBazMethod);
@@ -172,9 +172,9 @@ public class ExpressionTest {
 	public void infixExpressionWithDuplicateOperandsShouldBeFurtherSimplifiable() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
 		// when
 		final Expression operandExpressionA = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod, equalsBazMethod);
 		final Expression operandExpressionB = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod, equalsBazMethod);
@@ -187,9 +187,9 @@ public class ExpressionTest {
 	public void infixExpressionWithDuplicateOperandShouldBeFurtherSimplifiable() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
 		// when
 		final Expression expressionB = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, equalsBarMethod, equalsBazMethod);
 		final Expression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsFooMethod, expressionB);
@@ -201,9 +201,9 @@ public class ExpressionTest {
 	public void infixExpressionWithNestExpressionWithSameOperatorShouldBeFurtherSimplifiable() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", new StringLiteral("baz"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
 		// when
 		final Expression expressionB = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsBarMethod, equalsBazMethod);
 		final Expression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, expressionB);
