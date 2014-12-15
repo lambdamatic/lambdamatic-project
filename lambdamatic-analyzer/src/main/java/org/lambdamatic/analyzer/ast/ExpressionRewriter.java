@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
+import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.ComplexExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
@@ -83,6 +84,10 @@ public class ExpressionRewriter extends ExpressionVisitor {
 			else if(sourceType.equals(Long.class) && methodName.equals("longValue")) {
 				methodInvocation.delete();
 			}
+			// drop invocation of Float#floatValue() method
+			else if(sourceType.equals(Float.class) && methodName.equals("floatValue")) {
+				methodInvocation.delete();
+			}
 			// drop invocation of Double#doubleValue() method
 			else if(sourceType.equals(Double.class) && methodName.equals("doubleValue")) {
 				methodInvocation.delete();
@@ -114,6 +119,24 @@ public class ExpressionRewriter extends ExpressionVisitor {
 			} catch (NoSuchFieldException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
 				LOGGER.error("Failed to execute method '{}' on captured argument '{}'", fieldName, capturedSourceArgument.getValue());
 			}
+		} else if (fieldAccess.getSourceExpression().getExpressionType() == ExpressionType.CLASS_LITERAL) {
+			final ClassLiteral sourceClass = (ClassLiteral) fieldAccess.getSourceExpression();
+			final String fieldName = fieldAccess.getFieldName();
+			try {
+				final Class<?> source = sourceClass.getValue();
+				final Field f = getFieldToInvoke(source, fieldName);
+				f.setAccessible(true);
+				final Object replacement = f.get(source);
+				final ComplexExpression parentExpression = fieldAccess.getParent();
+				if (parentExpression != null) {
+					parentExpression.replaceElement(fieldAccess, LiteralFactory.getLiteral(replacement));
+				}
+				// no further visiting on this (obsolete) branch of the expression tree.
+				return false;
+			} catch (NoSuchFieldException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
+				LOGGER.error("Failed to execute method '{}' on class '{}'", fieldName, sourceClass.toString());
+			}
+			
 		}
 		return super.visitFieldAccessExpression(fieldAccess);
 	}
@@ -182,5 +205,5 @@ public class ExpressionRewriter extends ExpressionVisitor {
 		// no need to keep on visiting the current branch after the replacement with a literal.
 		return false;
 	}
-
+	
 }

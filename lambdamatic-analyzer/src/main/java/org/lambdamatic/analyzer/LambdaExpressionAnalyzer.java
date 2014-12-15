@@ -15,7 +15,9 @@ import org.lambdamatic.analyzer.ast.ExpressionRewriter;
 import org.lambdamatic.analyzer.ast.LambdaExpressionReader;
 import org.lambdamatic.analyzer.ast.ReturnTruePathFilter;
 import org.lambdamatic.analyzer.ast.node.ASTNodeUtils;
+import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
+import org.lambdamatic.analyzer.ast.node.ComplexExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
@@ -88,8 +90,14 @@ public class LambdaExpressionAnalyzer {
 	 */
 	private Expression processMethodCalls(final Expression expression) {
 		final ExpressionVisitor visitor = new ExpressionRewriter();
+		// wrap the expression to make sure it has a parent
+		// because in some cases (eg: a boolean expression, the MethodInvocation#delete() would fail)
+		final ExpressionWrapper wrapper = new ExpressionWrapper(expression);
 		expression.accept(visitor);
-		return expression;
+		// now, detach and return the resulting wrapped expression
+		final Expression resultExpression = wrapper.getExpression();
+		resultExpression.setParent(null);
+		return resultExpression;
 	}
 
 	/**
@@ -153,5 +161,54 @@ public class LambdaExpressionAnalyzer {
 		return result;
 	}
 
+	static class ExpressionWrapper extends ComplexExpression {
+
+		private Expression expression = null;
+		
+		public ExpressionWrapper(final Expression expression) {
+			super(generateId(), false);
+			this.expression = expression;
+			this.expression.setParent(this);
+		}
+
+		/**
+		 * @return the currently wrapped {@link Expression}.
+		 * (it may not the one given in the constructor if the {@link ExpressionWrapper#replaceElement(Expression, Expression)} was called.
+		 */
+		public Expression getExpression() {
+			return expression;
+		}
+		
+		@Override
+		public void replaceElement(final Expression oldExpression, final Expression newExpression) {
+			this.expression = newExpression;
+		}
+
+		@Override
+		public ExpressionType getExpressionType() {
+			return expression.getExpressionType();
+		}
+
+		@Override
+		public Class<?> getJavaType() {
+			return expression.getJavaType();
+		}
+
+		@Override
+		public Expression inverse() {
+			return this;
+		}
+
+		@Override
+		public boolean canBeInverted() {
+			return false;
+		}
+
+		@Override
+		public Expression duplicate(int id) {
+			return null;
+		}
+		
+	}
 }
 

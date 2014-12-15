@@ -4,10 +4,15 @@
 package org.lambdamatic.analyzer.ast.node;
 
 /**
+ * A Class Literal Expression.
+ * 
  * @author xcoulon
  *
  */
-public class NullLiteral extends Expression {
+public class ClassLiteral extends Expression {
+
+	/** The literal value. */
+	private final Class<?> value;
 
 	/**
 	 * Full constructor
@@ -18,8 +23,8 @@ public class NullLiteral extends Expression {
 	 * @param value
 	 *            the literal value
 	 */
-	public NullLiteral() {
-		this(generateId(), false);
+	public ClassLiteral(final Class<?> value) {
+		this(generateId(), value, false);
 	}
 
 	/**
@@ -27,21 +32,23 @@ public class NullLiteral extends Expression {
 	 * 
 	 * @param id
 	 *            the synthetic id of this {@link Expression}.
+	 * @param value
+	 *            the literal value
 	 * @param inverted
 	 *            the inversion flag of this {@link Expression}.
 	 */
-	public NullLiteral(final int id, final boolean inverted) {
+	public ClassLiteral(final int id, final Class<?> value, final boolean inverted) {
 		super(id, inverted);
+		this.value = value;
 	}
 
 	/**
 	 * {@inheritDoc}
-	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)
 	 */
 	@Override
-	public NullLiteral duplicate(int id) {
-		return new NullLiteral(id, isInverted());
+	public ClassLiteral duplicate(int id) {
+		return new ClassLiteral(id, getValue(), isInverted());
 	}
 
 	/**
@@ -50,19 +57,28 @@ public class NullLiteral extends Expression {
 	 */
 	@Override
 	public ExpressionType getExpressionType() {
-		return ExpressionType.NULL_LITERAL;
+		return ExpressionType.CLASS_LITERAL;
 	}
-
+	
 	/**
-	 * Returning {@link Void} to avoid {@link NullPointerException}
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getJavaType()
 	 */
 	@Override
 	public Class<?> getJavaType() {
-		return Void.class;
+		return Class.class;
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.lambdamatic.analyzer.ast.node.Expression#getValue()
+	 */
+	@Override
+	public Class<?> getValue() {
+		return value;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#inverse()
@@ -83,30 +99,31 @@ public class NullLiteral extends Expression {
 
 	/**
 	 * {@inheritDoc}
-	 * 
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getValue()
 	 */
 	@Override
-	public Object getValue() {
-		return null;
+	public String toString() {
+		return value.getName();
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#hashCode()
 	 */
-	@Override
-	public String toString() {
-		return "null";
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((getExpressionType() == null) ? 0 : getExpressionType().hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -114,6 +131,12 @@ public class NullLiteral extends Expression {
 		if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
+			return false;
+		ClassLiteral other = (ClassLiteral) obj;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
 			return false;
 		return true;
 	}

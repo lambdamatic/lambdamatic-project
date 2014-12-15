@@ -288,9 +288,15 @@ public class MethodInvocation extends ComplexExpression {
 	 * Deletes this {@link MethodInvocation} from the Expression tree.
 	 */
 	public void delete() {
-		// replace this MethodElement with the source expression, which means that
-		// it does not get 
-		getParent().replaceElement(this, getSourceExpression());
+		// replace this MethodElement with the source expression if the parent exists
+		if(getParent() != null) {
+			// preserve the inversion
+			if(this.isInverted()) {
+				getParent().replaceElement(this, getSourceExpression().inverse());
+			} else {
+				getParent().replaceElement(this, getSourceExpression());
+			}
+		}
 	}
 
 }

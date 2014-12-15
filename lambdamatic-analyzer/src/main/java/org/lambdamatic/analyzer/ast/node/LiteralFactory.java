@@ -47,6 +47,13 @@ public class LiteralFactory {
 			final Class<?> returnType = methodInvocation.getReturnType();
 			if(char.class.isAssignableFrom(returnType) || Character.class.isAssignableFrom(returnType)) {
 				return new CharacterLiteral((char)value);
+			} else if (boolean.class.isAssignableFrom(returnType) || Boolean.class.isAssignableFrom(returnType)) {
+				switch(value) {
+				case 0: 
+					return new BooleanLiteral(false);
+				default:
+					return new BooleanLiteral(true);
+				}
 			} 
 			return new NumberLiteral(value);
 		}

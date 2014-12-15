@@ -20,7 +20,7 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	private Expression parent;
 	
 	public enum ExpressionType {
-		BOOLEAN_LITERAL, CHARACTER_LITERAL, NUMBER_LITERAL, NULL_LITERAL, STRING_LITERAL, METHOD_INVOCATION, FIELD_ACCESS, INFIX, INSTANCE_OF, LOCAL_VARIABLE, CAPTURED_ARGUMENT;
+		BOOLEAN_LITERAL, CHARACTER_LITERAL, CLASS_LITERAL, NUMBER_LITERAL, NULL_LITERAL, STRING_LITERAL, METHOD_INVOCATION, FIELD_ACCESS, INFIX, INSTANCE_OF, LOCAL_VARIABLE, CAPTURED_ARGUMENT;
 	}
 
 	/** synthetic id generator based on {@link AtomicInteger}. */
@@ -29,7 +29,7 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	/**
 	 * @return a new synthetic ID
 	 */
-	static int generateId() {
+	protected static int generateId() {
 		final int id = sequence.incrementAndGet();
 		return id;
 	}

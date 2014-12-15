@@ -41,7 +41,7 @@ public class IsolatedLambdaBytecodeAnalyzerTest {
 		LOGGER.info("Number of InfixExpressions used during the process: {}",
 				(new InfixExpression(InfixOperator.CONDITIONAL_AND).getId() - 1));
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final FieldAccess testPojoField = new FieldAccess(testPojo, "intValue");
+		final FieldAccess testPojoField = new FieldAccess(testPojo, "primitiveIntValue");
 		final InfixExpression equals42Expression = new InfixExpression(InfixOperator.EQUALS, testPojoField, new NumberLiteral(42));
 		// verification
 		assertThat(resultExpression.getExpression()).isEqualTo(equals42Expression);
