@@ -15,7 +15,6 @@ import org.lambdamatic.analyzer.ast.ExpressionRewriter;
 import org.lambdamatic.analyzer.ast.LambdaExpressionReader;
 import org.lambdamatic.analyzer.ast.ReturnTruePathFilter;
 import org.lambdamatic.analyzer.ast.node.ASTNodeUtils;
-import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.ComplexExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @see http://cr.openjdk.java.net/~briangoetz/lambda/lambda-translation.html
  * 
- */
+ */ 
 public class LambdaExpressionAnalyzer {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(LambdaExpressionAnalyzer.class);

@@ -5,7 +5,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.ComplexExpression;
@@ -13,14 +15,21 @@ import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
+import org.lambdamatic.analyzer.ast.node.InfixExpression;
+import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.LiteralFactory;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Creates a new {@link Expression} where any method on a {@link CapturedArgument} is converted to its actual literal value.
- * Also, method calls such as {@link Long#longValue()}, etc. are removed because they are not relevant in our case (these are underlying conversion methods)
+ * Creates a new {@link Expression} where any method on a
+ * {@link CapturedArgument} is converted to its actual literal value. Also,
+ * method calls such as {@link Long#longValue()}, etc. are removed because they
+ * are not relevant in our case (these are underlying conversion methods)
+ * Finally, {@link InfixExpression} with a boolean conditions (eg:
+ * {@link MethodInvocation} == {@link BooleanLiteral}) are simplified as well:
+ * the {@link InfixExpression} is replaced with the meaningful operand.
  * 
  * @author xcoulon
  *
@@ -30,11 +39,31 @@ public class ExpressionRewriter extends ExpressionVisitor {
 	/** The logger. */
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExpressionRewriter.class);
 
+	/**
+	 * If the {@link InfixExpression} with a boolean conditions (eg:
+	 * {@link MethodInvocation} == {@link BooleanLiteral}), replace it with the meaningful operand (which may need to be inverted).
+	 * 
+	 * @param expr the {@link InfixExpression} to analyze
+	 */
 	@Override
-	public boolean visit(final Expression expr) {
-		return super.visit(expr);
+	public boolean visitInfixExpression(final InfixExpression expr) {
+		// manually visit all operands, first
+		expr.getOperands().stream().forEach(operand -> operand.accept(this));
+		if ((expr.getOperator() == InfixOperator.EQUALS || expr.getOperator() == InfixOperator.NOT_EQUALS)
+				&& expr.getOperands().size() == 2
+				&& expr.getOperands().stream().anyMatch(e -> e.getExpressionType() == ExpressionType.BOOLEAN_LITERAL)) {
+			final ComplexExpression parentExpression = expr.getParent();
+			final Optional<Expression> replacementExpr = expr.getOperands().stream().filter(e -> e.getExpressionType() != ExpressionType.BOOLEAN_LITERAL).findFirst();
+			if(replacementExpr.isPresent()) {
+				parentExpression.replaceElement(expr,
+						(expr.getOperator() == InfixOperator.EQUALS) ? replacementExpr.get() : replacementExpr.get()
+								.inverse());
+			}
+		}
+		// the branch was already visited
+		return false;
 	}
-
+	
 	@Override
 	public boolean visitMethodInvocationExpression(final MethodInvocation methodInvocation) {
 		if (methodInvocation.getSourceExpression().getExpressionType() == ExpressionType.CAPTURED_ARGUMENT) {

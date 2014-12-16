@@ -42,6 +42,8 @@ public abstract class ExpressionVisitor {
 				return visitNumberLiteralExpression((NumberLiteral) expr);
 			case STRING_LITERAL:
 				return visitStringLiteralExpression((StringLiteral) expr);
+			case CLASS_LITERAL:
+				return visitClassLiteralExpression((ClassLiteral) expr);
 			case CAPTURED_ARGUMENT:
 				return visitCapturedArgument((CapturedArgument) expr);
 			case LOCAL_VARIABLE:
@@ -92,6 +94,10 @@ public abstract class ExpressionVisitor {
 	}
 
 	public boolean visitStringLiteralExpression(final StringLiteral expr) {
+		return true;
+	}
+
+	public boolean visitClassLiteralExpression(final ClassLiteral expr) {
 		return true;
 	}
 }

@@ -202,6 +202,15 @@ public class InfixExpression extends ComplexExpression {
 
 	/**
 	 * {@inheritDoc}
+	 * @see org.lambdamatic.analyzer.ast.node.Expression#getParent()
+	 */
+	@Override
+	public ComplexExpression getParent() {
+		return (ComplexExpression) super.getParent();
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)
 	 */
@@ -346,9 +355,7 @@ public class InfixExpression extends ComplexExpression {
 	@Override
 	public void accept(final ExpressionVisitor visitor) {
 		if (visitor.visit(this)) {
-			for (Expression operand : operands) {
-				operand.accept(visitor);
-			}
+			getOperands().stream().forEach(operand -> operand.accept(visitor));
 		}
 	}
 
