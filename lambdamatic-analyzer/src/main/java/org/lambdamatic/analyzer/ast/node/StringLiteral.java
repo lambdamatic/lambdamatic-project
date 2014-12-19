@@ -49,6 +49,15 @@ public class StringLiteral extends Expression {
 
 	/**
 	 * {@inheritDoc}
+	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
+	 */
+	@Override
+	public StringLiteral duplicate() {
+		return duplicate(generateId());
+	}
+	
+	/**
+	 * {@inheritDoc}
 	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getValue()
 	 */

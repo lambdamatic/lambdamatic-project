@@ -53,6 +53,15 @@ public class CharacterLiteral extends Expression {
 
 	/**
 	 * {@inheritDoc}
+	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
+	 */
+	@Override
+	public CharacterLiteral duplicate() {
+		return duplicate(generateId());
+	}
+	
+	/**
+	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
 	 */
 	@Override

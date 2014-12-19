@@ -10,6 +10,7 @@ import java.util.Collection;
 import org.junit.Test;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 
+import com.sample.model.EnumPojo;
 import com.sample.model.TestPojo;
 
 /**
@@ -765,7 +766,7 @@ public class InfixExpressionSimplificationTest {
 	}
 
 	@Test
-	public void shouldApplyDistributiveLawOnConditionalANDWithThreeOperands() {
+	public void shouldApplyDistributiveLawOnConditionalORWithTwoOperands() {
 		// given '(foo.(bar + !baz)) + (!foo.!baz)'
 		final LocalVariable var = new LocalVariable("t", TestPojo.class);
 		final FieldAccess fieldF = new FieldAccess(var, "f");
@@ -804,5 +805,60 @@ public class InfixExpressionSimplificationTest {
 		assertThat(results).hasSize(0);
 	}
 	
+	
+	@Test
+	public void shouldSimplifyToConditionalORWithThreeOperands() {
+		// given (foo + (!foo.bar) + (!foo.!bar.baz))
+		final LocalVariable var = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation equalsFoo = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("foo"));
+		final MethodInvocation equalsBar = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("bar"));
+		final MethodInvocation equalsBaz = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("baz"));
+		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsFoo,
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBar),
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBar.inverse(), equalsBaz));
+		// when
+		final Expression result = expression.simplify();
+		// then expect (foo || bar || baz)
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsFoo, equalsBar, equalsBaz);
+		assertThat(result).isEqualTo(expectedExpression);
+	}
+	
+	@Test
+	public void shouldNotApplyDistributiveLawOnConditionalORWithThreeOperands() {
+		// given '(foo + (!foo.bar) + (!foo.bar.!baz)'
+		final LocalVariable var = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getStringValueMethod = new MethodInvocation(var, "getStringValue", String.class);
+		final InfixExpression equalsFooExpr = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("foo"));
+		final InfixExpression equalsBarExpr = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("bar"));
+		final InfixExpression equalsBazExpr = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("baz"));
+		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsFooExpr, 
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooExpr.inverse(), equalsBarExpr), 
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooExpr.inverse(), equalsBarExpr.inverse(), equalsBazExpr));
+				
+		// when
+		final Collection<Expression> results = expression.applyDistributiveLaw();
+		// then expect nothing 
+		assertThat(results).hasSize(0);
+	}
+	
+	@Test
+	public void shouldSimplifyToConditionalORWithThreeOperands2() {
+		// given '(foo + (!foo.bar) + (!foo.bar.!baz)'
+		final LocalVariable var = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation getStringValueMethod = new MethodInvocation(var, "getStringValue", String.class);
+		final MethodInvocation getEnumPojoMethod = new MethodInvocation(var, "getEnumPojo", EnumPojo.class);
+		final MethodInvocation getPrimitiveIntMethod = new MethodInvocation(var, "getPrimitiveIntValue", int.class);
+		final InfixExpression getStringValueMethodEqualsFoo = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("foo"));
+		final InfixExpression getEnumPojoMethodEqualsBar = new InfixExpression(InfixOperator.EQUALS, getEnumPojoMethod, new EnumLiteral(EnumPojo.BAR));
+		final InfixExpression getPrimitiveIntMethodEquals42 = new InfixExpression(InfixOperator.EQUALS, getPrimitiveIntMethod, new NumberLiteral(42));
+		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, getPrimitiveIntMethodEquals42, 
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsBar), 
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsBar.inverse(), getStringValueMethodEqualsFoo));
+		// when
+		final Expression result = expression.simplify();
+		// then expect (foo || bar || baz)
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, getPrimitiveIntMethodEquals42, getEnumPojoMethodEqualsBar, getStringValueMethodEqualsFoo);
+		assertThat(result).isEqualTo(expectedExpression);
+	}
 }
 

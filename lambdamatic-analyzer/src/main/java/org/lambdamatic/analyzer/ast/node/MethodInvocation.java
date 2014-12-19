@@ -4,7 +4,6 @@
 package org.lambdamatic.analyzer.ast.node;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -99,9 +98,27 @@ public class MethodInvocation extends ComplexExpression {
 	 */
 	@Override
 	public MethodInvocation duplicate(int id) {
-		return new MethodInvocation(id, getSourceExpression(), getMethodName(), new ArrayList<>(this.arguments), getReturnType(), isInverted());
+		return new MethodInvocation(id, getSourceExpression().duplicate(), getMethodName(), duplicateArguments(), getReturnType(), isInverted());
 	}
-
+	
+	/**
+	 * {@inheritDoc}
+	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
+	 */
+	@Override
+	public MethodInvocation duplicate() {
+		return duplicate(generateId());
+	}
+	
+	/**
+	 * @return a duplicate {@link List} of the {@link Expression} arguments
+	 */
+	private List<Expression> duplicateArguments() {
+		return this.arguments.stream().map(e -> {return e.duplicate();}).collect(Collectors.toList());
+	}
+	
+	
+	
 	/**
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
@@ -210,7 +227,7 @@ public class MethodInvocation extends ComplexExpression {
 	 */
 	@Override
 	public MethodInvocation inverse() {
-		return new MethodInvocation(generateId(), sourceExpression, methodName, new ArrayList<>(this.arguments), getReturnType(), !isInverted());
+		return new MethodInvocation(generateId(), sourceExpression, methodName, duplicateArguments(), getReturnType(), !isInverted());
 	};
 
 	/**

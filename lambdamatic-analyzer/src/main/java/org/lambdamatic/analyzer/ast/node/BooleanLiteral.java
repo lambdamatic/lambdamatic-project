@@ -55,10 +55,19 @@ public class BooleanLiteral extends Expression {
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)
 	 */
 	@Override
-	public Expression duplicate(int id) {
+	public BooleanLiteral duplicate(int id) {
 		return new BooleanLiteral(id, getValue(), isInverted());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
+	 */
+	@Override
+	public BooleanLiteral duplicate() {
+		return duplicate(generateId());
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()

@@ -208,6 +208,11 @@ public class LambdaExpressionAnalyzer {
 			return null;
 		}
 		
+		@Override
+		public Expression duplicate() {
+			return null;
+		}
+		
 	}
 }
 

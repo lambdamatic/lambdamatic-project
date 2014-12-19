@@ -7,10 +7,10 @@ package org.lambdamatic.analyzer.ast.node;
  * @author xcoulon
  *
  */
-public class NumberLiteral extends Expression {
+public class EnumLiteral extends Expression {
 
 	/** The literal value. */
-	private final Number value;
+	private final Enum<?> value;
 
 	/**
 	 * Full constructor
@@ -21,21 +21,19 @@ public class NumberLiteral extends Expression {
 	 * @param value
 	 *            the literal value
 	 */
-	public NumberLiteral(final Number value) {
+	public EnumLiteral(final Enum<?> value) {
 		this(generateId(), value, false);
 	}
 
 	/**
 	 * Full constructor with given id
 	 * 
-	 * @param id
-	 *            the synthetic id of this {@link Expression}.
 	 * @param value
 	 *            the literal value
 	 * @param inverted
 	 *            the inversion flag of this {@link Expression}.
 	 */
-	public NumberLiteral(final int id, final Number value, final boolean inverted) {
+	public EnumLiteral(final int id, final Enum<?> value, final boolean inverted) {
 		super(id, inverted);
 		this.value = value;
 	}
@@ -45,8 +43,8 @@ public class NumberLiteral extends Expression {
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)
 	 */
 	@Override
-	public NumberLiteral duplicate(int id) {
-		return new NumberLiteral(id, getValue(), isInverted());
+	public EnumLiteral duplicate(int id) {
+		return new EnumLiteral(id, getValue(), isInverted());
 	}
 
 	/**
@@ -54,26 +52,18 @@ public class NumberLiteral extends Expression {
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
 	 */
 	@Override
-	public NumberLiteral duplicate() {
+	public EnumLiteral duplicate() {
 		return duplicate(generateId());
 	}
 	
 	/**
-	 * @return the value
 	 * {@inheritDoc}
+	 * 
+	 * @see org.lambdamatic.analyzer.ast.node.Expression#getValue()
 	 */
 	@Override
-	public Number getValue() {
+	public Enum<?> getValue() {
 		return value;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
-	 */
-	@Override
-	public ExpressionType getExpressionType() {
-		return ExpressionType.NUMBER_LITERAL;
 	}
 
 	/**
@@ -82,9 +72,18 @@ public class NumberLiteral extends Expression {
 	 */
 	@Override
 	public Class<?> getJavaType() {
-		return value.getClass();
+		return String.class;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
+	 */
+	@Override
+	public ExpressionType getExpressionType() {
+		return ExpressionType.ENUM_LITERAL;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#inverse()
@@ -93,7 +92,7 @@ public class NumberLiteral extends Expression {
 	public Expression inverse() {
 		throw new UnsupportedOperationException(this.getClass().getName() + " does not support inversion.");
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#canBeInverted()
@@ -105,18 +104,12 @@ public class NumberLiteral extends Expression {
 
 	/**
 	 * {@inheritDoc}
-	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return getValue().toString();
+		return value.getClass().getName() + "." + value.name();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -126,11 +119,6 @@ public class NumberLiteral extends Expression {
 		return result;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -139,7 +127,7 @@ public class NumberLiteral extends Expression {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		NumberLiteral other = (NumberLiteral) obj;
+		EnumLiteral other = (EnumLiteral) obj;
 		if (value == null) {
 			if (other.value != null)
 				return false;

@@ -59,6 +59,15 @@ public class LocalVariable extends Expression {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
+	 */
+	@Override
+	public LocalVariable duplicate() {
+		return duplicate(generateId());
+	}
+	
+	/**
 	 * @return the variable name
 	 */
 	public String getName() {

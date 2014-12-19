@@ -31,6 +31,8 @@ public class LiteralFactory {
 			return new CharacterLiteral((Character) value);
 		} else if (value instanceof Number) {
 			return new NumberLiteral((Number) value);
+		} else if (value instanceof Enum<?>) {
+			return new EnumLiteral((Enum<?>)value);
 		}
 		return new StringLiteral(value.toString());
 	}

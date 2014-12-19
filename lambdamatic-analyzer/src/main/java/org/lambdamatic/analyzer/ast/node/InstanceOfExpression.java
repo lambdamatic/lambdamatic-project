@@ -60,6 +60,15 @@ public class InstanceOfExpression extends Expression {
 
 	/**
 	 * {@inheritDoc}
+	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
+	 */
+	@Override
+	public InstanceOfExpression duplicate() {
+		return duplicate(generateId());
+	}
+	
+	/**
+	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
 	 */
 	@Override

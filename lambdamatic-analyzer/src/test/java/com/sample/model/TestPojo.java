@@ -11,6 +11,8 @@ public class TestPojo {
 	public String stringValue = "foo";
 
 	public Date dateValue = new Date();
+	
+	public EnumPojo enumPojo = EnumPojo.FOO;
 
 	public boolean getPrimitiveBooleanValue() {
 		return true;
@@ -82,6 +84,10 @@ public class TestPojo {
 	
 	public Date getDateValue() {
 		return dateValue;
+	}
+	
+	public EnumPojo getEnumPojo() {
+		return enumPojo;
 	}
 
 	

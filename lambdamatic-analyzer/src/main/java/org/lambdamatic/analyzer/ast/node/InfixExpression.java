@@ -204,9 +204,19 @@ public class InfixExpression extends ComplexExpression {
 	 */
 	@Override
 	public InfixExpression duplicate(int id) {
-		return new InfixExpression(getId(), operator, new ArrayList<>(this.operands), isInverted());
+		return new InfixExpression(getId(), operator, duplicateOperands(), isInverted());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
+	 */
+	@Override
+	public InfixExpression duplicate() {
+		return duplicate(generateId());
+	}
+	
 	/**
 	 * Computes the complexity of this {@link InfixExpression} using the following rule:
 	 * <ul>
@@ -325,9 +335,17 @@ public class InfixExpression extends ComplexExpression {
 	 */
 	@Override
 	public Expression inverse() {
-		// returns an InfixExpression with the inverted operator and the same
-		// operands. The 'inverse' flag remains 'false', though.
-		return new InfixExpression(this.getId(), operator.inverse(), new ArrayList<>(this.operands), false);
+		// returns an InfixExpression with the inverted operator and the a *duplicate version* of all
+		// operands, because their parent expression (the one being init and returned) is not *this*
+		// The 'inverse' flag remains 'false', though.
+		return new InfixExpression(this.getId(), operator.inverse(), duplicateOperands(), false);
+	}
+
+	/**
+	 * @return a duplicate {@link List} of the {@link Expression} operands
+	 */
+	private List<Expression> duplicateOperands() {
+		return this.operands.stream().map(e -> {return e.duplicate();}).collect(Collectors.toList());
 	}
 	
 	/**
@@ -545,7 +563,7 @@ public class InfixExpression extends ComplexExpression {
 					} else if (monitor.isExpressionFormKnown(resultExpression)) {
 						LOGGER.trace("{}#{}: simplified form is already known. Trying next step...", monitor.getIndentation(), this.getId(), step);
 					} else {
-						LOGGER.trace("{}#{}: {} -> {}", monitor.getIndentation(), this.getId(), step, resultExpression.toString());
+						LOGGER.trace("{}#{}: {} \n{} -> \n{}", monitor.getIndentation(), this.getId(), step, this.toString(), resultExpression.toString());
 						variants.add(resultExpression);
 						final List<Expression> resultExpressionVariants = resultExpression.computeVariants(monitor);
 						// monitor may have been stopped during call to 'computeVariants()' above. 
@@ -1042,7 +1060,7 @@ public class InfixExpression extends ComplexExpression {
 					}
 					final InfixExpression otherInfixOperand = (InfixExpression) otherOperand;
 					final boolean containsInfixOperands = (otherInfixOperand.getOperands().stream()
-							.anyMatch(o -> o.getExpressionType() == ExpressionType.INFIX && ((InfixExpression)o).operator != otherInfixOperand.operator));
+							.anyMatch(o -> o.getExpressionType() == ExpressionType.INFIX && ((InfixExpression)o).operator == otherInfixOperand.operator.inverse()));
 					if (containsInfixOperands && otherInfixOperand.getOperands().contains(sourceSubOperand)) {
 						// match found
 						matchingOtherOperands.put(otherInfixOperand, sourceSubOperand);

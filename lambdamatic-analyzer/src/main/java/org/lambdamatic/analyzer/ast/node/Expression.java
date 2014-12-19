@@ -20,7 +20,7 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	private Expression parent;
 	
 	public enum ExpressionType {
-		BOOLEAN_LITERAL, CHARACTER_LITERAL, CLASS_LITERAL, NUMBER_LITERAL, NULL_LITERAL, STRING_LITERAL, METHOD_INVOCATION, FIELD_ACCESS, INFIX, INSTANCE_OF, LOCAL_VARIABLE, CAPTURED_ARGUMENT;
+		BOOLEAN_LITERAL, CHARACTER_LITERAL, CLASS_LITERAL, NUMBER_LITERAL, NULL_LITERAL, STRING_LITERAL, METHOD_INVOCATION, FIELD_ACCESS, INFIX, INSTANCE_OF, LOCAL_VARIABLE, CAPTURED_ARGUMENT, ENUM_LITERAL;
 	}
 
 	/** synthetic id generator based on {@link AtomicInteger}. */
@@ -112,6 +112,12 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	 * @return the duplicate {@link Expression}.
 	 */
 	public abstract Expression duplicate(final int id);
+	
+	/**
+	 * Duplicates {@code this} {@link Expression} and without any specific {@code id}.
+	 * @return the duplicate {@link Expression}.
+	 */
+	public abstract Expression duplicate();
 	
 
 	/**
