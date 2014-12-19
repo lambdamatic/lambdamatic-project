@@ -20,8 +20,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.lambdamatic.analyzer.utils.CollectionUtils;
-import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,42 +85,30 @@ public class InfixExpression extends ComplexExpression {
 		}
 
 		/**
-		 * @return an {@link InfixOperator} for the given {@link Opcodes} value. Let's keep in mind that the compiler generates an opposite
-		 *         comparison that should be restored in its actual form.
-		 * @param opcode
-		 *            the opcode
+		 * @return the inverse of {@link InfixOperator} of {@code this} operator
+		 * @throws AnalyzeException if there is not inverse operator defined for {@code this}.
 		 */
-		@Deprecated
-		public static InfixOperator from(final int opcode) {
-			switch (opcode) {
-			case Opcodes.LCMP:
-				// Takes two two-word long integers off the stack and compares them. If
-				// the two integers are the same, the int 0 is pushed onto the stack. If
-				// value2 is greater than value1, the int 1 is pushed onto the stack. If
-				// value1 is greater than value2, the int -1 is pushed onto the stack.
-				// FIXME need to compare with second operand
-				break;
-			case Opcodes.IF_ACMPEQ:
-			case Opcodes.IF_ICMPEQ:
-				return InfixOperator.NOT_EQUALS;
-			case Opcodes.IF_ACMPNE:
-			case Opcodes.IF_ICMPNE:
-				return InfixOperator.EQUALS;
-			case Opcodes.IF_ICMPLE:
-			case Opcodes.IFLE:
-				return InfixOperator.GREATER;
-			case Opcodes.IF_ICMPLT:
-			case Opcodes.IFLT:
-				return InfixOperator.GREATER_EQUALS;
-			case Opcodes.IF_ICMPGE:
-			case Opcodes.IFGE:
-				return InfixOperator.LESS;
-			case Opcodes.IF_ICMPGT:
-			case Opcodes.IFGT:
-				return InfixOperator.LESS_EQUALS;
+		public InfixOperator inverse() {
+			switch(this) {
+			case EQUALS:
+				return NOT_EQUALS;
+			case NOT_EQUALS:
+				return EQUALS;
+			case GREATER:
+				return LESS_EQUALS;
+			case GREATER_EQUALS:
+				return LESS;
+			case LESS:
+				return GREATER_EQUALS;
+			case LESS_EQUALS:
+				return GREATER;
+			case CONDITIONAL_AND:
+				return CONDITIONAL_OR;
+			case CONDITIONAL_OR:
+				return CONDITIONAL_AND;
+			default:
+				throw new AnalyzeException("Inverse operator for '" + this.toString() + "' is not defined :/");
 			}
-			LOGGER.error("Unexpected opcode for InfixOperator: {}", opcode);
-			return null;
 		}
 
 	}
@@ -337,7 +325,9 @@ public class InfixExpression extends ComplexExpression {
 	 */
 	@Override
 	public Expression inverse() {
-		return new InfixExpression(this.getId(), operator, new ArrayList<>(this.operands), !isInverted());
+		// returns an InfixExpression with the inverted operator and the same
+		// operands. The 'inverse' flag remains 'false', though.
+		return new InfixExpression(this.getId(), operator.inverse(), new ArrayList<>(this.operands), false);
 	}
 	
 	/**

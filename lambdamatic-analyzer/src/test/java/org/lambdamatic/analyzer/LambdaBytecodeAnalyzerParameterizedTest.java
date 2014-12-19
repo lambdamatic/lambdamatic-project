@@ -43,7 +43,8 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 	@Parameters(name = "[{index}] {1}")
 	public static Object[][] data() {
 		final TestPojo anotherPojo = new TestPojo();
-		@SuppressWarnings("unused") // looks like a bug in Eclipse, this variable is actually used.
+		@SuppressWarnings("unused")
+		// looks like a bug in Eclipse, this variable is actually used.
 		final boolean booleanValue_true = true;
 		final byte byteValue_0 = (byte) 0;
 		final byte byteValue_1 = (byte) 1;
@@ -114,7 +115,8 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 		return new Object[][] {
 				// primitive boolean (comparisons are pretty straightforward in
 				// the bytecode)
-				// in any case, the Lambda expression analysis returns an InfixExpression rather than a simple MethodInvocation
+				// in any case, the Lambda expression analysis returns an
+				// InfixExpression rather than a simple MethodInvocation
 				new Object[] { (FilterExpression<TestPojo>) ((TestPojo t) -> t.getPrimitiveBooleanValue()),
 						t_dot_getPrimitiveBooleanValue },
 				new Object[] { (FilterExpression<TestPojo>) ((TestPojo t) -> !t.getPrimitiveBooleanValue()),
@@ -126,7 +128,8 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 						t_dot_getPrimitiveBooleanValue.inverse() },
 				// java.lang.Boolean (comparisons are pretty straightforward in
 				// the bytecode)
-				// in any case, the Lambda expression analysis returns an InfixExpression rather than a simple MethodInvocation
+				// in any case, the Lambda expression analysis returns an
+				// InfixExpression rather than a simple MethodInvocation
 				new Object[] { (FilterExpression<TestPojo>) ((TestPojo t) -> t.getBooleanValue()),
 						t_dot_getBooleanValue },
 				new Object[] { (FilterExpression<TestPojo>) ((TestPojo t) -> !t.getBooleanValue()),
@@ -137,10 +140,14 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 						t_dot_getBooleanValue.inverse() },
 
 				// primitive byte
-				new Object[] { (FilterExpression<TestPojo>) ((TestPojo t) -> t.getPrimitiveByteValue() > (byte) 0),
-						new InfixExpression(InfixOperator.GREATER, t_dot_getPrimitiveByteValue, new NumberLiteral((byte) 0)) },
-				new Object[] { (FilterExpression<TestPojo>) ((TestPojo t) -> t.getPrimitiveByteValue() < byteValue_0),
-						new InfixExpression(InfixOperator.LESS, t_dot_getPrimitiveByteValue, new NumberLiteral((byte) 0)) },
+				new Object[] {
+						(FilterExpression<TestPojo>) ((TestPojo t) -> t.getPrimitiveByteValue() > (byte) 0),
+						new InfixExpression(InfixOperator.GREATER, t_dot_getPrimitiveByteValue, new NumberLiteral(
+								(byte) 0)) },
+				new Object[] {
+						(FilterExpression<TestPojo>) ((TestPojo t) -> t.getPrimitiveByteValue() < byteValue_0),
+						new InfixExpression(InfixOperator.LESS, t_dot_getPrimitiveByteValue,
+								new NumberLiteral((byte) 0)) },
 				new Object[] {
 						(FilterExpression<TestPojo>) ((TestPojo t) -> t.getPrimitiveByteValue() >= (byte) 1),
 						new InfixExpression(InfixOperator.GREATER_EQUALS, t_dot_getPrimitiveByteValue,
@@ -175,11 +182,14 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 
 				// primitive short (comparing with NumberLiterals with int
 				// values - see bytecode instructions)
-				new Object[] { (FilterExpression<TestPojo>) ((TestPojo t) -> t.getPrimitiveShortValue() > (short) 0),
-						new InfixExpression(InfixOperator.GREATER, t_dot_getPrimitiveShortValue, new NumberLiteral((short)0)) },
+				new Object[] {
+						(FilterExpression<TestPojo>) ((TestPojo t) -> t.getPrimitiveShortValue() > (short) 0),
+						new InfixExpression(InfixOperator.GREATER, t_dot_getPrimitiveShortValue, new NumberLiteral(
+								(short) 0)) },
 				new Object[] {
 						(FilterExpression<TestPojo>) ((TestPojo t) -> t.getPrimitiveShortValue() < shortValue_0),
-						new InfixExpression(InfixOperator.LESS, t_dot_getPrimitiveShortValue, new NumberLiteral((short)0)) },
+						new InfixExpression(InfixOperator.LESS, t_dot_getPrimitiveShortValue, new NumberLiteral(
+								(short) 0)) },
 				new Object[] {
 						(FilterExpression<TestPojo>) ((TestPojo t) -> t.getPrimitiveShortValue() >= (short) 1),
 						new InfixExpression(InfixOperator.GREATER_EQUALS, t_dot_getPrimitiveShortValue,
@@ -198,9 +208,9 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 				// java.lang.Short (comparing with NumberLiterals with int
 				// values - see bytecode instructions)
 				new Object[] { (FilterExpression<TestPojo>) ((TestPojo t) -> t.getShortValue() > (short) 0),
-						new InfixExpression(InfixOperator.GREATER, t_dot_getShortValue, new NumberLiteral((short)0)) },
+						new InfixExpression(InfixOperator.GREATER, t_dot_getShortValue, new NumberLiteral((short) 0)) },
 				new Object[] { (FilterExpression<TestPojo>) ((TestPojo t) -> t.getShortValue() < shortValue_0),
-						new InfixExpression(InfixOperator.LESS, t_dot_getShortValue, new NumberLiteral((short)0)) },
+						new InfixExpression(InfixOperator.LESS, t_dot_getShortValue, new NumberLiteral((short) 0)) },
 				new Object[] { (FilterExpression<TestPojo>) ((TestPojo t) -> t.getShortValue() >= 1),
 						new InfixExpression(InfixOperator.GREATER_EQUALS, t_dot_getShortValue, new NumberLiteral(1)) },
 				new Object[] {
@@ -415,8 +425,12 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 								doubleValue_42)) },
 
 				// java.lang.String
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.field == "foo"), t_dot_field_equals_foo },
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.field != "foo"), t_dot_field_equals_foo.inverse() },
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.getStringValue().equals("foo")),
 						t_dot_getStringValue_dot_equals_foo },
+				new Object[] { (FilterExpression<TestPojo>) (t -> !t.getStringValue().equals("foo")),
+						t_dot_getStringValue_dot_equals_foo.inverse() },
 				new Object[] {
 						(FilterExpression<TestPojo>) (t -> t.getStringValue().equals(stringValue_bar)),
 						new MethodInvocation(t_dot_getStringValue, "equals", Boolean.class, new StringLiteral(
@@ -427,6 +441,7 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 						(FilterExpression<TestPojo>) (t -> !t.getStringValue().equals(stringValue_null)),
 						new MethodInvocation(t_dot_getStringValue, "equals", Boolean.class, new NullLiteral())
 								.inverse() },
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.field != "foo"), t_dot_field_not_equals_foo },
 				new Object[] {
 						(FilterExpression<TestPojo>) (t -> t.getStringValue().equals(anotherPojo.getStringValue())),
 						t_dot_getStringValue_dot_equals_foo },
@@ -434,8 +449,6 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 						t_dot_getStringValue_dot_equals_foo },
 				new Object[] { LambdaExpressionFactory.staticBuildLambdaExpression("foo"),
 						t_dot_getStringValue_dot_equals_foo },
-				// java.lang.Date
-
 				// Enumeration
 
 				// mixes with multiple operands
@@ -465,8 +478,12 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 								t_dot_field_dot_equals_baz.inverse()) },
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.field.equals("foo") && t.field.equals("foo")),
 						t_dot_field_dot_equals_foo },
-				new Object[] { (FilterExpression<TestPojo>) (t -> t.field == "foo"), t_dot_field_equals_foo },
-				new Object[] { (FilterExpression<TestPojo>) (t -> t.field != "foo"), t_dot_field_not_equals_foo },
+				new Object[] {
+						(FilterExpression<TestPojo>) (t -> t.getStringValue().equals("foo")
+								|| t.getPrimitiveIntValue() == 42),
+						new InfixExpression(InfixOperator.CONDITIONAL_OR, t_dot_getStringValue_dot_equals_foo,
+								new InfixExpression(InfixOperator.EQUALS, t_dot_getPrimitiveIntValue,
+										new NumberLiteral(intValue_42))) }
 
 		};
 	}

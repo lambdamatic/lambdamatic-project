@@ -60,33 +60,5 @@ public class CollectionUtils {
 		return true;
 	}
 	
-	/**
-	 * Fills the given array of elements into a {@link Set}
-	 * @param elements
-	 * @return the {@link Set}
-	 */
-	@SafeVarargs
-	public static <T> Set<T> toSet(T... elements) {
-		final Set<T> result = new HashSet<>();
-		for(T element : elements) {
-			result.add(element);
-		}
-		return result;
-	}
-
-	/**
-	 * Fills the given array of elements into a {@link Set}
-	 * @param elements
-	 * @return the {@link Set}
-	 */
-	@SafeVarargs
-	public static <T> SortedSet<T> toSortedSet(T... elements) {
-		final SortedSet<T> result = new TreeSet<>();
-		for(T element : elements) {
-			result.add(element);
-		}
-		return result;
-	}
-
 }
 

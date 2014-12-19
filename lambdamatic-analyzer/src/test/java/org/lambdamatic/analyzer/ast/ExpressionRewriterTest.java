@@ -20,7 +20,6 @@ import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
 
 import com.sample.model.TestPojo;
-import com.sample.model.User;
 
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
@@ -31,30 +30,30 @@ public class ExpressionRewriterTest {
 	@Test
 	public void shouldSubstituteOneCapturedArgumentInMethodInvocation() {
 		// given
-		final LocalVariable user = new LocalVariable("u", User.class);
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation getStringValueMethod = new MethodInvocation(new CapturedArgument(new TestPojo()), "getStringValue", String.class);
-		final MethodInvocation equalsGetStringValue = new MethodInvocation(user, "equals", Boolean.class, getStringValueMethod);
+		final MethodInvocation equalsGetStringValue = new MethodInvocation(testPojo, "equals", Boolean.class, getStringValueMethod);
 		// when
 		final ExpressionRewriter expressionRewriter = new ExpressionRewriter();
 		equalsGetStringValue.accept(expressionRewriter);
 		// then
-		final MethodInvocation expectedResult = new MethodInvocation(user, "equals", Boolean.class, new StringLiteral("foo"));
+		final MethodInvocation expectedResult = new MethodInvocation(testPojo, "equals", Boolean.class, new StringLiteral("foo"));
 		assertThat(equalsGetStringValue).isEqualTo(expectedResult);
 	}
 
 	@Test
 	public void shouldSubstituteCapturedArgumentInTwoMethodInvocations() {
 		// given
-		final LocalVariable user = new LocalVariable("u", User.class);
-		final MethodInvocation equalsMethodInvocation = new MethodInvocation(user, "equals", Boolean.class, new MethodInvocation(new CapturedArgument(new TestPojo()), "getStringValue", String.class));
-		final MethodInvocation equalsFieldAccess = new MethodInvocation(user, "equals", Boolean.class, new FieldAccess(new CapturedArgument(new TestPojo()), "field"));
+		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final MethodInvocation equalsMethodInvocation = new MethodInvocation(testPojo, "equals", Boolean.class, new MethodInvocation(new CapturedArgument(new TestPojo()), "getStringValue", String.class));
+		final MethodInvocation equalsFieldAccess = new MethodInvocation(testPojo, "equals", Boolean.class, new FieldAccess(new CapturedArgument(new TestPojo()), "field"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsMethodInvocation, equalsFieldAccess);
 		// when
 		final ExpressionRewriter expressionRewriter = new ExpressionRewriter();
 		expression.accept(expressionRewriter);
 		// then
-		final InfixExpression expectedResult = new InfixExpression(InfixOperator.CONDITIONAL_OR, new MethodInvocation(user, "equals", Boolean.class, 
-				new StringLiteral("foo")), new MethodInvocation(user, "equals", Boolean.class, new StringLiteral("bar")));
+		final InfixExpression expectedResult = new InfixExpression(InfixOperator.CONDITIONAL_OR, new MethodInvocation(testPojo, "equals", Boolean.class, 
+				new StringLiteral("foo")), new MethodInvocation(testPojo, "equals", Boolean.class, new StringLiteral("bar")));
 		assertThat(expression).isEqualTo(expectedResult);
 	}
 

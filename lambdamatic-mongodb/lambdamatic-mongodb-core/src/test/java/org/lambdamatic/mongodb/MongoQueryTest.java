@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 import org.assertj.core.api.Condition;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,14 +49,14 @@ public class MongoQueryTest {
 	
 	@Test
 	public void shouldFindOneUser() throws IOException {
-		Assert.fail("Should add logs to driver requests/responses");
 		// when
 		final Foo foo = fooCollection.find(f -> f.stringField.equals("john")).first();
 		// then
 		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override
 			public boolean matches(final Foo value) {
-				return value.getStringField().equals("john") && value.getPrimitiveIntField() == 42;
+				return value.getStringField().equals("john") && value.getPrimitiveIntField() == 42
+						&& value.getEnumFoo() == EnumFoo.FOO;
 			}
 		});
 	}

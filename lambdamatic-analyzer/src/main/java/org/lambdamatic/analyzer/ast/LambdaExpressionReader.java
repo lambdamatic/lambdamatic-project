@@ -388,23 +388,23 @@ public class LambdaExpressionReader {
 		case Opcodes.IF_ACMPNE:
 		case Opcodes.IF_ICMPNE:
 		case Opcodes.IFNE:
-			return InfixOperator.EQUALS;
+			return InfixOperator.NOT_EQUALS;
 		case Opcodes.IF_ACMPEQ:
 		case Opcodes.IF_ICMPEQ:
 		case Opcodes.IFEQ:
-			return InfixOperator.NOT_EQUALS;
+			return InfixOperator.EQUALS;
 		case Opcodes.IF_ICMPLE:
 		case Opcodes.IFLE:
-			return InfixOperator.GREATER;
+			return InfixOperator.LESS_EQUALS;
 		case Opcodes.IF_ICMPLT:
 		case Opcodes.IFLT:
-			return InfixOperator.GREATER_EQUALS;
+			return InfixOperator.LESS;
 		case Opcodes.IF_ICMPGE:
 		case Opcodes.IFGE:
-			return InfixOperator.LESS;
+			return InfixOperator.GREATER_EQUALS;
 		case Opcodes.IF_ICMPGT:
 		case Opcodes.IFGT:
-			return InfixOperator.LESS_EQUALS;
+			return InfixOperator.GREATER;
 		default:
 			throw new AnalyzeException("Failed to retrieve the operator for the current comparison instruction (opcode: " + currentInstruction.getOpcode() + ")");
 		}
@@ -486,7 +486,10 @@ public class LambdaExpressionReader {
 		switch (jumpInsnNode.getOpcode()) {
 		case Opcodes.IFEQ:
 		case Opcodes.IFNE:
-			return buildEqualityStatement(instructionCursor, expressionStack, capturedArgs, localVariables);
+		case Opcodes.IFLE:
+		case Opcodes.IFLT:
+		case Opcodes.IFGE:
+		case Opcodes.IFGT:
 		case Opcodes.IF_ICMPEQ:
 		case Opcodes.IF_ICMPNE:
 		case Opcodes.IF_ICMPLE:
@@ -495,10 +498,6 @@ public class LambdaExpressionReader {
 		case Opcodes.IF_ICMPGT:
 		case Opcodes.IF_ACMPEQ:
 		case Opcodes.IF_ACMPNE:
-		case Opcodes.IFLE:
-		case Opcodes.IFLT:
-		case Opcodes.IFGE:
-		case Opcodes.IFGT:
 			return buildComparisonStatement(instructionCursor, expressionStack, capturedArgs, localVariables);
 		case Opcodes.GOTO:
 			final InsnCursor jumpInstructionCursor = instructionCursor.duplicate();
@@ -523,10 +522,10 @@ public class LambdaExpressionReader {
 		final LabelNode jumpLabel = jumpInsnNode.label;
 		final InsnCursor jumpInstructionCursor = insnCursor.duplicate().move(jumpLabel.getLabel());
 		final Expression comparisonExpression = getComparisonExpression(jumpInsnNode, expressionStack);
-		final Statement elseStatement = (Statement) readStatementSubTree(jumpInstructionCursor, expressionStack, capturedArgs, localVariables);
-		final Statement thenStatement = (Statement) readStatementSubTree(insnCursor.next(), expressionStack, capturedArgs,
+		final Statement thenStatement = (Statement) readStatementSubTree(jumpInstructionCursor, expressionStack, capturedArgs, localVariables);
+		final Statement elseStatement = (Statement) readStatementSubTree(insnCursor.next(), expressionStack, capturedArgs,
 				localVariables);
-		return new IfStatement(comparisonExpression.inverse(), thenStatement, elseStatement);
+		return new IfStatement(comparisonExpression, thenStatement, elseStatement);
 	}
 
 	/**
@@ -540,12 +539,23 @@ public class LambdaExpressionReader {
 	 */
 	private Expression getComparisonExpression(final JumpInsnNode jumpInsnNode,
 			final Stack<Expression> expressionStack) {
+		final InfixOperator comparisonOperator = extractComparisonOperator(jumpInsnNode);
 		final Expression compareLeftSideExpression = expressionStack.pop();
 		final Expression compareRightSideExpression = (expressionStack.empty() ? getDefaultComparisonOperand(compareLeftSideExpression) : expressionStack.pop());
-		if(compareRightSideExpression == null) {
-			return compareLeftSideExpression;
+		if (compareRightSideExpression.equals(new BooleanLiteral(Boolean.FALSE))) {
+			switch (comparisonOperator) {
+			// if we have: 'expr == false', just return '!expr'
+			case EQUALS:
+				return compareLeftSideExpression.inverse();
+			// if we have: 'expr != false', just return 'expr'
+			case NOT_EQUALS:
+				return compareLeftSideExpression;
+			default:
+				throw new AnalyzeException("There's no right side expression to compare with "
+						+ compareLeftSideExpression + " " + comparisonOperator + " [expected something here]");
+			}
 		}
-		final InfixExpression comparisonExpression = new InfixExpression(extractComparisonOperator(jumpInsnNode), Arrays.asList(
+		final InfixExpression comparisonExpression = new InfixExpression(comparisonOperator, Arrays.asList(
 				compareLeftSideExpression, compareRightSideExpression));
 		return comparisonExpression;
 	}
@@ -566,7 +576,7 @@ public class LambdaExpressionReader {
 			final MethodInvocation methodInvocation = (MethodInvocation) expression;
 			// if the expression is something like 'a.equals(b)', there's no need to add an extra ' == true' in the equation.
 			if(methodInvocation.getReturnType().equals(Boolean.class) || methodInvocation.getReturnType().equals(boolean.class)) {
-				return null;
+				return new BooleanLiteral(Boolean.FALSE);
 			} else if(methodInvocation.getReturnType().equals(Byte.class) || methodInvocation.getReturnType().equals(byte.class)) {
 				return new NumberLiteral((byte)0);
 			} else if(methodInvocation.getReturnType().equals(Short.class) || methodInvocation.getReturnType().equals(short.class)) {
@@ -584,38 +594,8 @@ public class LambdaExpressionReader {
 			} else if(methodInvocation.getReturnType().equals(String.class)) {
 				return new NullLiteral();
 			}
-			
-
 		}
 		throw new AnalyzeException("Sorry, I can't give a default comparison operand for '" + expression + "'");
-	}
-
-	/**
-	 * Builds an equality {@link IfStatement} from the given elements
-	 * @param insnCursor the instruction insnCursor
-	 * @param expressionStack the stack of expressions waiting to be used
-	 * @param capturedArgs the captured arguments, if any
-	 * @param localVariables the local variables, if any
-	 * @param labels the labels, used to find the instruction to jump to if necessary. 
-	 * @return an {@link IfStatement}.
-	 */
-	private IfStatement buildEqualityStatement(final InsnCursor insnCursor, final Stack<Expression> expressionStack,
-			final List<Object> capturedArgs, final List<LocalVariableNode> localVariables) {
-		final JumpInsnNode jumpInsnNode = (JumpInsnNode) insnCursor.getCurrent();
-		// the cursor must be duplicated before it is reused in further
-		// processing (in readStatementSubTree()), otherwise we'll loose its
-		// current position.
-		final InsnCursor duplicatedCursor = insnCursor.duplicate();
-		final Expression equalityExpression = getComparisonExpression(jumpInsnNode, expressionStack);
-		final Statement thenStatement = (Statement) readStatementSubTree(insnCursor.next(), expressionStack, capturedArgs,
-				localVariables);
-		final LabelNode jumpLabel = jumpInsnNode.label;
-		final InsnCursor jumpInstructionCursor = duplicatedCursor.move(jumpLabel.getLabel());
-		final Statement elseStatement = (Statement) readStatementSubTree(jumpInstructionCursor, expressionStack, capturedArgs, localVariables);
-		if(jumpInsnNode.getOpcode() == Opcodes.IFEQ) {
-			return new IfStatement(equalityExpression, thenStatement, elseStatement);
-		}
-		return new IfStatement(equalityExpression, elseStatement, thenStatement);
 	}
 
 }
