@@ -505,21 +505,12 @@ public class InfixExpression extends ComplexExpression {
 					return variantFormsOfThis;
 				}
 				// asking each operand to simplify itself 
-				operands_loop:
 				for (Expression operand : this.operands) {
 					final Collection<Expression> variantFormsOfOperand = operand.computeVariants(monitor);
 					for (Expression variantFormOfOperand : variantFormsOfOperand) {
-						final InfixExpression variantFormOfThis = new InfixExpression(getId(), getOperator(), new ArrayList<>(this.operands), isInverted());
+						final InfixExpression variantFormOfThis = this.duplicate(getId());
 						variantFormOfThis.replaceElement(operand, variantFormOfOperand);
 						LOGGER.trace("{}variant form: #{} {}", monitor.getIndentation(), variantFormOfThis.getId(), variantFormOfThis.toString());
-						if(monitor.getExpressionToSimplify().getId() == variantFormOfThis.getId() && !variantFormOfThis.canFurtherSimplify()) {
-							LOGGER.trace("{}#{} {} cannot be further simplified. Let's stop here.", monitor.getIndentation(), variantFormOfThis.getId(), variantFormOfThis.toString());
-							monitor.stop();
-							// only keep the current result.
-							variantFormsOfThis.clear();
-							variantFormsOfThis.add(variantFormOfThis);
-							break operands_loop;
-						} 
 						variantFormsOfThis.add(variantFormOfThis);
 						variantFormsOfThis.addAll(variantFormOfThis.computeVariants(monitor));
 					}
@@ -546,6 +537,11 @@ public class InfixExpression extends ComplexExpression {
 	 *         applied.
 	 */
 	protected List<Expression> applyBooleanLaws(final ExpressionSimplificationMonitor monitor) {
+		if(monitor.getExpressionToSimplify().getId() == this.getId() && !this.canFurtherSimplify()) {
+			LOGGER.trace("{}#{} {} cannot be further simplified. Let's stop here.", monitor.getIndentation(), this.getId(), this.toString());
+			monitor.stop();
+			return Arrays.asList(this);
+		} 
 		if(monitor.isStopped()){
 			LOGGER.trace("{}monitor was stopped. No further boolean laws processing", monitor.getIndentation());
 			return Collections.emptyList();
@@ -581,7 +577,7 @@ public class InfixExpression extends ComplexExpression {
 				LOGGER.trace("{}#{}: {} boolean simplification{} found{}", monitor.getIndentation(), this.getId(), variants.size(),
 						(variants.size()>1 ? "s" : ""), (variants.isEmpty() ? "." : ":"));
 				for (Expression variant : variants) {
-					LOGGER.trace("{}|- {}", monitor.getIndentation(), variant.toString());
+					LOGGER.trace("{} |- {}", monitor.getIndentation(), variant.toString());
 				}
 			}
 			Collections.sort(variants);
