@@ -3,8 +3,6 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author xcoulon
@@ -12,9 +10,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class ExpressionVisitor {
 
-	/** The usual Logger.*/
-	private static final Logger LOGGER = LoggerFactory.getLogger(ExpressionVisitor.class);
-	
 	/**
 	 * Dispatch to the other visitXYZ methods
 	 * <p>
@@ -29,7 +24,6 @@ public abstract class ExpressionVisitor {
 	 */
 	public boolean visit(final Expression expr) {
 		if (expr != null) {
-			//LOGGER.trace("Visiting {}", expr);
 			switch (expr.getExpressionType()) {
 			case BOOLEAN_LITERAL:
 				return visitBooleanLiteralExpression((BooleanLiteral) expr);

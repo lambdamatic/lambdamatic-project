@@ -14,13 +14,12 @@ import org.junit.Test;
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.EnumLiteral;
-import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
-import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
+import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
 
 import com.sample.model.EnumPojo;

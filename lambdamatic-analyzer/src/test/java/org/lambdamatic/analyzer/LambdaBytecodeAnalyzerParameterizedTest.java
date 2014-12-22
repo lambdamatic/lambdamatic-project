@@ -13,6 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.lambdamatic.FilterExpression;
 import org.lambdamatic.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.CharacterLiteral;
+import org.lambdamatic.analyzer.ast.node.EnumLiteral;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
@@ -24,6 +25,7 @@ import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.lambdamatic.testutils.TestWatcher;
 
+import com.sample.model.EnumPojo;
 import com.sample.model.TestPojo;
 
 /**
@@ -112,6 +114,13 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 				new StringLiteral("foo"));
 		final InfixExpression t_dot_field_not_equals_foo = new InfixExpression(InfixOperator.NOT_EQUALS, t_dot_field,
 				new StringLiteral("foo"));
+		final FieldAccess t_dot_enumPojo = new FieldAccess(var_t, "enumPojo");
+		final InfixExpression t_dot_enumPojo_equals_foo = new InfixExpression(InfixOperator.EQUALS, t_dot_enumPojo,
+				new EnumLiteral(EnumPojo.FOO));
+		final InfixExpression t_dot_enumPojo_not_equals_foo = new InfixExpression(InfixOperator.NOT_EQUALS, t_dot_enumPojo,
+				new EnumLiteral(EnumPojo.FOO));
+		final MethodInvocation t_dot_enumPojo_dot_equals_foo = new MethodInvocation(t_dot_enumPojo, "equals", Boolean.class, 
+				new EnumLiteral(EnumPojo.FOO));
 		return new Object[][] {
 				// primitive boolean (comparisons are pretty straightforward in
 				// the bytecode)
@@ -450,7 +459,15 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 				new Object[] { LambdaExpressionFactory.staticBuildLambdaExpression("foo"),
 						t_dot_getStringValue_dot_equals_foo },
 				// Enumeration
-
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.enumPojo == EnumPojo.FOO),
+						t_dot_enumPojo_equals_foo },
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.enumPojo != EnumPojo.FOO),
+						t_dot_enumPojo_not_equals_foo },
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.enumPojo.equals(EnumPojo.FOO)),
+						t_dot_enumPojo_dot_equals_foo },
+				new Object[] { (FilterExpression<TestPojo>) (t -> !t.enumPojo.equals(EnumPojo.FOO)),
+						t_dot_enumPojo_dot_equals_foo.inverse() },
+						
 				// mixes with multiple operands
 				new Object[] {
 						(FilterExpression<TestPojo>) (t -> t.getStringValue().equals("foo")
