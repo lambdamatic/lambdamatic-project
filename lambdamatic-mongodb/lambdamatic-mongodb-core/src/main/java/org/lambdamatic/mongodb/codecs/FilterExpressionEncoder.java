@@ -1,8 +1,5 @@
 package org.lambdamatic.mongodb.codecs;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bson.BsonDocument;
 import org.bson.BsonDocumentReader;
 import org.bson.BsonDocumentWriter;
@@ -15,7 +12,6 @@ import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
-import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.metadata.Metadata;
 import org.slf4j.Logger;
@@ -47,6 +43,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	 * @param writer
 	 *            the {@link BsonWriter} in which the {@link FilterExpression}
 	 *            representation will be written.
+	 * @see: http://docs.mongodb.org/manual/reference/operator/query/
 	 */
 	FilterExpressionEncoder(final Class<?> metadataClass, final BsonWriter writer) {
 		this.metadataClass = metadataClass;
@@ -62,12 +59,14 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	public boolean visitInfixExpression(final InfixExpression expr) {
 		switch (expr.getOperator()) {
 		case CONDITIONAL_AND:
+			// Syntax: { $and: [ { <expression1> }, { <expression2> } , ... , { <expressionN> } ] }
 			for (Expression operand : expr.getOperands()) {
 				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(metadataClass, writer);
 				operand.accept(operandEncoder);
 			}
 			break;
 		case CONDITIONAL_OR:
+			// syntax: { $or: [ { <expression1> }, { <expression2> }, ... , { <expressionN> } ] }
 			writer.writeStartArray("$or");
 			for (Expression operand : expr.getOperands()) {
 				final BsonDocument operandDocument = new BsonDocument(); 
@@ -81,26 +80,60 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			}
 			writer.writeEndArray();
 			break;
-		default:
+		case EQUALS:
+			// Syntax: {field: value} }
+			write(writer, expr.getOperands().get(0), expr.getOperands().get(1));
 			break;
+		case NOT_EQUALS:
+			// Syntax: {field: {$ne: value} }
+			write(writer, expr.getOperands().get(0), expr.getOperands().get(1));
+			break;
+		default:
+			throw new UnsupportedOperationException("Generating a query with '" + expr.getOperator() + "' is not supported yet (shame...)");
 		}
 		return false;
 	}
 	
 	@Override
 	public boolean visitMethodInvocationExpression(final MethodInvocation expr) {
-		final String key = extractKey(expr.getSourceExpression());
-		final List<Object> values = new ArrayList<>();
-		for (Expression argumentExpr : expr.getArguments()) {
-			values.add(extractValue(argumentExpr));
+		if(expr.getArguments().size() > 1) {
+			throw new UnsupportedOperationException("Generating a BSON document from a method invocation with multiple arguments is not supported yet");
 		}
 		// FIXME: support other methods here
 		if (expr.getMethodName().equals("equals")) {
-			BsonWriterUtil.write(writer, key, values.get(0));
+			write(writer, expr.getSourceExpression(), expr.getArguments().get(0));
 		}
 		return false;
 	}
-
+	
+	/**
+	 * Writes the given key/value pair
+	 * @param writer the {@link BsonWriter} to write into.
+	 * @param key the key 
+	 * @param value the value
+	 */
+	//FIXME: need to complete with more 'instanceof', and support for Enumerations, too.
+	private void write(final BsonWriter writer, final Expression keyExpr, final Expression valueExpr) {
+		final String key = extractKey(keyExpr);
+		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
+		if(value == null) {
+			writer.writeNull(key);
+		}
+		else if(value instanceof Integer) {
+			writer.writeInt32(key, (Integer)value);
+		}
+		else if(value instanceof Long) {
+			writer.writeInt64(key, (Long)value);
+		}
+		else if(value instanceof String) {
+			writer.writeString(key, (String)value);
+		} else if (value instanceof Enum) {
+			writer.writeString(key, ((Enum<?>)value).name());
+		} else {
+			throw new UnsupportedOperationException("Writing value of a '" + valueExpr.getExpressionType() + "' is not supported yet");
+		}
+	}
+	
 	private String extractKey(final Expression expr) {
 		switch (expr.getExpressionType()) {
 		case LOCAL_VARIABLE:
@@ -147,17 +180,4 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		return builder.toString();
 	}
 	
-	private String extractValue(final Expression expr) {
-		switch (expr.getExpressionType()) {
-		case STRING_LITERAL:
-			return extractValue((StringLiteral) expr);
-		default:
-			return null;
-		}
-	}
-
-	private String extractValue(final StringLiteral expr) {
-		return expr.getValue();
-	}
-
 }

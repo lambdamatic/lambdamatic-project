@@ -517,13 +517,13 @@ public class InfixExpression extends ComplexExpression {
 				}
 			}
 			Collections.sort(variantFormsOfThis);
-			if (LOGGER.isTraceEnabled()) {
+			/*if (LOGGER.isTraceEnabled()) {
 				LOGGER.trace("{}#{}: {} variant{} found{}", monitor.getIndentation(), this.getId(), variantFormsOfThis.size(),
 						(variantFormsOfThis.size()>1 ? "s" : ""), (variantFormsOfThis.isEmpty() ? "." : ":"));
 				for (Expression variantFormOfThis : variantFormsOfThis) {
 					LOGGER.trace("{}|- {}", monitor.getIndentation(), variantFormOfThis.toString());
 				}
-			}
+			}*/
 			return variantFormsOfThis;
 		} finally {
 			monitor.decrementIndentationCount();
@@ -576,9 +576,9 @@ public class InfixExpression extends ComplexExpression {
 			if (LOGGER.isTraceEnabled()) {
 				LOGGER.trace("{}#{}: {} boolean simplification{} found{}", monitor.getIndentation(), this.getId(), variants.size(),
 						(variants.size()>1 ? "s" : ""), (variants.isEmpty() ? "." : ":"));
-				for (Expression variant : variants) {
+				/*for (Expression variant : variants) {
 					LOGGER.trace("{} |- {}", monitor.getIndentation(), variant.toString());
-				}
+				}*/
 			}
 			Collections.sort(variants);
 			return variants;

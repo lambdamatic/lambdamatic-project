@@ -540,19 +540,19 @@ public class LambdaExpressionReader {
 	private Expression getComparisonExpression(final JumpInsnNode jumpInsnNode,
 			final Stack<Expression> expressionStack) {
 		final InfixOperator comparisonOperator = extractComparisonOperator(jumpInsnNode);
-		final Expression compareLeftSideExpression = expressionStack.pop();
-		final Expression compareRightSideExpression = (expressionStack.empty() ? getDefaultComparisonOperand(compareLeftSideExpression) : expressionStack.pop());
-		if (compareRightSideExpression.equals(new BooleanLiteral(Boolean.FALSE))) {
+		final Expression compareRightSideExpression = expressionStack.pop();
+		final Expression compareLeftSideExpression = (expressionStack.empty() ? getDefaultComparisonOperand(compareRightSideExpression) : expressionStack.pop());
+		if (compareLeftSideExpression.equals(new BooleanLiteral(Boolean.FALSE))) {
 			switch (comparisonOperator) {
 			// if we have: 'expr == false', just return '!expr'
 			case EQUALS:
-				return compareLeftSideExpression.inverse();
+				return compareRightSideExpression.inverse();
 			// if we have: 'expr != false', just return 'expr'
 			case NOT_EQUALS:
-				return compareLeftSideExpression;
+				return compareRightSideExpression;
 			default:
-				throw new AnalyzeException("There's no right side expression to compare with "
-						+ compareLeftSideExpression + " " + comparisonOperator + " [expected something here]");
+				throw new AnalyzeException("There's no expression to compare with "
+						+ compareRightSideExpression + " " + comparisonOperator + " [expected something here]");
 			}
 		}
 		final InfixExpression comparisonExpression = new InfixExpression(comparisonOperator, Arrays.asList(

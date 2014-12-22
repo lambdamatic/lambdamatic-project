@@ -48,7 +48,6 @@ public class ExpressionRewriter extends ExpressionVisitor {
 	@Override
 	public boolean visitInfixExpression(final InfixExpression expr) {
 		// manually visit all operands, first
-		LOGGER.trace("Visiting Infix {}", expr);
 		expr.getOperands().stream().forEach(operand -> operand.accept(this));
 		if ((expr.getOperator() == InfixOperator.EQUALS || expr.getOperator() == InfixOperator.NOT_EQUALS)
 				&& expr.getOperands().size() == 2
@@ -67,7 +66,6 @@ public class ExpressionRewriter extends ExpressionVisitor {
 	
 	@Override
 	public boolean visitMethodInvocationExpression(final MethodInvocation methodInvocation) {
-		LOGGER.trace("Visiting Method {}", methodInvocation);
 		if (methodInvocation.getSourceExpression().getExpressionType() == ExpressionType.CAPTURED_ARGUMENT) {
 			final String methodName = methodInvocation.getMethodName();
 			final CapturedArgument capturedSourceArgument = (CapturedArgument) methodInvocation.getSourceExpression();
@@ -133,7 +131,6 @@ public class ExpressionRewriter extends ExpressionVisitor {
 
 	@Override
 	public boolean visitFieldAccessExpression(final FieldAccess fieldAccess) {
-		LOGGER.trace("Visiting Field {}", fieldAccess);
 		if (fieldAccess.getSourceExpression().getExpressionType() == ExpressionType.CAPTURED_ARGUMENT) {
 			final CapturedArgument capturedSourceArgument = (CapturedArgument) fieldAccess.getSourceExpression();
 			final String fieldName = fieldAccess.getFieldName();

@@ -117,10 +117,13 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 		final FieldAccess t_dot_enumPojo = new FieldAccess(var_t, "enumPojo");
 		final InfixExpression t_dot_enumPojo_equals_foo = new InfixExpression(InfixOperator.EQUALS, t_dot_enumPojo,
 				new EnumLiteral(EnumPojo.FOO));
-		final InfixExpression t_dot_enumPojo_not_equals_foo = new InfixExpression(InfixOperator.NOT_EQUALS, t_dot_enumPojo,
-				new EnumLiteral(EnumPojo.FOO));
-		final MethodInvocation t_dot_enumPojo_dot_equals_foo = new MethodInvocation(t_dot_enumPojo, "equals", Boolean.class, 
-				new EnumLiteral(EnumPojo.FOO));
+		final InfixExpression t_dot_enumPojo_not_equals_foo = new InfixExpression(InfixOperator.NOT_EQUALS,
+				t_dot_enumPojo, new EnumLiteral(EnumPojo.FOO));
+		final MethodInvocation t_dot_enumPojo_dot_equals_foo = new MethodInvocation(t_dot_enumPojo, "equals",
+				Boolean.class, new EnumLiteral(EnumPojo.FOO));
+		final FieldAccess t_dot_primitiveIntValue = new FieldAccess(var_t, "primitiveIntValue");
+		final InfixExpression t_dot_primitiveIntValue_equals_42 = new InfixExpression(InfixOperator.EQUALS, t_dot_primitiveIntValue,
+				new NumberLiteral(42));
 		return new Object[][] {
 				// primitive boolean (comparisons are pretty straightforward in
 				// the bytecode)
@@ -467,7 +470,7 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 						t_dot_enumPojo_dot_equals_foo },
 				new Object[] { (FilterExpression<TestPojo>) (t -> !t.enumPojo.equals(EnumPojo.FOO)),
 						t_dot_enumPojo_dot_equals_foo.inverse() },
-						
+
 				// mixes with multiple operands
 				new Object[] {
 						(FilterExpression<TestPojo>) (t -> t.getStringValue().equals("foo")
@@ -493,6 +496,12 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 						new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
 								InfixOperator.CONDITIONAL_AND, t_dot_field_dot_equals_foo, t_dot_field_dot_equals_bar),
 								t_dot_field_dot_equals_baz.inverse()) },
+				new Object[] {
+						(FilterExpression<TestPojo>) (t -> (t.field.equals("foo") && t.enumPojo == EnumPojo.FOO)
+								|| t.primitiveIntValue == 42),
+						new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
+								InfixOperator.CONDITIONAL_AND, t_dot_field_dot_equals_foo, t_dot_enumPojo_equals_foo),
+								t_dot_primitiveIntValue_equals_42) },
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.field.equals("foo") && t.field.equals("foo")),
 						t_dot_field_dot_equals_foo },
 				new Object[] {

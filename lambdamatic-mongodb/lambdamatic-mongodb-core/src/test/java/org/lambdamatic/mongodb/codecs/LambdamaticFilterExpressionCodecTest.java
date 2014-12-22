@@ -119,6 +119,7 @@ public class LambdamaticFilterExpressionCodecTest {
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
 		final String expected = "{$or: [{primitiveIntField: 42}, {enumFoo: 'FOO'}, {stringField: 'john'}]}";
+		LOGGER.debug("Result BSON document: {}", actual);
 		JSONAssert.assertEquals(expected, actual, false);
 	}
 	
