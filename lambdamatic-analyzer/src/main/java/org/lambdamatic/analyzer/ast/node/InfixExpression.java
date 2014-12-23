@@ -335,17 +335,33 @@ public class InfixExpression extends ComplexExpression {
 	 */
 	@Override
 	public Expression inverse() {
-		// returns an InfixExpression with the inverted operator and the a *duplicate version* of all
-		// operands, because their parent expression (the one being init and returned) is not *this*
-		// The 'inverse' flag remains 'false', though.
-		return new InfixExpression(this.getId(), operator.inverse(), duplicateOperands(), false);
+		switch (this.operator) {
+		case CONDITIONAL_AND:
+		case CONDITIONAL_OR:
+			// returns an InfixExpression with the inverted operator and the a *duplicate inverted version* of all
+			// operands, because their parent expression (the one being init and returned) is not *this*
+			// The 'inverse' flag remains 'false', though.
+			return new InfixExpression(this.getId(), operator.inverse(), duplicateAndInverseOperands(), false);
+		default:
+			// returns an InfixExpression with the inverted operator and the a *duplicate version* of all
+			// operands, because their parent expression (the one being init and returned) is not *this*
+			// The 'inverse' flag remains 'false', and the operands are not inverted, though.
+			return new InfixExpression(this.getId(), operator.inverse(), duplicateOperands(), false);
+		}
 	}
 
 	/**
-	 * @return a duplicate {@link List} of the {@link Expression} operands
+	 * @return a {@link List} containing a duplicate version of all {@link Expression} operands of {@code this}.
 	 */
 	private List<Expression> duplicateOperands() {
 		return this.operands.stream().map(e -> {return e.duplicate();}).collect(Collectors.toList());
+	}
+	
+	/**
+	 * @return a {@link List} containing a duplicate version of all {@link Expression} operands of {@code this}.
+	 */
+	private List<Expression> duplicateAndInverseOperands() {
+		return this.operands.stream().map(e -> {return e.duplicate().inverse();}).collect(Collectors.toList());
 	}
 	
 	/**
@@ -556,8 +572,8 @@ public class InfixExpression extends ComplexExpression {
 				for (Expression resultExpression : resultExpressions) {
 					if (resultExpression.equals(this)) {
 						// LOGGER.trace("  #{}: no simplification after {}. Trying next step...", this.getId(), step);
-					} else if (monitor.isExpressionFormKnown(resultExpression)) {
-						LOGGER.trace("{}#{}: simplified form is already known. Trying next step...", monitor.getIndentation(), this.getId(), step);
+					//} else if (monitor.isExpressionFormKnown(resultExpression)) {
+					//	LOGGER.trace("{}#{}: simplified form is already known. Trying next step...", monitor.getIndentation(), this.getId(), step);
 					} else {
 						LOGGER.trace("{}#{}: {} \n{} -> \n{}", monitor.getIndentation(), this.getId(), step, this.toString(), resultExpression.toString());
 						variants.add(resultExpression);
@@ -605,11 +621,6 @@ public class InfixExpression extends ComplexExpression {
 		// check if there are nested InfixExpressions with same operator
 		if(this.operands.parallelStream().anyMatch(o -> o.getExpressionType() == ExpressionType.INFIX && 
 				((InfixExpression)o).operator == this.operator)) {
-			return true;
-		}
-		// check if there are deeply nested InfixExpressions
-		if(this.operands.parallelStream().anyMatch(o -> o.getExpressionType() == ExpressionType.INFIX && 
-				((InfixExpression)o).hasNestedInfixExpressionOperands())) {
 			return true;
 		}
 		// if the current expression is something like:

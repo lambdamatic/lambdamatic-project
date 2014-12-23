@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 
+import com.sample.model.EnumPojo;
 import com.sample.model.TestPojo;
 
 /**
@@ -140,7 +141,38 @@ public class ExpressionTest {
 	}
 	
 	@Test
-	public void infixExpressionShouldBeFurtherSimplifiable() {
+	public void infixExpressionWithMethodInvocationOperandsShouldBeFurtherSimplifiable() {
+		// given
+		final LocalVariable var = new LocalVariable("t", TestPojo.class);
+		final InfixExpression primitiveIntValueEquals42Expression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
+		final InfixExpression fieldEqualsFooExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
+		final InfixExpression enumPojoEqualsFOOExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "enumPojo"), new EnumLiteral(EnumPojo.FOO));
+		// when
+		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR,
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression,
+				new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsFooExpression.inverse(), enumPojoEqualsFOOExpression.inverse())),
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, fieldEqualsFooExpression, enumPojoEqualsFOOExpression));
+		// then
+		assertThat(expression.canFurtherSimplify()).isEqualTo(true);
+	}
+
+	@Test
+	public void infixExpressionWithMethodInvocationOperandsShouldNotBeFurtherSimplifiable() {
+		// given
+		final LocalVariable var = new LocalVariable("t", TestPojo.class);
+		final InfixExpression primitiveIntValueEquals42Expression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
+		final InfixExpression fieldEqualsFooExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
+		final InfixExpression enumPojoEqualsFOOExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "enumPojo"), new EnumLiteral(EnumPojo.FOO));
+		// when
+		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR,
+				primitiveIntValueEquals42Expression,
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, fieldEqualsFooExpression, enumPojoEqualsFOOExpression));
+		// then
+		assertThat(expression.canFurtherSimplify()).isEqualTo(false);
+	}
+
+	@Test
+	public void infixExpressionWithInfixExpressionOperandsShouldBeFurtherSimplifiable() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
@@ -153,9 +185,9 @@ public class ExpressionTest {
 		// then
 		assertThat(expression.canFurtherSimplify()).isEqualTo(true);
 	}
-
+	
 	@Test
-	public void infixExpressionShouldNotBeFurtherSimplifiable() {
+	public void infixExpressionWithMethodInvocationsShouldNotBeFurtherSimplifiable() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
@@ -169,7 +201,7 @@ public class ExpressionTest {
 	}
 
 	@Test
-	public void infixExpressionWithDuplicateOperandsShouldBeFurtherSimplifiable() {
+	public void infixExpressionWithDuplicateMethodInvocationOperandsShouldBeFurtherSimplifiable() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
@@ -184,7 +216,7 @@ public class ExpressionTest {
 	}
 
 	@Test
-	public void infixExpressionWithDuplicateOperandShouldBeFurtherSimplifiable() {
+	public void infixExpressionWithDuplicateMethodInvocationOperandShouldBeFurtherSimplifiable() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));

@@ -447,7 +447,7 @@ public class InfixExpressionSimplificationTest {
 	}
 
 	@Test
-	public void shouldApplyRedundancyLawOnAllOperandsOnConditionalAND() {
+	public void shouldApplyRedundancyLawOnAllMethodInvocationOperandsOnConditionalAND() {
 		// given '(a.(!a + b).(!a + c))'
 		final LocalVariable var = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
@@ -519,7 +519,7 @@ public class InfixExpressionSimplificationTest {
 	}
 
 	@Test
-	public void shouldApplyRedundancyLawOnAllOperandsOnConditionalOR() {
+	public void shouldApplyRedundancyLawOnAllMethodInvocationOperandsOnConditionalOR() {
 		// given '(a + (!a.!b) + (!a.c))'
 		final LocalVariable var = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
@@ -537,6 +537,28 @@ public class InfixExpressionSimplificationTest {
 				new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, notEqualsBMethod, equalsCMethod));
 	}
 
+	@Test
+	public void shouldApplyRedundancyLawOnAllComplexInfixExpressionOperandsOnConditionalOR() {
+		// given '(p.(!f+!e) + (f.e))' (ie, same as: a.!b + b = a + b)
+		final LocalVariable var = new LocalVariable("t", TestPojo.class);
+		final InfixExpression primitiveIntValueEquals42Expression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
+		final InfixExpression fieldEqualsFooExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
+		final InfixExpression enumPojoEqualsFOOExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "enumPojo"), new EnumLiteral(EnumPojo.FOO));
+		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR,
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression,
+				new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsFooExpression.inverse(), enumPojoEqualsFOOExpression.inverse())),
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, fieldEqualsFooExpression, enumPojoEqualsFOOExpression));
+				
+		// when
+		final Collection<Expression> results = expression.applyRedundancyLaw();
+		// then expect 'p + (f.e)'
+		assertThat(results).hasSize(1);
+		assertThat(results).contains(
+				new InfixExpression(InfixOperator.CONDITIONAL_OR,
+						primitiveIntValueEquals42Expression,
+						new InfixExpression(InfixOperator.CONDITIONAL_AND, fieldEqualsFooExpression, enumPojoEqualsFOOExpression)));
+	}
+	
 	@Test
 	public void shouldNotApplyRedundancyLawOnAllOperandsOnConditionalOR() {
 		// given '(a + (a.b) + (a.c))'
