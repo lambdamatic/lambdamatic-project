@@ -1043,6 +1043,9 @@ public class InfixExpression extends ComplexExpression {
 	 * </ul>
 	 * </li>
 	 * </ul>
+	 * Eg:
+	 * <ul>
+	 * <li>{@code ((a.(b+c)) + (!a.(d+e))) = (a.b + a.c + !a.d + !a.e)}</li>
 	 * in each case, the presence of the {@code a} or {@code !a} operands associated with an {@link InfixExpression} is the key to trigger
 	 * the development.
 	 * 
@@ -1112,7 +1115,7 @@ public class InfixExpression extends ComplexExpression {
 		final InfixExpression resultExpression = new InfixExpression(this.getId(), this.operator);
 		// pick the first other operand that is an InfixExpression
 		final Optional<Expression> optionalOtherInfixOperand = this.operands.stream()
-				.filter(e -> e != sourceOperand && e.getExpressionType() == ExpressionType.INFIX).findFirst();
+				.filter(e -> !e.equals(sourceOperand) && e.getExpressionType() == ExpressionType.INFIX).findFirst();
 		if (!optionalOtherInfixOperand.isPresent()) {
 			resultExpressions.add(this);
 		} else {

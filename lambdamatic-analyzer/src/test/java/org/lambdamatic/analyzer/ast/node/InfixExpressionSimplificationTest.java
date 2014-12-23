@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 
@@ -788,7 +789,7 @@ public class InfixExpressionSimplificationTest {
 	}
 
 	@Test
-	public void shouldApplyDistributiveLawOnConditionalORWithTwoOperands() {
+	public void shouldApplyDistributiveLawOnConditionalORWithTwoMethodInvocationOperands() {
 		// given '(foo.(bar + !baz)) + (!foo.!baz)'
 		final LocalVariable var = new LocalVariable("t", TestPojo.class);
 		final FieldAccess fieldF = new FieldAccess(var, "f");
@@ -810,6 +811,32 @@ public class InfixExpressionSimplificationTest {
 		assertThat(results).contains(expectedExpression);
 	}
 
+	@Test
+	public void shouldApplyDistributiveLawOnConditionalORWithTwoInfixExpressionOperands() {
+		// given '((p.(f+ (!f.e))) + (!p.e))'
+		final LocalVariable var = new LocalVariable("t", TestPojo.class);
+		final InfixExpression primitiveIntValueEquals42Expression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
+		final InfixExpression fieldEqualsFooExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
+		final InfixExpression enumPojoEqualsFOOExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "enumPojo"), new EnumLiteral(EnumPojo.FOO));
+		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR,
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression,
+						new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsFooExpression, 
+								new InfixExpression(InfixOperator.CONDITIONAL_AND, fieldEqualsFooExpression.inverse(), enumPojoEqualsFOOExpression))),
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression.inverse(), enumPojoEqualsFOOExpression));
+
+		// when
+		final Collection<Expression> results = expression.applyDistributiveLaw();
+		// then expect should expect: '((p.f) + (p.!f.e) + (!p.e))' 
+		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR,
+				new InfixExpression(InfixOperator.CONDITIONAL_OR,
+						new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression, fieldEqualsFooExpression),
+						new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression, 
+								new InfixExpression(InfixOperator.CONDITIONAL_AND, fieldEqualsFooExpression.inverse(), enumPojoEqualsFOOExpression))),
+				new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression.inverse(), enumPojoEqualsFOOExpression));
+		assertThat(results).hasSize(1);
+		assertThat(results).contains(expectedExpression);
+	}
+	
 	@Test
 	public void shouldNotApplyDistributiveLawOnConditionalANDWithThreeOperands() {
 		// given '((foo.bar) + (foo.(!bar.!baz)))'
