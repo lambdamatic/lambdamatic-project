@@ -51,11 +51,6 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	}
 
 	@Override
-	public boolean visit(Expression expr) {
-		return super.visit(expr);
-	}
-
-	@Override
 	public boolean visitInfixExpression(final InfixExpression expr) {
 		switch (expr.getOperator()) {
 		case CONDITIONAL_AND:

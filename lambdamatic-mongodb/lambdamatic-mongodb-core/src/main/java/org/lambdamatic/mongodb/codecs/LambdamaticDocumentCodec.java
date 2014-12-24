@@ -75,6 +75,7 @@ public class LambdamaticDocumentCodec<T> implements Codec<T> {
 	 */
 	@Override
 	public void encode(final BsonWriter writer, final T domainObject, final EncoderContext encoderContext) {
+		// FIXME: use a debugWriter to log the generated document 
 		try {
 			writer.writeStartDocument();
 			final Map<String, Field> bindings = getBindings(domainObject.getClass());
@@ -93,11 +94,11 @@ public class LambdamaticDocumentCodec<T> implements Codec<T> {
 			// write the technical/inner "_targetClassName" attribute
 			writer.writeString(TARGET_CLASS_FIELD, domainObject.getClass().getName());
 			// write other attributes
-			bindings.entrySet().stream().filter(e -> isIdBinding(e)).forEach(
+			bindings.entrySet().stream().filter(e -> !isIdBinding(e)).forEach(
 					binding -> {
 						final Object bindingValue = getBindingValue(domainObject, binding.getValue());
 						if(bindingValue != null) {
-							writeValue(writer, MONGOBD_DOCUMENT_ID, bindingValue);
+							writeValue(writer, binding.getKey(), bindingValue);
 						}
 					});
 			writer.writeEndDocument();
@@ -149,6 +150,7 @@ public class LambdamaticDocumentCodec<T> implements Codec<T> {
 	
 	@Override
 	public T decode(final BsonReader reader, final DecoderContext decoderContext) {
+		// FIXME: implement this method
 		return null;
 	}
 

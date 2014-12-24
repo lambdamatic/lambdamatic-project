@@ -39,6 +39,7 @@ public class LambdamaticFilterExpressionCodecProvider<M> implements CodecProvide
 	 * @see org.bson.codecs.configuration.CodecProvider#get(java.lang.Class,
 	 *      org.bson.codecs.configuration.CodecRegistry)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public <E> Codec<E> get(final Class<E> clazz, final CodecRegistry registry) {
 		try {
