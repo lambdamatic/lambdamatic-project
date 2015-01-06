@@ -245,6 +245,79 @@ public class Foo {
 	public void setLocation(Point location) {
 		this.location = location;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((enumFoo == null) ? 0 : enumFoo.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((location == null) ? 0 : location.hashCode());
+		result = prime * result + (primitiveBooleanField ? 1231 : 1237);
+		result = prime * result + primitiveByteField;
+		result = prime * result + primitiveCharField;
+		long temp;
+		temp = Double.doubleToLongBits(primitiveDoubleField);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + Float.floatToIntBits(primitiveFloatField);
+		result = prime * result + primitiveIntField;
+		result = prime * result + (int) (primitiveLongField ^ (primitiveLongField >>> 32));
+		result = prime * result + primitiveShortField;
+		result = prime * result + ((stringField == null) ? 0 : stringField.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Foo other = (Foo) obj;
+		if (enumFoo != other.enumFoo)
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (location == null) {
+			if (other.location != null)
+				return false;
+		} else if (!location.equals(other.location))
+			return false;
+		if (primitiveBooleanField != other.primitiveBooleanField)
+			return false;
+		if (primitiveByteField != other.primitiveByteField)
+			return false;
+		if (primitiveCharField != other.primitiveCharField)
+			return false;
+		if (Double.doubleToLongBits(primitiveDoubleField) != Double.doubleToLongBits(other.primitiveDoubleField))
+			return false;
+		if (Float.floatToIntBits(primitiveFloatField) != Float.floatToIntBits(other.primitiveFloatField))
+			return false;
+		if (primitiveIntField != other.primitiveIntField)
+			return false;
+		if (primitiveLongField != other.primitiveLongField)
+			return false;
+		if (primitiveShortField != other.primitiveShortField)
+			return false;
+		if (stringField == null) {
+			if (other.stringField != null)
+				return false;
+		} else if (!stringField.equals(other.stringField))
+			return false;
+		return true;
+	}
+	
 	
 	
 	

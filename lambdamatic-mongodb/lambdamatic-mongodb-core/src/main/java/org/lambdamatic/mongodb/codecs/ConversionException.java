@@ -17,6 +17,18 @@ public class ConversionException extends RuntimeException {
 	/** serialVersionUID */
 	private static final long serialVersionUID = 7216008533037657142L;
 
+	/**
+	 * Constructor without an underlying cause {@link Exception}.
+	 * @param message the exception message 
+	 */
+	public ConversionException(final String message) {
+		super(message);
+	}
+	
+	/**
+	 * Constructor with an underlying cause {@link Exception}.
+	 * @param message the contextual message
+	 */
 	public ConversionException(final String message, final Exception cause) {
 		super(message, cause);
 	}

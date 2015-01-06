@@ -34,8 +34,10 @@ import org.slf4j.LoggerFactory;
  */
 public class LambdamaticFilterExpressionCodec implements Codec<FilterExpression<?>> {
 
-	/** The usual Logger. */
-	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticFilterExpressionCodec.class);
+	/** The Logger name to use when logging conversion results.*/
+	static final String LOGGER_NAME = LambdamaticFilterExpressionCodec.class.getName();
+	/** The usual Logger */
+	private static final Logger LOGGER = LoggerFactory.getLogger(LOGGER_NAME);
 
 	/**
 	 * private final Class<FilterExpression<?>>
@@ -72,8 +74,9 @@ public class LambdamaticFilterExpressionCodec implements Codec<FilterExpression<
 				final String jsonContent = IOUtils.toString(jsonOutputStream.toByteArray(), "UTF-8");
 				LOGGER.debug("JSON query: {}", jsonContent);
 				// now, write the document in the target writer
-				final BsonReader operandBsonReader = new JsonReader(jsonContent);
-				writer.pipe(operandBsonReader);
+				final JsonReader jsonContentReader = new JsonReader(jsonContent);
+				writer.pipe(jsonContentReader);
+				writer.flush();
 			} catch (IOException e) {
 				throw new ConversionException("Failed to convert '" + filterExpression.toString()
 						+ "' to a BSON document", e);
