@@ -8,11 +8,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.apache.commons.io.IOUtils;
+import org.bson.BsonReader;
 import org.bson.BsonWriter;
+import org.bson.codecs.BsonValueCodecProvider;
+import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
+import org.bson.codecs.ValueCodecProvider;
+import org.bson.codecs.configuration.RootCodecRegistry;
+import org.bson.json.JsonReader;
 import org.bson.json.JsonWriter;
 import org.bson.types.ObjectId;
 import org.json.JSONException;
@@ -26,6 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.DBObjectCodecProvider;
+import com.mongodb.DBRefCodecProvider;
 import com.sample.EnumFoo;
 import com.sample.Foo;
 
@@ -36,6 +45,11 @@ import com.sample.Foo;
  */
 public class LambdamaticDocumentCodecTest {
 	
+	private static final RootCodecRegistry DEFAULT_CODEC_REGISTRY =
+		    new RootCodecRegistry(Arrays.asList(new ValueCodecProvider(),
+		                                 new DBRefCodecProvider(),
+		                                 new DBObjectCodecProvider(),
+		                                 new BsonValueCodecProvider()));
 	/** The usual Logger.*/
 	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticDocumentCodecTest.class);
 	
@@ -47,7 +61,7 @@ public class LambdamaticDocumentCodecTest {
 		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8")); 
 		final EncoderContext context = EncoderContext.builder().isEncodingCollectibleDocument(true).build();
 		// when
-		new LambdamaticDocumentCodec<Foo>(Foo.class).encode(bsonWriter, foo, context); 
+		new LambdamaticDocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY).encode(bsonWriter, foo, context); 
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
 		LOGGER.debug("Output JSON: {}", actual);
@@ -63,13 +77,27 @@ public class LambdamaticDocumentCodecTest {
 		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8")); 
 		final EncoderContext context = EncoderContext.builder().isEncodingCollectibleDocument(true).build();
 		// when
-		new LambdamaticDocumentCodec<Foo>(Foo.class).encode(bsonWriter, foo, context); 
+		new LambdamaticDocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY).encode(bsonWriter, foo, context); 
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
 		LOGGER.debug("Output JSON: {}", actual);
 		assertThat(foo.getId()).isNotNull();
 		final String expected = "{_id: '" + foo.getId() + "', _targetClass:'com.sample.Foo', fooName:'jdoe', firstName:'John', lastName:'Doe'}";
 		JSONAssert.assertEquals(expected, actual, true);
+	}
+	
+	
+	@Test
+	public void shouldDecodeFooDocument() throws IOException, JSONException {
+		// given
+		final String json = "{_id: '5459fed60986a72813eb2d59', _targetClass:'com.sample.Foo', stringField:'jdoe', primitiveIntField:42, enumFoo:'FOO'}";
+		final BsonReader bsonReader = new JsonReader(json); 
+		final DecoderContext context = DecoderContext.builder().build();
+		// when
+		final Foo result = new LambdamaticDocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY).decode(bsonReader, context); 
+		// then
+		final Foo expected = new Foo(new ObjectId("5459fed60986a72813eb2d59"), "jdoe", 42, EnumFoo.FOO);
+		Assert.assertEquals(expected, result);
 	}
 	
 	final static Date now = new Date();
@@ -87,6 +115,7 @@ public class LambdamaticDocumentCodecTest {
 	}
 
 	@Test
+	@Ignore
 	public void shouldConvertObjectWithPrimitiveTypesWithoutAnnotationToDBObject() throws ConversionException {
 		// given
 		final DBObject dbObject = generateDBObjectWithPrimitiveTypes();
@@ -105,6 +134,7 @@ public class LambdamaticDocumentCodecTest {
 	}
 
 	@Test
+	@Ignore
 	public void shouldConvertObjectWithPrimitiveTypesWithAnnotationsToDBObject() throws ConversionException {
 		// given
 		final DBObject dbObject = generateDBObjectWithPrimitiveTypes();
@@ -123,6 +153,7 @@ public class LambdamaticDocumentCodecTest {
 	}
 
 	@Test
+	@Ignore
 	public void shouldConvertObjectWithObjectTypesWithoutAnnotationsToDBObject() {
 		// given
 		final DBObject dbObject = generateDBObjectWithObjectTypes();
@@ -161,6 +192,7 @@ public class LambdamaticDocumentCodecTest {
 	@Test
 	@Ignore
 	public void shouldConvertObjectWithArraysAndListsOfObjectTypesToDBObject() {
+		Assert.fail("not implemented yet");
 		// given
 
 		// when
@@ -171,6 +203,7 @@ public class LambdamaticDocumentCodecTest {
 	@Test
 	@Ignore
 	public void shouldConvertObjectWithNestedElementsToDBObject() {
+		Assert.fail("not implemented yet");
 		// given
 
 		// when
@@ -181,9 +214,15 @@ public class LambdamaticDocumentCodecTest {
 	@Test
 	public void shouldConvertObjectWithEnumElementsToDBObject() {
 		Assert.fail("not implemented yet");
+		// given
+
+		// when
+
+		// then
 	}
 
 	@Test
+	@Ignore
 	public void shouldConvertDBObjectToSampleClassWithPrimitiveTypesWithoutAnnotation() {
 		// given
 		final SampleClassWithPrimitiveTypesWithoutAnnotation domainInstance = new SampleClassWithPrimitiveTypesWithoutAnnotation();
@@ -208,6 +247,13 @@ public class LambdamaticDocumentCodecTest {
 		assertThat(result.get("dateField")).isEqualTo(now);
 		assertThat(result.get("dateField")).isEqualTo(now);
 		assertThat(result.get(DBObjectConverter.TARGET_CLASS_FIELD)).isEqualTo(SampleClassWithPrimitiveTypesWithoutAnnotation.class.getName());
+	}
+	
+	
+	@Test
+	@Ignore
+	public void shouldDecodeBSONDocumentToSampleClassWithPrimitiveTypesWithoutAnnotation() {
+		
 	}
 
 	static class SampleClassWithPrimitiveTypesWithoutAnnotation {
