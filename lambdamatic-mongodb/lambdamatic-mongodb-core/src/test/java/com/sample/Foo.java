@@ -21,6 +21,84 @@ import org.lambdamatic.mongodb.types.geospatial.Point;
 @Document(collection="foos")
 public class Foo {
 
+	public static class FooBuilder {
+		private ObjectId id;
+		private String stringField;
+		private byte primitiveByteField;
+		private short primitiveShortField;
+		private int primitiveIntField;
+		private long primitiveLongField;
+		private float primitiveFloatField;
+		private double primitiveDoubleField;
+		private boolean primitiveBooleanField;
+		private char primitiveCharField;
+		private EnumFoo enumFoo;
+		private Point location;
+
+		public FooBuilder withId(final ObjectId id) {
+			this.id = id;
+			return this;
+		}
+
+		public FooBuilder withPrimitiveByteField(final byte primitiveByteField) {
+			this.primitiveByteField = primitiveByteField;
+			return this;
+		}
+		
+		public FooBuilder withPrimitiveShortField(final short primitiveShortField) {
+			this.primitiveShortField = primitiveShortField;
+			return this;
+		}
+		
+		public FooBuilder withPrimitiveIntField(final int primitiveIntField) {
+			this.primitiveIntField = primitiveIntField;
+			return this;
+		}
+		
+		public FooBuilder withPrimitiveLongField(final long primitiveLongField) {
+			this.primitiveLongField = primitiveLongField;
+			return this;
+		}
+		
+		public FooBuilder withPrimitiveFloatField(final float primitiveFloatField) {
+			this.primitiveFloatField = primitiveFloatField;
+			return this;
+		}
+		
+		public FooBuilder withPrimitiveDoubleField(final double primitiveDoubleField) {
+			this.primitiveDoubleField = primitiveDoubleField;
+			return this;
+		}
+		
+		public FooBuilder withPrimitiveBooleanField(final boolean primitiveBooleanField) {
+			this.primitiveBooleanField = primitiveBooleanField;
+			return this;
+		}
+		
+		public FooBuilder withPrimitiveCharField(final char primitiveCharField) {
+			this.primitiveCharField = primitiveCharField;
+			return this;
+		}
+		
+		public FooBuilder withStringField(final String stringField) {
+			this.stringField = stringField;
+			return this;
+		}
+		
+		public FooBuilder withEnumFool(final EnumFoo enumFoo) {
+			this.enumFoo = enumFoo;
+			return this;
+		}
+		public FooBuilder withLocation(final Point location) {
+			this.location = location;
+			return this;
+		}
+		
+		public Foo build() {
+			return new Foo(this);
+		}
+	}
+	
 	@DocumentId 
 	private ObjectId id;
 	
@@ -61,21 +139,20 @@ public class Foo {
 		
 	}
 
-	public Foo(final String stringField) {
-		this.stringField = stringField;
-	}
-
-	public Foo(final String stringField, final int primitiveIntField, final EnumFoo fooType) {
-		this.stringField = stringField;
-		this.primitiveIntField = primitiveIntField;
-		this.enumFoo = fooType; 
-	}
-
-	public Foo(final ObjectId id, final String stringField, final int primitiveIntField, final EnumFoo fooType) {
-		this.id = id;
-		this.stringField = stringField;
-		this.primitiveIntField = primitiveIntField;
-		this.enumFoo = fooType; 
+	public Foo(final FooBuilder fooBuilder) {
+		this.id = fooBuilder.id;
+		this.enumFoo = fooBuilder.enumFoo;
+		this.location = fooBuilder.location;
+		this.stringField = fooBuilder.stringField;
+		this.primitiveBooleanField = fooBuilder.primitiveBooleanField;
+		this.primitiveByteField = fooBuilder.primitiveByteField;
+		this.primitiveCharField = fooBuilder.primitiveCharField;
+		this.primitiveDoubleField = fooBuilder.primitiveDoubleField;
+		this.primitiveFloatField = fooBuilder.primitiveFloatField;
+		this.primitiveIntField = fooBuilder.primitiveIntField;
+		this.primitiveLongField = fooBuilder.primitiveLongField;
+		this.primitiveShortField = fooBuilder.primitiveShortField;
+		this.primitiveShortField = fooBuilder.primitiveShortField;
 	}
 
 	/**

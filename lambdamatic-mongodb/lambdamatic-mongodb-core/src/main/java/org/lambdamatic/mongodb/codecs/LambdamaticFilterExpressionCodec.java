@@ -36,23 +36,9 @@ public class LambdamaticFilterExpressionCodec implements Codec<FilterExpression<
 
 	/** The Logger name to use when logging conversion results.*/
 	static final String LOGGER_NAME = LambdamaticFilterExpressionCodec.class.getName();
+	
 	/** The usual Logger */
 	private static final Logger LOGGER = LoggerFactory.getLogger(LOGGER_NAME);
-
-	/**
-	 * private final Class<FilterExpression<?>>
-	 * filterExpressionImplementationClass;
-	 * 
-	 * Constructor
-	 * 
-	 * @param filterExpressionImplementationClass
-	 * @param metadataClass
-	 *            public LambdamaticFilterExpressionCodec(final
-	 *            Class<FilterExpression<?>>
-	 *            filterExpressionImplementationClass) {
-	 *            this.filterExpressionImplementationClass =
-	 *            filterExpressionImplementationClass; }
-	 */
 
 	@Override
 	public Class<FilterExpression<?>> getEncoderClass() {
@@ -72,7 +58,7 @@ public class LambdamaticFilterExpressionCodec implements Codec<FilterExpression<
 				final BsonWriter debugWriter = new JsonWriter(new OutputStreamWriter(jsonOutputStream, "UTF-8"));
 				encodeExpression(filterExpression, debugWriter);
 				final String jsonContent = IOUtils.toString(jsonOutputStream.toByteArray(), "UTF-8");
-				LOGGER.debug("JSON query: {}", jsonContent);
+				LOGGER.debug("Encoded query: {}", jsonContent);
 				// now, write the document in the target writer
 				final JsonReader jsonContentReader = new JsonReader(jsonContent);
 				writer.pipe(jsonContentReader);
@@ -92,7 +78,7 @@ public class LambdamaticFilterExpressionCodec implements Codec<FilterExpression<
 	 * @param writer
 	 */
 	private void encodeExpression(final LambdaExpression filterExpression, final BsonWriter writer) {
-		final FilterExpressionEncoder expressionEncoder = new FilterExpressionEncoder(
+		final LambdamaticFilterExpressionEncoder expressionEncoder = new LambdamaticFilterExpressionEncoder(
 				filterExpression.getArgumentType(), writer);
 		writer.writeStartDocument();
 		filterExpression.getExpression().accept(expressionEncoder);

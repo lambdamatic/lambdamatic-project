@@ -10,6 +10,7 @@ package org.lambdamatic.mongodb;
 
 import java.util.Arrays;
 
+import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.configuration.RootCodecRegistry;
 import org.lambdamatic.FilterExpression;
 import org.lambdamatic.mongodb.codecs.LambdamaticDocumentCodecProvider;
@@ -65,12 +66,12 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 	// and retrieve the collection name from <T> ?
 	// this would avoid the need to subclass LambdamaticMongoCollectionImpl :-)
 	public LambdamaticMongoCollectionImpl(final MongoClient mongoClient, final String databaseName,
-			final String collectionName, final Class<T> targetClass, final Class<M> metadataClass) {
+			final String collectionName, final Class<T> targetClass) {
 		// final RootCodecRegistry codecRegistry =
 		// MongoClient.getDefaultCodecRegistry().withCodec(new
 		// LambdamaticCodec<T>(targetClass));
 		final RootCodecRegistry codecRegistry = new RootCodecRegistry(Arrays.asList(
-				new LambdamaticDocumentCodecProvider(), new LambdamaticFilterExpressionCodecProvider<M>(metadataClass)));
+				new LambdamaticDocumentCodecProvider(), new LambdamaticFilterExpressionCodecProvider<M>(), new BsonValueCodecProvider()));
 		final MongoCollectionOptions options = MongoCollectionOptions.builder().codecRegistry(codecRegistry).build();
 		this.mongoCollection = mongoClient.getDatabase(databaseName)
 				.getCollection(collectionName, targetClass, options);
@@ -87,8 +88,8 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 	}
 
 	@Override
-	public WriteConcernResult insertOne(T domainObject) {
-		return mongoCollection.insertOne(domainObject);
+	public void insertOne(T domainObject) {
+		mongoCollection.insertOne(domainObject);
 	}
 
 	/**

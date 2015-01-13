@@ -38,9 +38,8 @@ public interface LambdamaticMongoCollection<T, M extends Metadata<T>> {
 	 * 
 	 * @param domainObject
 	 *            the object to convert into a BSON document
-	 * @return the {@link WriteConcernResult} for details on the insert operation that occurred.
 	 */
-	public WriteConcernResult insertOne(T domainObject);
+	public void insertOne(T domainObject);
 	
 }
 

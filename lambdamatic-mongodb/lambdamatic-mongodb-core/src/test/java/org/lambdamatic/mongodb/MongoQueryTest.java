@@ -17,18 +17,20 @@ import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.testutils.CleanMongoCollectionsRule;
 
 import com.mongodb.MongoClient;
 import com.sample.EnumFoo;
 import com.sample.Foo;
+import com.sample.Foo.FooBuilder;
 import com.sample.FooCollection;
 
 
 /**
  * Testing the MongoDB Lambda-based Fluent API
  * 
- * @author Xavier Coulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public class MongoQueryTest {
@@ -36,7 +38,7 @@ public class MongoQueryTest {
 	private MongoClient mongoClient = new MongoClient();
 	
 	@Rule
-	public CleanMongoCollectionsRule collectionCleaning = new CleanMongoCollectionsRule(mongoClient, "lambdamatic-tests", "users");
+	public CleanMongoCollectionsRule collectionCleaning = new CleanMongoCollectionsRule(mongoClient, "lambdamatic-tests", ((Document)Foo.class.getAnnotation(Document.class)).collection());
 	
 	private FooCollection fooCollection;
 	
@@ -44,18 +46,19 @@ public class MongoQueryTest {
 	public void setup() throws UnknownHostException {
 		this.fooCollection = new FooCollection(mongoClient, "lambdamatic-tests");
 		// insert test data
-		this.fooCollection.insertOne(new Foo("john", 42, EnumFoo.FOO));
+		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFool(EnumFoo.FOO).build();
+		this.fooCollection.insertOne(foo);
 	}
 	
 	@Test
-	public void shouldFindOneUser() throws IOException {
+	public void shouldFindOneFoo() throws IOException {
 		// when
-		final Foo foo = fooCollection.find(f -> f.stringField.equals("john")).first();
+		final Foo foo = fooCollection.find(f -> f.stringField.equals("jdoe")).first();
 		// then
 		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override
 			public boolean matches(final Foo value) {
-				return value.getStringField().equals("john") && value.getPrimitiveIntField() == 42
+				return value.getStringField().equals("jdoe") && value.getPrimitiveIntField() == 42
 						&& value.getEnumFoo() == EnumFoo.FOO;
 			}
 		});

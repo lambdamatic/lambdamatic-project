@@ -26,13 +26,6 @@ public class LambdamaticFilterExpressionCodecProvider<M> implements CodecProvide
 	/** The usual Logger.*/
 	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticFilterExpressionCodecProvider.class);
 	
-	/** The generated metadata class associated with a user-defined domain class. */
-	private final Class<M> metadataClass;
-
-	public LambdamaticFilterExpressionCodecProvider(final Class<M> metadataClass) {
-		this.metadataClass = metadataClass;
-	}
-
 	/**
 	 * {@inheritDoc}
 	 * 

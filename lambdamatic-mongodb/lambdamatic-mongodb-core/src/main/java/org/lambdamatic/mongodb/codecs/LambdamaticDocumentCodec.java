@@ -8,6 +8,9 @@
 
 package org.lambdamatic.mongodb.codecs;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,6 +20,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TreeMap;
 
+import org.apache.commons.io.IOUtils;
 import org.bson.BsonElement;
 import org.bson.BsonReader;
 import org.bson.BsonType;
@@ -27,6 +31,8 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.json.JsonReader;
+import org.bson.json.JsonWriter;
 import org.bson.types.ObjectId;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
@@ -41,9 +47,12 @@ import com.mongodb.DBObject;
  */
 public class LambdamaticDocumentCodec<T> implements Codec<T> {
 
-	/** the usual logger.*/
-	private final static Logger LOGGER = LoggerFactory.getLogger(LambdamaticDocumentCodec.class);
+	/** The Logger name to use when logging conversion results.*/
+	static final String LOGGER_NAME = LambdamaticDocumentCodec.class.getName();
 	
+	/** The usual Logger */
+	private static final Logger LOGGER = LoggerFactory.getLogger(LOGGER_NAME);
+
 	/**
 	 * Internal cache of bindings to convert domain class instances with
 	 * incoming DBObjects.
@@ -93,7 +102,29 @@ public class LambdamaticDocumentCodec<T> implements Codec<T> {
 	 */
 	@Override
 	public void encode(final BsonWriter writer, final T domainObject, final EncoderContext encoderContext) {
-		// FIXME: use a debugWriter to log the generated document 
+		if (LOGGER.isDebugEnabled()) {
+			try {
+				// use an intermediate JsonWriter whose Outputstream can be
+				// retrieved
+				final ByteArrayOutputStream jsonOutputStream = new ByteArrayOutputStream();
+				final BsonWriter debugWriter = new JsonWriter(new OutputStreamWriter(jsonOutputStream, "UTF-8"));
+				encodeDomainObject(debugWriter, domainObject);
+				final String jsonContent = IOUtils.toString(jsonOutputStream.toByteArray(), "UTF-8");
+				LOGGER.debug("Encoded document: {}", jsonContent);
+				// now, write the document in the target writer
+				final JsonReader jsonContentReader = new JsonReader(jsonContent);
+				writer.pipe(jsonContentReader);
+				writer.flush();
+			} catch (IOException e) {
+				throw new ConversionException("Failed to convert '" + domainObject.toString()
+						+ "' to a BSON document", e);
+			}
+		} else {
+			encodeDomainObject(writer, domainObject);
+		}
+	}
+
+	private void encodeDomainObject(final BsonWriter writer, final T domainObject) {
 		try {
 			writer.writeStartDocument();
 			final Map<String, Field> bindings = getBindings(domainObject.getClass());
@@ -114,10 +145,7 @@ public class LambdamaticDocumentCodec<T> implements Codec<T> {
 			// write other attributes
 			bindings.entrySet().stream().filter(e -> !isIdBinding(e)).forEach(
 					binding -> {
-						final Object bindingValue = getBindingValue(domainObject, binding.getValue());
-						if(bindingValue != null) {
-							writeValue(writer, binding.getKey(), bindingValue);
-						}
+						writeValue(writer, binding.getKey(), getBindingValue(domainObject, binding.getValue()));
 					});
 			writer.writeEndDocument();
 		} catch (IllegalArgumentException | IllegalAccessException e) {
@@ -131,12 +159,27 @@ public class LambdamaticDocumentCodec<T> implements Codec<T> {
 	 * @param writer
 	 */
 	private void writeValue(final BsonWriter writer, final String attributeName, final Object attributeValue) {
+		if(attributeValue == null) {
+			return;
+		}
 		if (attributeValue.getClass().isEnum()) {
 			writer.writeString(attributeName, ((Enum<?>) attributeValue).name());
-		} else if (attributeValue instanceof String) {
-			writer.writeString(attributeName, (String) attributeValue);
-		} else if (attributeValue instanceof ObjectId) {
-			writer.writeString(attributeName, attributeValue.toString());
+		} else {
+			// FIXME: complete the switches to cover all writer.writeXXX methods
+			switch(attributeValue.getClass().getName()) {
+			case "org.bson.types.ObjectId":
+				writer.writeObjectId(MONGOBD_DOCUMENT_ID, (ObjectId) attributeValue);
+				break;
+			case "boolean":
+				writer.writeBoolean(attributeName, (boolean) attributeValue);
+				break;
+			case "java.lang.Integer": // covers also "int" with is autoboxed
+				writer.writeInt32(attributeName, (int) attributeValue);
+				break;
+			case "java.lang.String":
+				writer.writeString(attributeName, (String) attributeValue);
+				break;
+			}
 		}
 	}
 
@@ -230,6 +273,7 @@ public class LambdamaticDocumentCodec<T> implements Codec<T> {
 				}
 			}
 		}
+		//FIXME: missing switches. Can we write it differently ?
 		switch (targetType.getName()) {
 		case "short":
 			return Short.parseShort(value.toString());
@@ -341,7 +385,9 @@ public class LambdamaticDocumentCodec<T> implements Codec<T> {
      * @return the non-null value read from the reader
      */
     protected BsonValue readValue(final BsonReader reader, final DecoderContext decoderContext) {
-        return codecRegistry.get(BsonValueCodecProvider.getClassForBsonType(reader.getCurrentBsonType())).decode(reader, decoderContext);
+        final Class<? extends BsonValue> classForBsonType = BsonValueCodecProvider.getClassForBsonType(reader.getCurrentBsonType());
+		final Codec<? extends BsonValue> codec = codecRegistry.get(classForBsonType);
+		return codec.decode(reader, decoderContext);
     }
 
 

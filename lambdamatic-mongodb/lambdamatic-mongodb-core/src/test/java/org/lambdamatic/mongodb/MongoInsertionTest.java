@@ -20,13 +20,13 @@ import com.mongodb.MongoClient;
 import com.sample.EnumFoo;
 import com.sample.Foo;
 import com.sample.FooCollection;
+import com.sample.Foo.FooBuilder;
 
 
 /**
  * Testing the MongoDB Lambda-based Fluent API
  * 
- * @author Xavier Coulon
- *
+ * @author Xavier Coulon <xcoulon@redhat.com>
  */
 public class MongoInsertionTest {
 	
@@ -39,7 +39,7 @@ public class MongoInsertionTest {
 	public void shouldInsertOneFoo() throws IOException {
 		// given
 		final FooCollection FooCollection = new FooCollection(mongoClient, "lambdamatic-tests");
-		final Foo foo = new Foo("john", 42, EnumFoo.FOO);
+		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFool(EnumFoo.FOO).build();
 		// when
 		FooCollection.insertOne(foo);
 		// then

@@ -24,10 +24,10 @@ import org.slf4j.LoggerFactory;
  *
  * @param <M>
  */
-class FilterExpressionEncoder extends ExpressionVisitor {
+class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 
 	/** the usual logger. */
-	private static final Logger LOGGER = LoggerFactory.getLogger(FilterExpressionEncoder.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticFilterExpressionEncoder.class);
 	
 	/** The {@link Metadata} class associated with the domain class being queried. */
 	private final Class<?> metadataClass;
@@ -45,7 +45,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	 *            representation will be written.
 	 * @see: http://docs.mongodb.org/manual/reference/operator/query/
 	 */
-	FilterExpressionEncoder(final Class<?> metadataClass, final BsonWriter writer) {
+	LambdamaticFilterExpressionEncoder(final Class<?> metadataClass, final BsonWriter writer) {
 		this.metadataClass = metadataClass;
 		this.writer = writer;
 	}
@@ -56,7 +56,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		case CONDITIONAL_AND:
 			// Syntax: { $and: [ { <expression1> }, { <expression2> } , ... , { <expressionN> } ] }
 			for (Expression operand : expr.getOperands()) {
-				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(metadataClass, writer);
+				final LambdamaticFilterExpressionEncoder operandEncoder = new LambdamaticFilterExpressionEncoder(metadataClass, writer);
 				operand.accept(operandEncoder);
 			}
 			break;
@@ -66,7 +66,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			for (Expression operand : expr.getOperands()) {
 				final BsonDocument operandDocument = new BsonDocument(); 
 				final BsonWriter operandBsonWriter = new BsonDocumentWriter(operandDocument);
-				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(metadataClass, operandBsonWriter);
+				final LambdamaticFilterExpressionEncoder operandEncoder = new LambdamaticFilterExpressionEncoder(metadataClass, operandBsonWriter);
 				operandBsonWriter.writeStartDocument();
 				operand.accept(operandEncoder);
 				operandBsonWriter.writeEndDocument();

@@ -16,7 +16,7 @@ import com.mongodb.MongoClient;
 public class FooCollection extends LambdamaticMongoCollectionImpl<Foo, Foo_> {
 
 	public FooCollection(final MongoClient mongoClient, final String databaseName) {
-		super(mongoClient, databaseName, "foos", Foo.class, Foo_.class);
+		super(mongoClient, databaseName, "foos", Foo.class);
 	}
 
 }
