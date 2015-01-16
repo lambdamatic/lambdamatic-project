@@ -43,24 +43,19 @@ public class LiteralFactory {
 	 * @param expression the expression that helps in selecting the specific type of literal to help
 	 * @return the literal {@link Expression} wrapping the given value.
 	 */
-	public static Expression getLiteral(final int value, final Expression expression) {
-		if(expression.getExpressionType() == ExpressionType.METHOD_INVOCATION) {
-			final MethodInvocation methodInvocation = (MethodInvocation) expression;
-			final Class<?> returnType = methodInvocation.getReturnType();
-			if(char.class.isAssignableFrom(returnType) || Character.class.isAssignableFrom(returnType)) {
-				return new CharacterLiteral((char)value);
-			} else if (boolean.class.isAssignableFrom(returnType) || Boolean.class.isAssignableFrom(returnType)) {
-				switch(value) {
-				case 0: 
-					return new BooleanLiteral(false);
-				default:
-					return new BooleanLiteral(true);
-				}
-			} 
-			return new NumberLiteral(value);
-		}
-		// default case
-		return getLiteral(value);
+	public static Expression getLiteral(final NumberLiteral numberLiteral, final Class<?> targetType) {
+		final Number value = numberLiteral.getValue();
+		if(char.class.isAssignableFrom(targetType) || Character.class.isAssignableFrom(targetType)) {
+			return new CharacterLiteral((char)value.intValue());
+		} else if (boolean.class.isAssignableFrom(targetType) || Boolean.class.isAssignableFrom(targetType)) {
+			switch(value.intValue()) {
+			case 0: 
+				return new BooleanLiteral(false);
+			default:
+				return new BooleanLiteral(true);
+			}
+		} 
+		return new NumberLiteral(value);
 	}
 
 }

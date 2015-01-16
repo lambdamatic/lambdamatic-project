@@ -3,6 +3,8 @@ package org.lambdamatic.analyzer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,6 +14,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.lambdamatic.FilterExpression;
 import org.lambdamatic.LambdaExpression;
+import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.CharacterLiteral;
 import org.lambdamatic.analyzer.ast.node.EnumLiteral;
 import org.lambdamatic.analyzer.ast.node.Expression;
@@ -22,6 +25,7 @@ import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.ast.node.NullLiteral;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
+import org.lambdamatic.analyzer.ast.node.ObjectInstantiation;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.lambdamatic.testutils.TestWatcher;
 
@@ -96,9 +100,14 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 		final MethodInvocation t_dot_getPrimitiveDoubleValue = new MethodInvocation(var_t, "getPrimitiveDoubleValue",
 				double.class);
 		final MethodInvocation t_dot_getDoubleValue = new MethodInvocation(var_t, "getDoubleValue", Double.class);
+		final FieldAccess t_dot_stringValue = new FieldAccess(var_t, "stringValue");
 		final MethodInvocation t_dot_getStringValue = new MethodInvocation(var_t, "getStringValue", String.class);
+		final MethodInvocation t_dot_stringValue_dot_equals_foo = new MethodInvocation(t_dot_stringValue,
+				"equals", Boolean.class, new StringLiteral("foo"));
 		final MethodInvocation t_dot_getStringValue_dot_equals_foo = new MethodInvocation(t_dot_getStringValue,
 				"equals", Boolean.class, new StringLiteral("foo"));
+		final MethodInvocation t_dot_getStringValue_dot_equals_captured_argument_foo = new MethodInvocation(t_dot_getStringValue,
+				"equals", Boolean.class, new CapturedArgument("foo"));
 		final MethodInvocation t_dot_getStringValue_dot_equals_bar = new MethodInvocation(t_dot_getStringValue,
 				"equals", Boolean.class, new StringLiteral("bar"));
 		final MethodInvocation t_dot_getStringValue_dot_equals_baz = new MethodInvocation(t_dot_getStringValue,
@@ -124,6 +133,17 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 		final FieldAccess t_dot_primitiveIntValue = new FieldAccess(var_t, "primitiveIntValue");
 		final InfixExpression t_dot_primitiveIntValue_equals_42 = new InfixExpression(InfixOperator.EQUALS, t_dot_primitiveIntValue,
 				new NumberLiteral(42));
+		
+		final FieldAccess t_elements = new FieldAccess(var_t, "elements");
+		final MethodInvocation t_elements_dot_size = new MethodInvocation(t_elements, "size", Integer.class);
+		final InfixExpression t_elements_dot_size_equals_0 = new InfixExpression(InfixOperator.EQUALS, t_elements_dot_size, new NumberLiteral(0));
+		final List<Object> otherElements = new ArrayList<>();
+		final MethodInvocation t_elements_dot_equals_otherElements = new MethodInvocation(t_elements, "equals", Boolean.class, new CapturedArgument(otherElements));
+		final MethodInvocation t_dot_equals_newTestPojo = new MethodInvocation(var_t, "equals", Boolean.class, new ObjectInstantiation(TestPojo.class));
+		final MethodInvocation t_dot_equals_newTestPojo_foo42 = new MethodInvocation(var_t, "equals", Boolean.class, new ObjectInstantiation(TestPojo.class, new StringLiteral("foo"), new NumberLiteral(42)));
+		final TestPojo otherTestPojo = new TestPojo();
+		final MethodInvocation t_dot_equals_otherTestPojo = new MethodInvocation(var_t, "equals", Boolean.class, new CapturedArgument(otherTestPojo));
+		
 		return new Object[][] {
 				// primitive boolean (comparisons are pretty straightforward in
 				// the bytecode)
@@ -439,6 +459,10 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 				// java.lang.String
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.field == "foo"), t_dot_field_equals_foo },
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.field != "foo"), t_dot_field_equals_foo.inverse() },
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.stringValue.equals("foo")),
+						t_dot_stringValue_dot_equals_foo },
+				new Object[] { (FilterExpression<TestPojo>) (t -> !t.stringValue.equals("foo")),
+						t_dot_stringValue_dot_equals_foo.inverse() },
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.getStringValue().equals("foo")),
 						t_dot_getStringValue_dot_equals_foo },
 				new Object[] { (FilterExpression<TestPojo>) (t -> !t.getStringValue().equals("foo")),
@@ -451,16 +475,16 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 						new MethodInvocation(t_dot_getStringValue, "equals", Boolean.class, new NullLiteral()) },
 				new Object[] {
 						(FilterExpression<TestPojo>) (t -> !t.getStringValue().equals(stringValue_null)),
-						new MethodInvocation(t_dot_getStringValue, "equals", Boolean.class, new NullLiteral())
+						new MethodInvocation(t_dot_getStringValue, "equals", Boolean.class, new CapturedArgument(stringValue_null))
 								.inverse() },
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.field != "foo"), t_dot_field_not_equals_foo },
 				new Object[] {
 						(FilterExpression<TestPojo>) (t -> t.getStringValue().equals(anotherPojo.getStringValue())),
 						t_dot_getStringValue_dot_equals_foo },
 				new Object[] { new LambdaExpressionFactory().buildLambdaExpression("foo"),
-						t_dot_getStringValue_dot_equals_foo },
+						t_dot_getStringValue_dot_equals_captured_argument_foo },
 				new Object[] { LambdaExpressionFactory.staticBuildLambdaExpression("foo"),
-						t_dot_getStringValue_dot_equals_foo },
+						t_dot_getStringValue_dot_equals_captured_argument_foo },
 				// Enumeration
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.enumPojo == EnumPojo.FOO),
 						t_dot_enumPojo_equals_foo },
@@ -470,7 +494,20 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 						t_dot_enumPojo_dot_equals_foo },
 				new Object[] { (FilterExpression<TestPojo>) (t -> !t.enumPojo.equals(EnumPojo.FOO)),
 						t_dot_enumPojo_dot_equals_foo.inverse() },
-
+				// List (and interface, btw)
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.elements.size() == 0),
+						t_elements_dot_size_equals_0 },
+				
+				// Captured argument
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.elements.equals(otherElements)),
+						t_elements_dot_equals_otherElements },
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.equals(otherTestPojo)),
+						t_dot_equals_otherTestPojo },
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.equals(new TestPojo())),
+						t_dot_equals_newTestPojo },
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.equals(new TestPojo("foo", 42))),
+						t_dot_equals_newTestPojo_foo42 },
+						
 				// mixes with multiple operands
 				new Object[] {
 						(FilterExpression<TestPojo>) (t -> t.getStringValue().equals("foo")
@@ -510,7 +547,6 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 						new InfixExpression(InfixOperator.CONDITIONAL_OR, t_dot_getStringValue_dot_equals_foo,
 								new InfixExpression(InfixOperator.EQUALS, t_dot_getPrimitiveIntValue,
 										new NumberLiteral(intValue_42))) }
-
 		};
 	}
 

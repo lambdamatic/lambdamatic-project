@@ -1,6 +1,8 @@
 package com.sample.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class TestPojo {
 	
@@ -13,6 +15,18 @@ public class TestPojo {
 	public Date dateValue = new Date();
 	
 	public EnumPojo enumPojo = EnumPojo.FOO;
+	
+	public List<Object> elements = new ArrayList<>();
+
+	public TestPojo() {
+	}
+	
+	public TestPojo(String stringValue, int primitiveIntValue) {
+		super();
+		this.stringValue = stringValue;
+		this.primitiveIntValue = primitiveIntValue;
+	}
+
 
 	public boolean getPrimitiveBooleanValue() {
 		return true;
@@ -90,7 +104,10 @@ public class TestPojo {
 		return enumPojo;
 	}
 
-	
+	@Override
+	public String toString() {
+		return "TestPojo";
+	}
 }
 
 

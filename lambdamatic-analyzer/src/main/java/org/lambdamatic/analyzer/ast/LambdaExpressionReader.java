@@ -24,6 +24,7 @@ import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.IfStatement;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
+import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.LiteralFactory;
@@ -33,6 +34,7 @@ import org.lambdamatic.analyzer.ast.node.NullLiteral;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.Statement;
+import org.lambdamatic.analyzer.ast.node.ObjectInstantiation;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
@@ -222,13 +224,18 @@ public class LambdaExpressionReader {
 				final String returnTypeName = Type.getReturnType(methodInsnNode.desc).getClassName();
 				final Class<?> returnType = getType(returnTypeName);
 				switch (methodInsnNode.getOpcode()) {
+				case Opcodes.INVOKEINTERFACE:
 				case Opcodes.INVOKEVIRTUAL:
-					final MethodInvocation invokedVirtualMethod = new MethodInvocation(expressionStack.pop(), methodInsnNode.name, args, returnType);
-					expressionStack.add(invokedVirtualMethod);
-					break;
 				case Opcodes.INVOKESPECIAL:
-					final MethodInvocation invokedSpecialMethod = new MethodInvocation(expressionStack.pop(), methodInsnNode.name, args, returnType);
-					expressionStack.add(invokedSpecialMethod);
+					// object instantiation
+					if(methodInsnNode.name.equals("<init>")) {
+						final String instanceName = Type.getObjectType(methodInsnNode.owner).getClassName();
+						final ObjectInstantiation objectInstantiation = new ObjectInstantiation(getType(instanceName), args);
+						expressionStack.add(objectInstantiation);
+					} else {
+						final MethodInvocation invokedMethod = new MethodInvocation(expressionStack.pop(), methodInsnNode.name, args, returnType);
+						expressionStack.add(invokedMethod);
+					}
 					break;
 				case Opcodes.INVOKESTATIC:
 					final LocalVariableNode var = localVariables.get(0);
@@ -248,10 +255,7 @@ public class LambdaExpressionReader {
 			case AbstractInsnNode.JUMP_INSN:
 				return readJumpInstruction(insnCursor, expressionStack, capturedArgs, localVariables);
 			case AbstractInsnNode.INT_INSN:
-				final Statement intInstructionStmt = readInstruction((IntInsnNode)currentInstruction, expressionStack, localVariables);
-				if (intInstructionStmt != null) {
-					return intInstructionStmt;
-				}
+				readInstruction((IntInsnNode)currentInstruction, expressionStack, localVariables);
 				break;
 			case AbstractInsnNode.INSN:
 				final Statement instructionStmt = readInstruction(insnCursor, expressionStack, capturedArgs, localVariables);
@@ -259,9 +263,12 @@ public class LambdaExpressionReader {
 					return instructionStmt;
 				}
 				break;
+			case AbstractInsnNode.TYPE_INSN:
+				// ignore this one, this is called during new type instanciation, but we'll catch the call to <init> instead.
+				break;
 			default:
 				LOGGER.error("Ouch, this is embarrassing... We've reached an unexpected instruction operator: {}",
-						currentInstruction.getOpcode());
+						currentInstruction.getType());
 			}
 			insnCursor.next();
 		};
@@ -292,6 +299,8 @@ public class LambdaExpressionReader {
 				return double.class;
 			case "char":
 				return char.class;
+			case "void":
+				return void.class;
 			default:
 				return Class.forName(typeName);
 			}
@@ -340,7 +349,7 @@ public class LambdaExpressionReader {
 			break;
 		case Opcodes.ICONST_0:
 			// applies for byte, short, int and boolean
-			expressionStack.add(expressionStack.empty() ? LiteralFactory.getLiteral(0) : LiteralFactory.getLiteral(0, expressionStack.peek()));
+			expressionStack.add(LiteralFactory.getLiteral(0));
 			break;
 		case Opcodes.LCONST_0:
 			expressionStack.add(new NumberLiteral(0l));
@@ -353,7 +362,7 @@ public class LambdaExpressionReader {
 			break;
 		case Opcodes.ICONST_1:
 			// applies for byte, short, int and boolean
-			expressionStack.add(expressionStack.empty() ? LiteralFactory.getLiteral(1) : LiteralFactory.getLiteral(1, expressionStack.peek()));
+			expressionStack.add(LiteralFactory.getLiteral(1));
 			break;
 		case Opcodes.LCONST_1:
 			expressionStack.add(new NumberLiteral(1l));
@@ -420,20 +429,19 @@ public class LambdaExpressionReader {
 	 *            the expression stack to put on or pop from.
 	 * @param localVariables
 	 *            the local variables
-	 * @return a {@link Statement} or {@code null}
 	 */
-	private Statement readInstruction(final IntInsnNode intInsnNode, final Stack<Expression> expressionStack,
+	private void readInstruction(final IntInsnNode intInsnNode, final Stack<Expression> expressionStack,
 			final List<LocalVariableNode> localVariables) {
 		switch (intInsnNode.getOpcode()) {
 		case Opcodes.BIPUSH:
-			expressionStack.add(LiteralFactory.getLiteral(intInsnNode.operand, expressionStack.peek()));
+			//expressionStack.add(LiteralFactory.getLiteral(intInsnNode.operand, expressionStack.peek()));
+			final Expression literal = LiteralFactory.getLiteral(intInsnNode.operand);
+			LOGGER.trace("Stacking literal {}", literal);
+			expressionStack.add(literal);
 			break;
 		default:
 			LOGGER.warn("Instruction with OpCode {} was ignored.", intInsnNode.getOpcode());
 		}
-		// no statement to return for now, instruction was put on top of
-		// ExpressionStack for further usage
-		return null;
 	}
 	
 	/**
@@ -459,7 +467,7 @@ public class LambdaExpressionReader {
 				return new BooleanLiteral(true);
 			}
 		default:
-			throw new IllegalArgumentException("Could not convert '" + value + "' into a Boolean Literal");
+			throw new IllegalArgumentException("Could not convert '" + value + "' (" + value.getExpressionType() + ") into a Boolean Literal");
 		}
 	}
 
@@ -540,24 +548,56 @@ public class LambdaExpressionReader {
 	private Expression getComparisonExpression(final JumpInsnNode jumpInsnNode,
 			final Stack<Expression> expressionStack) {
 		final InfixOperator comparisonOperator = extractComparisonOperator(jumpInsnNode);
-		final Expression compareRightSideExpression = expressionStack.pop();
-		final Expression compareLeftSideExpression = (expressionStack.empty() ? getDefaultComparisonOperand(compareRightSideExpression) : expressionStack.pop());
-		if (compareLeftSideExpression.equals(new BooleanLiteral(Boolean.FALSE))) {
+		final Expression rightSideOperand = expressionStack.pop();
+		final Expression leftSideOperand = (expressionStack.empty() ? getDefaultComparisonOperand(rightSideOperand) : expressionStack.pop());
+		if (leftSideOperand.equals(new BooleanLiteral(Boolean.FALSE))) {
 			switch (comparisonOperator) {
 			// if we have: 'expr == false', just return '!expr'
 			case EQUALS:
-				return compareRightSideExpression.inverse();
+				return rightSideOperand.inverse();
 			// if we have: 'expr != false', just return 'expr'
 			case NOT_EQUALS:
-				return compareRightSideExpression;
+				return rightSideOperand;
 			default:
 				throw new AnalyzeException("There's no expression to compare with "
-						+ compareRightSideExpression + " " + comparisonOperator + " [expected something here]");
+						+ rightSideOperand + " " + comparisonOperator + " [expected something here]");
 			}
 		}
+		// ensure the operand types match by forcing the right side to be the same type as the left side
+		final Class<?> leftSideOperandType = getOperandType(leftSideOperand);
+		final Expression castedRightOperand = castOperand(rightSideOperand, leftSideOperandType);
 		final InfixExpression comparisonExpression = new InfixExpression(comparisonOperator, Arrays.asList(
-				compareLeftSideExpression, compareRightSideExpression));
+				leftSideOperand, castedRightOperand));
 		return comparisonExpression;
+	}
+
+	/**
+	 * Attempts to cast the given operand (if it is a Literal) to the given {@code targetType}
+	 * @param operand the operand to process
+	 * @param targetType the target type
+	 * @return the casted operand or the given operand if no cast could be performed
+	 */
+	private Expression castOperand(final Expression operand, final Class<?> targetType) {
+		switch(operand.getExpressionType()) {
+		case NUMBER_LITERAL:
+			return LiteralFactory.getLiteral((NumberLiteral)operand, targetType);
+		default:
+			return operand;
+		}
+	}
+
+	/**
+	 * @param operand the operand to analyze
+	 * @return the type of the operand, in particular, the {@code returnType} if the given {@code operand} is a {@link MethodInvocation}.
+	 * @see MethodInvocation#getReturnType()
+	 */
+	private Class<?> getOperandType(final Expression operand) {
+		switch(operand.getExpressionType()) {
+		case METHOD_INVOCATION:
+			return ((MethodInvocation)operand).getReturnType();
+		default:
+			return operand.getJavaType();
+		}
 	}
 
 	/**

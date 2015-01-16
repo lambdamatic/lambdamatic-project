@@ -35,6 +35,8 @@ public abstract class ExpressionVisitor {
 				return visitInfixExpression((InfixExpression) expr);
 			case INSTANCE_OF:
 				return visitInstanceOfExpression((InstanceOfExpression) expr);
+			case OBJECT_INSTANTIATION:
+				return visitObjectInstantiationExpression((ObjectInstantiation) expr);
 			case METHOD_INVOCATION:
 				return visitMethodInvocationExpression((MethodInvocation) expr);
 			case NULL_LITERAL:
@@ -84,10 +86,14 @@ public abstract class ExpressionVisitor {
 		return true;
 	}
 
-	public boolean visitMethodInvocationExpression(final MethodInvocation expr) {
+	public boolean visitObjectInstantiationExpression(final ObjectInstantiation expr) {
 		return true;
 	}
 
+	public boolean visitMethodInvocationExpression(final MethodInvocation expr) {
+		return true;
+	}
+	
 	public boolean visitNullLiteralExpression(final NullLiteral expr) {
 		return true;
 	}

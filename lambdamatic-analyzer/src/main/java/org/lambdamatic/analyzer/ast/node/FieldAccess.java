@@ -20,7 +20,7 @@ public class FieldAccess extends Expression {
 	
 	/**
 	 * Full constructor
-	  * <p>
+	 * <p>
 	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
 	 * </p>
 	 * @param sourceExpression the sourceExpression containing the field to access

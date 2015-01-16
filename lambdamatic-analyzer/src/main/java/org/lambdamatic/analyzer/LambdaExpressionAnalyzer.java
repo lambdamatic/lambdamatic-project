@@ -57,9 +57,9 @@ public class LambdaExpressionAnalyzer {
 			final Class<?> argumentClass = Class.forName(argumentClassName);
 			final Statement statement = new LambdaExpressionReader().readBytecodeStatement(serializedLambda);
 			final Expression thinedOutExpression = thinOut(statement);
-			final Expression processedExpression = processMethodCalls(thinedOutExpression);
-			final Expression resultExpression = simplifyExpression(processedExpression);
-			return new LambdaExpression(resultExpression, argumentClass);
+			final Expression simplifiedExpression = simplifyExpression(thinedOutExpression);
+			final Expression processedExpression = processMethodCalls(simplifiedExpression);
+			return new LambdaExpression(processedExpression, argumentClass);
 		} catch (IOException | ClassNotFoundException e) {
 			throw new AnalyzeException("Failed to analyze lambda expression", e);
 		}
@@ -108,7 +108,7 @@ public class LambdaExpressionAnalyzer {
 	 * @return the resulting expression
 	 */
 	private Expression thinOut(final Statement statement) {
-		LOGGER.debug("About to simplify \n{}", ASTNodeUtils.prettyPrint(statement));
+		LOGGER.debug("About to simplify \n\t{}", ASTNodeUtils.prettyPrint(statement));
 		// find branches that end with 'return 1'
 		final ReturnTruePathFilter filter = new ReturnTruePathFilter();
 		statement.accept(filter);
