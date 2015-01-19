@@ -12,7 +12,7 @@ import org.bson.types.ObjectId;
 import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
-import org.lambdamatic.mongodb.types.geospatial.Point;
+import org.lambdamatic.mongodb.types.geospatial.Location;
 
 /**
  * @author Xavier Coulon
@@ -33,7 +33,7 @@ public class Foo {
 		private boolean primitiveBooleanField;
 		private char primitiveCharField;
 		private EnumFoo enumFoo;
-		private Point location;
+		private Location location;
 
 		public FooBuilder withId(final ObjectId id) {
 			this.id = id;
@@ -89,7 +89,7 @@ public class Foo {
 			this.enumFoo = enumFoo;
 			return this;
 		}
-		public FooBuilder withLocation(final Point location) {
+		public FooBuilder withLocation(final Location location) {
 			this.location = location;
 			return this;
 		}
@@ -133,7 +133,7 @@ public class Foo {
 	private EnumFoo enumFoo;
 	
 	@DocumentField
-	private Point location;
+	private Location location;
 	
 	public Foo() {
 		
@@ -312,14 +312,14 @@ public class Foo {
 	/**
 	 * @return the location
 	 */
-	public Point getLocation() {
+	public Location getLocation() {
 		return location;
 	}
 
 	/**
 	 * @param location the location to set
 	 */
-	public void setLocation(Point location) {
+	public void setLocation(Location location) {
 		this.location = location;
 	}
 

@@ -642,13 +642,6 @@ public class InfixExpression extends ComplexExpression {
 	}
 	
 	/**
-	 * @return {@code true} if at least one of the operands is an {@link InfixExpression}
-	 */
-	private boolean hasNestedInfixExpressionOperands() {
-		return this.operands.parallelStream().anyMatch(o -> o.getExpressionType() == ExpressionType.INFIX);
-	}
-	
-	/**
 	 * Executes the given simplification on {@code this} and returns all combinations.
 	 * 
 	 * @param law

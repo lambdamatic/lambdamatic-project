@@ -8,26 +8,38 @@
 
 package org.lambdamatic.mongodb.connexion;
 
+import java.net.UnknownHostException;
+
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import org.lambdamatic.mongodb.configuration.MongoDBClientConfiguration;
+import org.lambdamatic.mongodb.configuration.MongoClientConfiguration;
 
-import com.mongodb.DB;
 import com.mongodb.MongoClient;
 
 /**
+ * CDI Producer for a single {@link MongoClient} instance.
+ * 
  * @author Xavier Coulon <xcoulon@redhat.com>
+ *
  *
  */
 @ApplicationScoped
-public class MongoDBDatabaseProducer {
-
+public class MongoClientProducer {
+	
 	@Produces
 	@Singleton
-	public DB getDatabase(MongoClient mongoClient, MongoDBClientConfiguration mongodDBClientConfiguration) {
-		return mongoClient.getDB(mongodDBClientConfiguration.getDatabaseName());
+	public MongoClient createMongoClient(MongoClientConfiguration mongoDBClientConfiguration) throws UnknownHostException {
+	    MongoClient mongoClient = new MongoClient();
+	    return mongoClient;
 	}
+
+	public void disposeClient(@Disposes MongoClient mongoClient) {
+		mongoClient.close();
+	}
+	
+
 }
 

@@ -1,5 +1,10 @@
 package org.lambdamatic.mongodb.codecs;
 
+import static org.lambdamatic.mongodb.codecs.MongoOperators.NOT_EQUALS;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.bson.BsonDocument;
 import org.bson.BsonDocumentReader;
 import org.bson.BsonDocumentWriter;
@@ -7,6 +12,7 @@ import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.lambdamatic.FilterExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
+import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
@@ -14,6 +20,9 @@ import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.metadata.Metadata;
+import org.lambdamatic.mongodb.types.geospatial.Location;
+import org.lambdamatic.mongodb.types.geospatial.Polygon;
+import org.lambdamatic.mongodb.types.geospatial.Polygon.Ring;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,13 +37,16 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 
 	/** the usual logger. */
 	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticFilterExpressionEncoder.class);
-	
-	/** The {@link Metadata} class associated with the domain class being queried. */
+
+	/**
+	 * The {@link Metadata} class associated with the domain class being
+	 * queried.
+	 */
 	private final Class<?> metadataClass;
 
 	/** The {@link BsonWriter} to use. */
 	private final BsonWriter writer;
-	
+
 	/**
 	 * Full constructor
 	 * 
@@ -54,19 +66,23 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 	public boolean visitInfixExpression(final InfixExpression expr) {
 		switch (expr.getOperator()) {
 		case CONDITIONAL_AND:
-			// Syntax: { $and: [ { <expression1> }, { <expression2> } , ... , { <expressionN> } ] }
+			// Syntax: { $and: [ { <expression1> }, { <expression2> } , ... , {
+			// <expressionN> } ] }
 			for (Expression operand : expr.getOperands()) {
-				final LambdamaticFilterExpressionEncoder operandEncoder = new LambdamaticFilterExpressionEncoder(metadataClass, writer);
+				final LambdamaticFilterExpressionEncoder operandEncoder = new LambdamaticFilterExpressionEncoder(
+						metadataClass, writer);
 				operand.accept(operandEncoder);
 			}
 			break;
 		case CONDITIONAL_OR:
-			// syntax: { $or: [ { <expression1> }, { <expression2> }, ... , { <expressionN> } ] }
+			// syntax: { $or: [ { <expression1> }, { <expression2> }, ... , {
+			// <expressionN> } ] }
 			writer.writeStartArray("$or");
 			for (Expression operand : expr.getOperands()) {
-				final BsonDocument operandDocument = new BsonDocument(); 
+				final BsonDocument operandDocument = new BsonDocument();
 				final BsonWriter operandBsonWriter = new BsonDocumentWriter(operandDocument);
-				final LambdamaticFilterExpressionEncoder operandEncoder = new LambdamaticFilterExpressionEncoder(metadataClass, operandBsonWriter);
+				final LambdamaticFilterExpressionEncoder operandEncoder = new LambdamaticFilterExpressionEncoder(
+						metadataClass, operandBsonWriter);
 				operandBsonWriter.writeStartDocument();
 				operand.accept(operandEncoder);
 				operandBsonWriter.writeEndDocument();
@@ -77,58 +93,159 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 			break;
 		case EQUALS:
 			// Syntax: {field: value} }
-			write(writer, expr.getOperands().get(0), expr.getOperands().get(1));
+			writeEquals(expr.getOperands().get(0), expr.getOperands().get(1));
 			break;
 		case NOT_EQUALS:
 			// Syntax: {field: {$ne: value} }
-			write(writer, expr.getOperands().get(0), expr.getOperands().get(1));
+			// FIXME: this needs testing
+			writeNotEquals(expr.getOperands().get(0), expr.getOperands().get(1));
 			break;
 		default:
-			throw new UnsupportedOperationException("Generating a query with '" + expr.getOperator() + "' is not supported yet (shame...)");
+			throw new UnsupportedOperationException("Generating a query with '" + expr.getOperator()
+					+ "' is not supported yet (shame...)");
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean visitMethodInvocationExpression(final MethodInvocation expr) {
-		if(expr.getArguments().size() > 1) {
-			throw new UnsupportedOperationException("Generating a BSON document from a method invocation with multiple arguments is not supported yet");
+		if (expr.getArguments().size() > 1) {
+			throw new ConversionException(
+					"Generating a BSON document from a method invocation with multiple arguments is not supported yet");
 		}
 		// FIXME: support other methods here
 		if (expr.getMethodName().equals("equals")) {
-			write(writer, expr.getSourceExpression(), expr.getArguments().get(0));
+			writeEquals(expr.getSourceExpression(), expr.getArguments().get(0));
+		} else if (expr.getMethodName().equals("geoWithin")) {
+			writeGeoWithin(expr.getSourceExpression(), expr.getArguments());
 		}
 		return false;
 	}
-	
+
 	/**
-	 * Writes the given key/value pair
-	 * @param writer the {@link BsonWriter} to write into.
-	 * @param key the key 
-	 * @param value the value
+	 * Encodes the given <code>sourceExpression</code> and <code>arguments</code> into a geoWithin query member, such as:
+	 * <pre>
+	 * loc: {
+     *   $geoWithin: {
+     *     $geometry: {
+     *       type : "Polygon" ,
+     *       coordinates: [ 
+     *         [ [ 0, 0 ], [ 3, 6 ], [ 6, 1 ], [ 0, 0 ] ] 
+     *       ]
+     *     }
+     *   }
+     * }
+	 * 
+	 * </pre>
+	 * @param sourceExpression
+	 * @param arguments a list of Array of {@link Location} or {@link Polygon}
 	 */
-	//FIXME: need to complete with more 'instanceof', and support for Enumerations, too.
-	private void write(final BsonWriter writer, final Expression keyExpr, final Expression valueExpr) {
-		final String key = extractKey(keyExpr);
-		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
-		if(value == null) {
-			writer.writeNull(key);
+	private void writeGeoWithin(final Expression sourceExpression, final List<Expression> arguments) {
+		if(arguments == null || arguments.isEmpty()) {
+			throw new ConversionException("Cannot generate geoWithin query with empty arguments");
 		}
-		else if(value instanceof Integer) {
-			writer.writeInt32(key, (Integer)value);
+		if(sourceExpression.getExpressionType() != ExpressionType.FIELD_ACCESS) {
+			throw new ConversionException("Did not expect to generate a 'geoWithin' query from a element of type " + sourceExpression.getExpressionType());
 		}
-		else if(value instanceof Long) {
-			writer.writeInt64(key, (Long)value);
-		}
-		else if(value instanceof String) {
-			writer.writeString(key, (String)value);
-		} else if (value instanceof Enum) {
-			writer.writeString(key, ((Enum<?>)value).name());
-		} else {
-			throw new UnsupportedOperationException("Writing value of a '" + valueExpr.getExpressionType() + "' is not supported yet");
+		final List<Object> argumentValues = arguments.stream().map(e -> e.getValue()).collect(Collectors.toList());
+		if(argumentValues.size() == 1) {
+			final Object argument = argumentValues.get(0);
+			if(argument instanceof Polygon) {
+				final Polygon polygon = (Polygon) argument;
+				// expect something like:
+				// { location: 
+				//   $geoWithin: 
+				//   { $geometry: 
+				//      { type: 'Polygon', 
+				//        coordinates: [ [0,0], [0,1], [1,1], [1,0], [0,0] ]
+				//      }  
+				//    } 
+				// }
+				writer.writeStartDocument(((FieldAccess)sourceExpression).getFieldName());
+				writer.writeStartDocument("$geoWithin");
+				writer.writeStartDocument("$geometry");
+				writer.writeString("type", "Polygon");
+				writer.writeStartArray("coordinates");
+				for(Ring ring : polygon.getRings()) {
+					writer.writeStartArray();
+					for(Location point : ring.getPoints()) {
+						writer.writeStartArray();
+						writer.writeDouble(point.getLongitude());
+						writer.writeDouble(point.getLatitude());
+						writer.writeEndArray();
+					}
+					writer.writeEndArray(); // ring
+				}
+				writer.writeEndArray(); // coordinates
+				writer.writeEndDocument(); // $geometry
+				writer.writeEndDocument(); // $geoWithin
+				writer.writeEndDocument(); // location field
+			}
 		}
 	}
-	
+
+	/**
+	 * Writes the equals query member for the given key/value pair
+	 * <p>
+	 * Eg: <code>{key: value}</code>
+	 * </p>
+	 * 
+	 * @param key
+	 *            the key
+	 * @param value
+	 *            the value
+	 */
+	private void writeEquals(final Expression keyExpr, final Expression valueExpr) {
+		final String key = extractKey(keyExpr);
+		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
+		if (value == null) {
+			writer.writeNull(key);
+		} else if (value instanceof Integer) {
+			writer.writeInt32(key, (Integer) value);
+		} else if (value instanceof Long) {
+			writer.writeInt64(key, (Long) value);
+		} else if (value instanceof String) {
+			writer.writeString(key, (String) value);
+		} else if (value instanceof Enum) {
+			writer.writeString(key, ((Enum<?>) value).name());
+		} else {
+			throw new UnsupportedOperationException("Writing value of a '" + valueExpr.getExpressionType()
+					+ "' is not supported yet");
+		}
+	}
+
+	/**
+	 * Writes the equals query member for the given key/value pair
+	 * <p>
+	 * Eg: <code>{key: {$ne: value}}</code>
+	 * </p>
+	 * 
+	 * @param key
+	 *            the key
+	 * @param value
+	 *            the value
+	 */
+	private void writeNotEquals(final Expression keyExpr, final Expression valueExpr) {
+		final String key = extractKey(keyExpr);
+		writer.writeStartDocument(key);
+		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
+		if (value == null) {
+			writer.writeNull(NOT_EQUALS);
+		} else if (value instanceof Integer) {
+			writer.writeInt32(NOT_EQUALS, (Integer) value);
+		} else if (value instanceof Long) {
+			writer.writeInt64(NOT_EQUALS, (Long) value);
+		} else if (value instanceof String) {
+			writer.writeString(NOT_EQUALS, (String) value);
+		} else if (value instanceof Enum) {
+			writer.writeString(NOT_EQUALS, ((Enum<?>) value).name());
+		} else {
+			throw new UnsupportedOperationException("Writing value of a '" + valueExpr.getExpressionType()
+					+ "' is not supported yet");
+		}
+		writer.writeEndDocument();
+	}
+
 	private String extractKey(final Expression expr) {
 		switch (expr.getExpressionType()) {
 		case LOCAL_VARIABLE:
@@ -149,7 +266,7 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 	}
 
 	private String extractKey(final FieldAccess expr) {
- 		final StringBuilder builder = new StringBuilder();
+		final StringBuilder builder = new StringBuilder();
 		final String target = extractKey(expr.getSourceExpression());
 		if (target != null) {
 			builder.append(target).append('.');
@@ -161,7 +278,7 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 				final DocumentField fieldAnnotation = field.getAnnotation(DocumentField.class);
 				if (fieldAnnotation != null) {
 					final String annotatedFieldName = fieldAnnotation.name();
-					if(annotatedFieldName != null&& !annotatedFieldName.isEmpty()) {
+					if (annotatedFieldName != null && !annotatedFieldName.isEmpty()) {
 						builder.append(annotatedFieldName);
 					} else {
 						builder.append(field.getName());
@@ -174,5 +291,5 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 		}
 		return builder.toString();
 	}
-	
+
 }

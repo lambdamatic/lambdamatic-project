@@ -9,12 +9,12 @@
 package org.lambdamatic.mongodb.types.geospatial;
 
 /**
- * Geospatial Point location for Spatial Queries
+ * Geospatial Location for Spatial Queries
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class Point {
+public class Location {
 
 	/** The longitude value.*/
 	private double longitude;
@@ -25,7 +25,7 @@ public class Point {
 	/**
 	 * Default constructor
 	 */
-	public Point() {
+	public Location() {
 		super();
 	}
 	
@@ -34,7 +34,7 @@ public class Point {
 	 * @param longitude
 	 * @param latitude
 	 */
-	public Point(double longitude, double latitude) {
+	public Location(double longitude, double latitude) {
 		super();
 		this.longitude = longitude;
 		this.latitude = latitude;
@@ -68,5 +68,44 @@ public class Point {
 		this.latitude = latitude;
 	}
 
+	@Override
+	public String toString() {
+		return "[" + this.longitude + ", " + this.latitude + "]";
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(latitude);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(longitude);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Location other = (Location) obj;
+		if (Double.doubleToLongBits(latitude) != Double.doubleToLongBits(other.latitude))
+			return false;
+		if (Double.doubleToLongBits(longitude) != Double.doubleToLongBits(other.longitude))
+			return false;
+		return true;
+	}
+	
 }
 

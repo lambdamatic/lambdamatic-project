@@ -11,7 +11,7 @@ package com.sample;
 import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
-import org.lambdamatic.mongodb.types.geospatial.Point;
+import org.lambdamatic.mongodb.types.geospatial.Location;
 
 /**
  * @author Xavier Coulon
@@ -54,6 +54,6 @@ public class Foo {
 	private EnumFoo enumFoo;
 	
 	@DocumentField
-	private Point location;
+	private Location location;
 	
 }

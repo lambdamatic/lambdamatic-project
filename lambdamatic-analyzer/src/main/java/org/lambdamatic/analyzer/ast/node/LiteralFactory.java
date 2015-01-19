@@ -3,7 +3,6 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
-import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 
 /**
  * @author xcoulon

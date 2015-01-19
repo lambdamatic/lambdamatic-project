@@ -12,7 +12,7 @@ package org.lambdamatic.mongodb.configuration;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class MongoDBClientConfiguration {
+public class MongoClientConfiguration {
 
 	private final String databaseName;
 	
@@ -20,7 +20,7 @@ public class MongoDBClientConfiguration {
 		return databaseName;
 	}
 	
-	public MongoDBClientConfiguration(final String databaseName) {
+	public MongoClientConfiguration(final String databaseName) {
 		this.databaseName = databaseName;
 	}
 }

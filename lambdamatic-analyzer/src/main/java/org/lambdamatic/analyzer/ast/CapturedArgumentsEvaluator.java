@@ -13,6 +13,7 @@ import org.lambdamatic.analyzer.ast.node.MethodInvocation;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
+@Deprecated
 public class CapturedArgumentsEvaluator extends ExpressionVisitor {
 	
 	/**

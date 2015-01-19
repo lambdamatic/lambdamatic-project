@@ -12,7 +12,6 @@ import org.lambdamatic.FilterExpression;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.metadata.Metadata;
 
-import com.mongodb.WriteConcernResult;
 import com.mongodb.client.FindFluent;
 
 /**

@@ -376,9 +376,12 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 						return DateField.class.getName();
 					case "org.bson.types.ObjectId":
 						return ObjectIdField.class.getName();
-					case "org.lambdamatic.mongodb.types.geospatial.Point":
+					case "org.lambdamatic.mongodb.types.geospatial.Location":
 						return LocationField.class.getName();
+					default:
+						throw new RuntimeException("Unsupported field '" + variableElement.getSimpleName() + "'  of type " + variableType.toString());
 					}
+					
 				}
 				processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
 						"Unexpected variable type for '" + variableElement.getSimpleName() + "' : " + variableType);

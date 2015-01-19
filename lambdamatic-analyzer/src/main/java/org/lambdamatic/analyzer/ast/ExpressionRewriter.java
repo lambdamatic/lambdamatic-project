@@ -94,36 +94,38 @@ public class ExpressionRewriter extends ExpressionVisitor {
 		} else {
 			final Class<?> sourceType = methodInvocation.getSourceExpression().getJavaType();
 			final String methodName = methodInvocation.getMethodName();
-			if(sourceType.equals(Boolean.class) && methodName.equals("booleanValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Byte#byteValue() method
-			else if(sourceType.equals(Byte.class) && methodName.equals("byteValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Short#shortValue() method
-			else if(sourceType.equals(Short.class) && methodName.equals("shortValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Integer#intValue() method
-			else if(sourceType.equals(Integer.class) && methodName.equals("intValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Long#longValue() method
-			else if(sourceType.equals(Long.class) && methodName.equals("longValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Float#floatValue() method
-			else if(sourceType.equals(Float.class) && methodName.equals("floatValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Double#doubleValue() method
-			else if(sourceType.equals(Double.class) && methodName.equals("doubleValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Character#charValue() method
-			else if(sourceType.equals(Character.class) && methodName.equals("charValue")) {
-				methodInvocation.delete();
+			if(methodInvocation.getArguments().isEmpty()) {
+				if(sourceType.equals(Boolean.class) && methodName.equals("booleanValue")) {
+					methodInvocation.delete();
+				}
+				// drop invocation of Byte#byteValue() method
+				else if(sourceType.equals(Byte.class) && methodName.equals("byteValue")) {
+					methodInvocation.delete();
+				}
+				// drop invocation of Short#shortValue() method
+				else if(sourceType.equals(Short.class) && methodName.equals("shortValue")) {
+					methodInvocation.delete();
+				}
+				// drop invocation of Integer#intValue() method
+				else if(sourceType.equals(Integer.class) && methodName.equals("intValue")) {
+					methodInvocation.delete();
+				}
+				// drop invocation of Long#longValue() method
+				else if(sourceType.equals(Long.class) && methodName.equals("longValue")) {
+					methodInvocation.delete();
+				}
+				// drop invocation of Float#floatValue() method
+				else if(sourceType.equals(Float.class) && methodName.equals("floatValue")) {
+					methodInvocation.delete();
+				}
+				// drop invocation of Double#doubleValue() method
+				else if(sourceType.equals(Double.class) && methodName.equals("doubleValue")) {
+					methodInvocation.delete();
+				}
+				// drop invocation of Character#charValue() method
+				else if(sourceType.equals(Character.class) && methodName.equals("charValue")) {
+					methodInvocation.delete();
+				}
 			}
 		}
 		return true;
@@ -226,5 +228,5 @@ public class ExpressionRewriter extends ExpressionVisitor {
 			SecurityException {
 		return clazz.getField(fieldName);
 	}
-
+	
 }

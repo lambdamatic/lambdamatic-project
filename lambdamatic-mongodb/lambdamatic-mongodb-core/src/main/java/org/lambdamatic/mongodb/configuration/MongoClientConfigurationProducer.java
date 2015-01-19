@@ -20,16 +20,16 @@ import javax.json.JsonString;
  * 
  */
 @ApplicationScoped
-public class MongoDBClientConfigurationProducer {
+public class MongoClientConfigurationProducer {
 
 	@Produces @Default
-	public MongoDBClientConfiguration getMongoDBClientConfiguration() {
+	public MongoClientConfiguration getMongoDBClientConfiguration() {
 		final InputStream jsonConfigFile = Thread.currentThread()
 				.getContextClassLoader().getResourceAsStream("config.json");
 		final JsonReader reader = Json.createReader(jsonConfigFile);
 		final JsonObject root = (JsonObject) reader.read();
 		final String databaseName = ((JsonString) root.get("databaseName")).getString();
-		final MongoDBClientConfiguration mongoDBClientConfiguration= new MongoDBClientConfiguration(databaseName);
+		final MongoClientConfiguration mongoDBClientConfiguration= new MongoClientConfiguration(databaseName);
 		return mongoDBClientConfiguration;
 	}
 

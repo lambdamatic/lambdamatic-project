@@ -20,10 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.MongoClient;
-import com.mongodb.WriteConcernResult;
 import com.mongodb.client.FindFluent;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCollectionOptions;
 import com.mongodb.client.MongoDatabase;
 
 /**
@@ -72,9 +70,9 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 		// LambdamaticCodec<T>(targetClass));
 		final RootCodecRegistry codecRegistry = new RootCodecRegistry(Arrays.asList(
 				new LambdamaticDocumentCodecProvider(), new LambdamaticFilterExpressionCodecProvider<M>(), new BsonValueCodecProvider()));
-		final MongoCollectionOptions options = MongoCollectionOptions.builder().codecRegistry(codecRegistry).build();
-		this.mongoCollection = mongoClient.getDatabase(databaseName)
-				.getCollection(collectionName, targetClass, options);
+		//final MongoCollectionOptions options = MongoCollectionOptions.builder().codecRegistry(codecRegistry).build();
+		this.mongoCollection = mongoClient.getDatabase(databaseName).withCodecRegistry(codecRegistry)
+				.getCollection(collectionName, targetClass);
 		this.targetClass = targetClass;
 		LOGGER.debug("Initialized MongoCollection for documents of class '{}'", targetClass);
 	}
