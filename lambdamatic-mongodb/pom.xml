@@ -16,11 +16,12 @@
 		<mongodb.driver.version>3.0.0-SNAPSHOT</mongodb.driver.version>
 		<jackson.version>2.4.0</jackson.version>
 		<bson4jackson.version>2.4.0</bson4jackson.version>
+		<stringtemplate.version>4.0.2</stringtemplate.version>
 	</properties>
 
 	<modules>
-		<module>lambdamatic-mongodb-core</module>
 		<module>lambdamatic-mongodb-metadata-generator</module>
+		<module>lambdamatic-mongodb-core</module>
 	</modules>
 
 	<dependencyManagement>
@@ -30,6 +31,11 @@
 				<artifactId>mongo-java-driver</artifactId>
 				<version>${mongodb.driver.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.antlr</groupId>
+				<artifactId>stringtemplate</artifactId>
+				<version>${stringtemplate.version}</version>
+		</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-core</artifactId>

@@ -89,7 +89,7 @@ public class CompilationAndAnnotationProcessingRule implements MethodRule {
 				Files.createDirectory(TARGET_GENERATED_TEST_SOURCES_FOLDER.toPath());
 			} else {
 				Files.walk(TARGET_GENERATED_TEST_SOURCES_FOLDER.toPath(), Integer.MAX_VALUE,
-						FileVisitOption.FOLLOW_LINKS).forEach(p -> p.toFile().delete());
+						FileVisitOption.FOLLOW_LINKS).filter(p -> !p.toFile().equals(TARGET_GENERATED_TEST_SOURCES_FOLDER)).forEach(p -> p.toFile().delete());
 			}
 		} else {
 			Files.createDirectory(TARGET_GENERATED_TEST_SOURCES_FOLDER.toPath());

@@ -23,8 +23,8 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.velocity</groupId>
-			<artifactId>velocity</artifactId>
+			<groupId>org.antlr</groupId>
+			<artifactId>stringtemplate</artifactId>
 		</dependency>
 		<!-- Test dependencies -->
 		<dependency>

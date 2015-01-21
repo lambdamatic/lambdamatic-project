@@ -12,7 +12,7 @@ import javax.enterprise.context.ApplicationScoped;
 @Generated(value="org.lambdamatic.mongodb.apt.LambdamaticAnnotationsProcessor")
 @ApplicationScoped
 public class FooCollectionProducer  {
-	
+
     /**
      * Creates and returns a new instance of FooCollection
      *

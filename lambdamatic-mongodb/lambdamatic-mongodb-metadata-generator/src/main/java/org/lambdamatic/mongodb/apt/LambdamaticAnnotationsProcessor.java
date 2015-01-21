@@ -5,12 +5,10 @@ package org.lambdamatic.mongodb.apt;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -29,9 +27,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
+import org.apache.commons.io.IOUtils;
 import org.lambdamatic.mongodb.LambdamaticMongoCollection;
 import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentField;
@@ -42,6 +38,8 @@ import org.lambdamatic.mongodb.metadata.LocationField;
 import org.lambdamatic.mongodb.metadata.Metadata;
 import org.lambdamatic.mongodb.metadata.ObjectIdField;
 import org.lambdamatic.mongodb.metadata.StringField;
+import org.stringtemplate.v4.AutoIndentWriter;
+import org.stringtemplate.v4.ST;
 
 
 /**
@@ -56,63 +54,51 @@ import org.lambdamatic.mongodb.metadata.StringField;
 public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 
 	/** Name of the template file for {@link Metadata} classes. */
-	private static final String METACLASS_TEMPLATE = "metadata_template.vm";
+	private static final String METACLASS_TEMPLATE = "metadata_template.st";
 
 	/** Suffix to use for the generated metadata classes. */
 	private static String METACLASS_NAME_SUFFIX = "_";
 	
 	/** Name of the template file for the {@link LambdamaticMongoCollection} implementation classes. */
-	private static final String MONGO_COLLECTION_TEMPLATE = "mongo_collection_template.vm";
+	private static final String MONGO_COLLECTION_TEMPLATE = "mongo_collection_template.st";
 
 	/** Suffix to use for the generated {@link LambdamaticMongoCollection} implementation classes. */
 	private static String MONGO_COLLECTION_NAME_SUFFIX = "Collection";
 	
 	/** Name of the template file for the {@link LambdamaticMongoCollection} implementation producer classes. */
-	private static final String MONGO_COLLECTION_PRODUCER_TEMPLATE = "mongo_collection_producer_template.vm";
+	private static final String MONGO_COLLECTION_PRODUCER_TEMPLATE = "mongo_collection_producer_template.st";
 	
 	/** Suffix to use for the generated {@link LambdamaticMongoCollection} implementation producer classes. */
 	private static String MONGO_COLLECTION_PRODUCER_NAME_SUFFIX = "CollectionProducer";
 	
-	/** The Velocity Engine. */
-	private VelocityEngine velocityEngine;
+	/** StringTemplate for the metadata classes. */
+	private ST metadataTemplate;
 
-	/** Velocity template for the metadata classes. */
-	private Template metadataTemplate;
+	/** StringTemplate for the {@link LambdamaticMongoCollection} implementation classes. */
+	private ST mongoCollectionTemplate;
 
-	/** Velocity template for the {@link LambdamaticMongoCollection} implementation classes. */
-	private Template mongoCollectionTemplate;
-
-	/** Velocity template for {@link LambdamaticMongoCollection} implementation producer classes. */
-	private Template mongoCollectionProducerTemplate;
+	/** StringTemplate for {@link LambdamaticMongoCollection} implementation producer classes. */
+	private ST mongoCollectionProducerTemplate;
 
 	/**
 	 * Constructor
+	 * @throws IOException if templates could not be loaded.
 	 */
-	public LambdamaticAnnotationsProcessor() {
-		loadVelocityContext();
+	public LambdamaticAnnotationsProcessor() throws IOException {
+		this.metadataTemplate = getStringTemplate(METACLASS_TEMPLATE);
+		this.mongoCollectionTemplate = getStringTemplate(MONGO_COLLECTION_TEMPLATE);
+		this.mongoCollectionProducerTemplate = getStringTemplate(MONGO_COLLECTION_PRODUCER_TEMPLATE);
 	}
 
 	/**
-	 * Loads the Velocity context and all templates
+	 * Initializes a StringTemplate ({@link ST}) from the given {@code templateFileName}
+	 * @param templateFileName the name of the template file to load
+	 * @return the corresponding StringTemplate
+	 * @throws IOException
 	 */
-	private void loadVelocityContext() {
-		if (this.velocityEngine == null) {
-			try {
-				final Properties props = new Properties();
-				final URL url = this.getClass().getClassLoader().getResource("velocity.properties");
-				if (url != null) {
-					props.load(url.openStream());
-				}
-				this.velocityEngine = new VelocityEngine(props);
-				velocityEngine.init();
-				this.metadataTemplate = velocityEngine.getTemplate(METACLASS_TEMPLATE);
-				this.mongoCollectionTemplate = velocityEngine.getTemplate(MONGO_COLLECTION_TEMPLATE);
-				this.mongoCollectionProducerTemplate = velocityEngine.getTemplate(MONGO_COLLECTION_PRODUCER_TEMPLATE);
-			} catch (IOException e) {
-				processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-						"Failed to initialize Velocity Engine, Context or Template: " + e.getMessage());
-			}
-		}
+	private ST getStringTemplate(final String templateFileName) throws IOException {
+		final String templateContent = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(templateFileName), "UTF-8");
+		return new ST(templateContent, '$', '$');
 	}
 
 	@Override
@@ -125,8 +111,8 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 							domainElement);
 					final Map<String, Object> templateContextProperties = initializeTemplateContextProperties(domainElement);
 					generateMetadataSourceCode(templateContextProperties);
-					generateDBCollectionSourceCode(templateContextProperties);
-					generateDBCollectionProducerSourceCode(templateContextProperties);
+					generateMongoCollectionSourceCode(templateContextProperties);
+					generateMongoCollectionProducerSourceCode(templateContextProperties);
 				} catch (IOException e) {
 					processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
 							"Failed to process annotated element '" + annotatedElement.getSimpleName() + "': " + e.getMessage());
@@ -155,7 +141,7 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	 * Generates the metadata source code for the given {@code classElement} in the given target {@code packageElement}.
 	 * 
 	 * @param allContextProperties
-	 *            all {@link VelocityContext} properties to use when running the engine to generate the source code.
+	 *            all properties to use when running the engine to generate the source code.
 	 * 
 	 * @throws IOException
 	 */
@@ -167,14 +153,13 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 							+ allContextProperties.get("domainClassName") + "' class");
 			return;
 		}
-		final VelocityContext velocityContext = new VelocityContext();
-		// fill the velocity context with all the properties (even if we don't need them all)
-		allContextProperties.keySet().stream().forEach(k -> velocityContext.put(k, allContextProperties.get(k)));
+		// fill the template with all the properties (even if we don't need them all)
+		allContextProperties.keySet().stream().forEach(k -> this.metadataTemplate.add(k, allContextProperties.get(k)));
 		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(allContextProperties.get("packageName").toString() + "." + allContextProperties.get("metadataDomainClassName").toString());
 		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
 		final Writer writer = jfo.openWriter();
-		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying velocity template: " + metadataTemplate.getName());
-		this.metadataTemplate.merge(velocityContext, writer);
+		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying template: " + metadataTemplate.getName());
+		this.metadataTemplate.write(new AutoIndentWriter(writer));
 		writer.close();
 	}
 
@@ -182,11 +167,11 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	 * Generates the {@code LambdamaticMongoCollection} implementation source code for the underlying MongoDB collection.
 	 * 
 	 * @param allContextProperties
-	 *            all {@link VelocityContext} properties to use when running the engine to generate the source code.
+	 *            all properties to use when running the engine to generate the source code.
 	 * 
 	 * @throws IOException
 	 */
-	private void generateDBCollectionSourceCode(final Map<String, Object> allContextProperties) throws IOException {
+	private void generateMongoCollectionSourceCode(final Map<String, Object> allContextProperties) throws IOException {
 		if (this.mongoCollectionTemplate == null) {
 			processingEnv.getMessager().printMessage(
 					Diagnostic.Kind.WARNING,
@@ -194,14 +179,13 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 							+ allContextProperties.get("domainClassName") + "' class");
 			return;
 		}
-		final VelocityContext velocityContext = new VelocityContext();
-		// fill the velocity context with all the properties (even if we don't need them all)
-		allContextProperties.keySet().stream().forEach(k -> velocityContext.put(k, allContextProperties.get(k)));
+		// fill the template with all the properties (even if we don't need them all)
+		allContextProperties.keySet().stream().forEach(k -> mongoCollectionTemplate.add(k, allContextProperties.get(k)));
 		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(allContextProperties.get("packageName").toString() + "." + allContextProperties.get("mongoCollectionClassName").toString());
 		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
 		final Writer writer = jfo.openWriter();
-		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying velocity template: " + this.mongoCollectionTemplate.getName());
-		this.mongoCollectionTemplate.merge(velocityContext, writer);
+		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying template: " + this.mongoCollectionTemplate.getName());
+		this.mongoCollectionTemplate.write(new AutoIndentWriter(writer));
 		writer.close();
 	}
 
@@ -209,11 +193,11 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	 * Generates the CDI Producer for the {@code LambdamaticMongoCollection} implementation.
 	 * 
 	 * @param allContextProperties
-	 *            all {@link VelocityContext} properties to use when running the engine to generate the source code.
+	 *            all properties to use when running the engine to generate the source code.
 	 * 
 	 * @throws IOException
 	 */
-	private void generateDBCollectionProducerSourceCode(final Map<String, Object> allContextProperties) throws IOException {
+	private void generateMongoCollectionProducerSourceCode(final Map<String, Object> allContextProperties) throws IOException {
 		if (this.mongoCollectionProducerTemplate == null) {
 			processingEnv.getMessager().printMessage(
 					Diagnostic.Kind.WARNING,
@@ -221,14 +205,13 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 							+ allContextProperties.get("domainClassName") + "' class");
 			return;
 		}
-		final VelocityContext velocityContext = new VelocityContext();
-		// fill the velocity context with all the properties (even if we don't need them all)
-		allContextProperties.keySet().stream().forEach(k -> velocityContext.put(k, allContextProperties.get(k)));
+		// fill the template context with all the properties (even if we don't need them all)
+		allContextProperties.keySet().stream().forEach(k -> mongoCollectionProducerTemplate.add(k, allContextProperties.get(k)));
 		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(allContextProperties.get("packageName").toString() + "." + allContextProperties.get("mongoCollectionProducerClassName").toString());
 		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
 		final Writer writer = jfo.openWriter();
-		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying velocity template: " + this.mongoCollectionProducerTemplate.getName());
-		this.mongoCollectionProducerTemplate.merge(velocityContext, writer);
+		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying template: " + this.mongoCollectionProducerTemplate.getName());
+		this.mongoCollectionProducerTemplate.write(new AutoIndentWriter(writer));
 		writer.close();
 	}
 	
