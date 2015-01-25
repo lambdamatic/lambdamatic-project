@@ -6,13 +6,15 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  ******************************************************************************/
 
-package org.lambdamatic.mongodb;
+package org.lambdamatic.mongodb.crud.impl;
 
 import java.util.Arrays;
 
 import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.configuration.RootCodecRegistry;
 import org.lambdamatic.FilterExpression;
+import org.lambdamatic.mongodb.FindTerminalContext;
+import org.lambdamatic.mongodb.LambdamaticMongoCollection;
 import org.lambdamatic.mongodb.codecs.LambdamaticDocumentCodecProvider;
 import org.lambdamatic.mongodb.codecs.LambdamaticFilterExpressionCodecProvider;
 import org.lambdamatic.mongodb.metadata.Metadata;
@@ -20,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.MongoClient;
-import com.mongodb.client.FindFluent;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
@@ -28,7 +29,7 @@ import com.mongodb.client.MongoDatabase;
  * Database Collection for a given type of element (along with its associated
  * metadata)
  * 
- * @author Xavier Coulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements LambdamaticMongoCollection<T, M> {
@@ -81,13 +82,15 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 	 * {@inheritDoc}
 	 */
 	@Override
-	public FindFluent<T> find(final FilterExpression<M> filterExpression) {
-		return mongoCollection.find(filterExpression);
+	public FindTerminalContext<T> find(final FilterExpression<M> filterExpression) {
+		return new FindTerminalContextImpl<T>(mongoCollection.find(filterExpression));
 	}
 
 	@Override
-	public void insertOne(T domainObject) {
-		mongoCollection.insertOne(domainObject);
+	public void insert(@SuppressWarnings("unchecked") T... domainObjects) {
+		if(domainObjects.length > 0) {
+			mongoCollection.insertMany(Arrays.asList(domainObjects));
+		}
 	}
 
 	/**

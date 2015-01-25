@@ -152,4 +152,5 @@
 		</plugins>
 	</build>
 
+	<name>Lambdamatic (parent)</name>
 </project>

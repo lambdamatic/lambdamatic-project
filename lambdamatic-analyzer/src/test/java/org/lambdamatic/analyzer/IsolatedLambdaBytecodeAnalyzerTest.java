@@ -7,11 +7,12 @@ import java.io.IOException;
 import org.junit.Test;
 import org.lambdamatic.FilterExpression;
 import org.lambdamatic.LambdaExpression;
-import org.lambdamatic.analyzer.ast.node.FieldAccess;
+import org.lambdamatic.analyzer.ast.node.CapturedArgument;
+import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
-import org.lambdamatic.analyzer.ast.node.NumberLiteral;
+import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,17 +35,17 @@ public class IsolatedLambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseExpression() throws IOException {
 		// given
-		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.primitiveIntValue == 42;
+		final String[] values = new String[]{new String(), new String()};
+		final FilterExpression<TestPojo> expression = (TestPojo t) -> t.matches(values);
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeLambdaExpression(expression);
 		// then
 		LOGGER.info("Number of InfixExpressions used during the process: {}",
 				(new InfixExpression(InfixOperator.CONDITIONAL_AND).getId() - 1));
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final FieldAccess testPojoField = new FieldAccess(testPojo, "primitiveIntValue");
-		final InfixExpression equals42Expression = new InfixExpression(InfixOperator.EQUALS, testPojoField, new NumberLiteral(42));
+		final Expression expected = new MethodInvocation(testPojo, "matches", Boolean.class, new CapturedArgument(values));
 		// verification
-		assertThat(resultExpression.getExpression()).isEqualTo(equals42Expression);
+		assertThat(resultExpression.getExpression()).isEqualTo(expected);
 	}
 }
 

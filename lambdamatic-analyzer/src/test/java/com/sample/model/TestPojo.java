@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Test domain class
+ * @author Xavier Coulon <xcoulon@redhat.com>
+ *
+ */
 public class TestPojo {
 	
 	public int primitiveIntValue = 42;
@@ -107,6 +112,14 @@ public class TestPojo {
 	@Override
 	public String toString() {
 		return "TestPojo";
+	}
+	
+	public boolean matches(final TestPojo[] otherPojos) {
+		return true;
+	}
+
+	public boolean matches(final String[] values) {
+		return true;
 	}
 }
 

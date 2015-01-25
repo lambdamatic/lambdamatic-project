@@ -83,8 +83,8 @@ public class LambdamaticDocumentCodecTest {
 		final List<Object[]> data = new ArrayList<>();
 		data.add(new Object[] {
 				new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
-						.withPrimitiveIntField(42).withEnumFool(EnumFoo.FOO).build(),
-				"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', primitiveIntField:42, enumFoo:'FOO'}"
+						.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2).build(),
+				"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', primitiveIntField:42, enumFoo:'FOO', location:{type:'Point', coordinates:[40.1, -70.2]}}"
 
 		});
 		return data;

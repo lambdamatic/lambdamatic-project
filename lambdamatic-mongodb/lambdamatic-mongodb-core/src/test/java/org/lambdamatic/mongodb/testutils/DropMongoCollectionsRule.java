@@ -17,13 +17,12 @@ import com.mongodb.client.MongoCollection;
 
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
- *
  */
-public class CleanMongoCollectionsRule implements MethodRule {
+public class DropMongoCollectionsRule implements MethodRule {
 
 	private final MongoCollection<?> collection;
 
-	public CleanMongoCollectionsRule(final MongoClient mongoClient, final String databaseName, final String collectionName) {
+	public DropMongoCollectionsRule(final MongoClient mongoClient, final String databaseName, final String collectionName) {
 		this.collection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
 	}
 

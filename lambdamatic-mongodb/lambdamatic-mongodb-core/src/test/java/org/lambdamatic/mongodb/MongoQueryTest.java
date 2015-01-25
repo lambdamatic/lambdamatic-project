@@ -18,14 +18,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.lambdamatic.mongodb.annotations.Document;
-import org.lambdamatic.mongodb.testutils.CleanMongoCollectionsRule;
+import org.lambdamatic.mongodb.testutils.DropMongoCollectionsRule;
 
 import com.mongodb.MongoClient;
 import com.sample.EnumFoo;
 import com.sample.Foo;
 import com.sample.Foo.FooBuilder;
 import com.sample.FooCollection;
-
 
 /**
  * Testing the MongoDB Lambda-based Fluent API
@@ -34,22 +33,27 @@ import com.sample.FooCollection;
  *
  */
 public class MongoQueryTest {
+
+	private static final String DATABASE_NAME = "lambdamatic-tests";
+
+	private static final String COLLECTION_NAME = ((Document)Foo.class.getAnnotation(Document.class)).collection();
 	
 	private MongoClient mongoClient = new MongoClient();
 	
 	@Rule
-	public CleanMongoCollectionsRule collectionCleaning = new CleanMongoCollectionsRule(mongoClient, "lambdamatic-tests", ((Document)Foo.class.getAnnotation(Document.class)).collection());
-	
+	public DropMongoCollectionsRule collectionCleaning = new DropMongoCollectionsRule(mongoClient, DATABASE_NAME, COLLECTION_NAME);
+
 	private FooCollection fooCollection;
-	
+
 	@Before
 	public void setup() throws UnknownHostException {
-		this.fooCollection = new FooCollection(mongoClient, "lambdamatic-tests");
+		this.fooCollection = new FooCollection(mongoClient, DATABASE_NAME, COLLECTION_NAME);
 		// insert test data
-		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFool(EnumFoo.FOO).build();
-		this.fooCollection.insertOne(foo);
+		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO)
+				.build();
+		this.fooCollection.insert(foo);
 	}
-	
+
 	@Test
 	public void shouldFindOneFoo() throws IOException {
 		// when
@@ -63,8 +67,5 @@ public class MongoQueryTest {
 			}
 		});
 	}
-	
-	
 
 }
-

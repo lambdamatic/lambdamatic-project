@@ -4,6 +4,7 @@
 package org.lambdamatic.mongodb.apt;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,7 +98,10 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	 * @throws IOException
 	 */
 	private ST getStringTemplate(final String templateFileName) throws IOException {
-		final String templateContent = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(templateFileName), "UTF-8");
+		// FIXME: the way the templateContent is retrieve causes problem when jar is reloaded in another IDE for a sample project. Current workaround that seems to work is closing/reopening the project. 
+		final ClassLoader contextClassLoader = getClass().getClassLoader();
+		final InputStream resourceAsStream = contextClassLoader.getResourceAsStream(templateFileName);
+		final String templateContent = IOUtils.toString(resourceAsStream, "UTF-8");
 		return new ST(templateContent, '$', '$');
 	}
 

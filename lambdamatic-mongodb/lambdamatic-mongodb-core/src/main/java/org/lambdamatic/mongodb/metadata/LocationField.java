@@ -90,6 +90,6 @@ public interface LocationField {
 	 * @see {@link Polygon.Ring}
 	 */
 	// FIXME: add support for http://docs.mongodb.org/manual/core/2dsphere/#multipoint et al.
-	public boolean geoWithin(final Location... points);
+	public boolean geoWithin(final Location[] points);
 
 }

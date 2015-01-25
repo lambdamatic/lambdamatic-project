@@ -85,12 +85,13 @@ public class Foo {
 			return this;
 		}
 		
-		public FooBuilder withEnumFool(final EnumFoo enumFoo) {
+		public FooBuilder withEnumFoo(final EnumFoo enumFoo) {
 			this.enumFoo = enumFoo;
 			return this;
 		}
-		public FooBuilder withLocation(final Location location) {
-			this.location = location;
+
+		public FooBuilder withLocation(final double latitude, final double longitude) {
+			this.location = new Location(latitude, longitude);
 			return this;
 		}
 		

@@ -39,7 +39,7 @@ import com.sample.model.TestPojo;
  *
  */
 @RunWith(Parameterized.class)
-public class LambdaBytecodeAnalyzerParameterizedTest {
+public class LambdaBytecodeAnalyzerTest {
 
 	private final LambdaExpressionAnalyzer analyzer = new LambdaExpressionAnalyzer();
 
@@ -143,6 +143,10 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 		final MethodInvocation t_dot_equals_newTestPojo_foo42 = new MethodInvocation(var_t, "equals", Boolean.class, new ObjectInstantiation(TestPojo.class, new StringLiteral("foo"), new NumberLiteral(42)));
 		final TestPojo otherTestPojo = new TestPojo();
 		final MethodInvocation t_dot_equals_otherTestPojo = new MethodInvocation(var_t, "equals", Boolean.class, new CapturedArgument(otherTestPojo));
+		
+		final String[] arrayOfStringValues = new String[]{new String(), new String()};
+		final TestPojo[] arrayOfTestPojoValues = new TestPojo[]{new TestPojo(), new TestPojo()};
+		
 		
 		return new Object[][] {
 				// primitive boolean (comparisons are pretty straightforward in
@@ -507,6 +511,10 @@ public class LambdaBytecodeAnalyzerParameterizedTest {
 						t_dot_equals_newTestPojo },
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.equals(new TestPojo("foo", 42))),
 						t_dot_equals_newTestPojo_foo42 },
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.matches(arrayOfStringValues)),
+						new MethodInvocation(var_t, "matches", Boolean.class, new CapturedArgument(arrayOfStringValues))},
+				new Object[] { (FilterExpression<TestPojo>) (t -> t.matches(arrayOfTestPojoValues)),
+						new MethodInvocation(var_t, "matches", Boolean.class, new CapturedArgument(arrayOfTestPojoValues))},
 						
 				// mixes with multiple operands
 				new Object[] {

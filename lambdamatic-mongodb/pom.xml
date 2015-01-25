@@ -9,11 +9,13 @@
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>lambdamatic-mongodb</artifactId>
-	<name>Lambdamatic for MongoDB</name>
+	<name>Lambdamatic for MongoDB (parent project)</name>
 	<packaging>pom</packaging>
 
 	<properties>
-		<mongodb.driver.version>3.0.0-SNAPSHOT</mongodb.driver.version>
+		<!-- sticking to a particular version to avoid API breakage before conference and demo ;-) -->
+		<mongodb.driver.version>3.0.0-20150116.202756-173</mongodb.driver.version>
+		<!-- mongodb.driver.version>3.0.0-SNAPSHOT</mongodb.driver.version -->
 		<jackson.version>2.4.0</jackson.version>
 		<bson4jackson.version>2.4.0</bson4jackson.version>
 		<stringtemplate.version>4.0.2</stringtemplate.version>

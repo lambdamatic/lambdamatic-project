@@ -10,6 +10,7 @@ import org.bson.BsonDocumentReader;
 import org.bson.BsonDocumentWriter;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
+import org.bson.codecs.EncoderContext;
 import org.lambdamatic.FilterExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
@@ -47,6 +48,9 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 	/** The {@link BsonWriter} to use. */
 	private final BsonWriter writer;
 
+	/** The {@link EncoderContext} to use.*/
+	private final EncoderContext encoderContext;
+	
 	/**
 	 * Full constructor
 	 * 
@@ -57,9 +61,10 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 	 *            representation will be written.
 	 * @see: http://docs.mongodb.org/manual/reference/operator/query/
 	 */
-	LambdamaticFilterExpressionEncoder(final Class<?> metadataClass, final BsonWriter writer) {
+	LambdamaticFilterExpressionEncoder(final Class<?> metadataClass, final BsonWriter writer, final EncoderContext encoderContext) {
 		this.metadataClass = metadataClass;
 		this.writer = writer;
+		this.encoderContext = encoderContext;
 	}
 
 	@Override
@@ -70,7 +75,7 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 			// <expressionN> } ] }
 			for (Expression operand : expr.getOperands()) {
 				final LambdamaticFilterExpressionEncoder operandEncoder = new LambdamaticFilterExpressionEncoder(
-						metadataClass, writer);
+						metadataClass, writer, this.encoderContext);
 				operand.accept(operandEncoder);
 			}
 			break;
@@ -82,7 +87,7 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 				final BsonDocument operandDocument = new BsonDocument();
 				final BsonWriter operandBsonWriter = new BsonDocumentWriter(operandDocument);
 				final LambdamaticFilterExpressionEncoder operandEncoder = new LambdamaticFilterExpressionEncoder(
-						metadataClass, operandBsonWriter);
+						metadataClass, operandBsonWriter, this.encoderContext);
 				operandBsonWriter.writeStartDocument();
 				operand.accept(operandEncoder);
 				operandBsonWriter.writeEndDocument();
@@ -150,38 +155,55 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 		final List<Object> argumentValues = arguments.stream().map(e -> e.getValue()).collect(Collectors.toList());
 		if(argumentValues.size() == 1) {
 			final Object argument = argumentValues.get(0);
+			// argument is an instance of Polygon
 			if(argument instanceof Polygon) {
 				final Polygon polygon = (Polygon) argument;
-				// expect something like:
-				// { location: 
-				//   $geoWithin: 
-				//   { $geometry: 
-				//      { type: 'Polygon', 
-				//        coordinates: [ [0,0], [0,1], [1,1], [1,0], [0,0] ]
-				//      }  
-				//    } 
-				// }
 				writer.writeStartDocument(((FieldAccess)sourceExpression).getFieldName());
-				writer.writeStartDocument("$geoWithin");
-				writer.writeStartDocument("$geometry");
-				writer.writeString("type", "Polygon");
-				writer.writeStartArray("coordinates");
-				for(Ring ring : polygon.getRings()) {
-					writer.writeStartArray();
-					for(Location point : ring.getPoints()) {
-						writer.writeStartArray();
-						writer.writeDouble(point.getLongitude());
-						writer.writeDouble(point.getLatitude());
-						writer.writeEndArray();
-					}
-					writer.writeEndArray(); // ring
-				}
-				writer.writeEndArray(); // coordinates
-				writer.writeEndDocument(); // $geometry
-				writer.writeEndDocument(); // $geoWithin
-				writer.writeEndDocument(); // location field
+				encodePolygon(writer, polygon);
+				writer.writeEndDocument();
+			} 
+			// argument is an array of Location
+			else if(argument.getClass().isArray() && argument.getClass().getComponentType().equals(Location.class)) {
+				final Location[] locations = (Location[]) argument;
+				final Polygon polygon = new Polygon(locations);
+				writer.writeStartDocument(((FieldAccess)sourceExpression).getFieldName());
+				encodePolygon(writer, polygon);
+				writer.writeEndDocument();
 			}
 		}
+	}
+
+	/**
+	 * Encodes the given {@link Polygon} into the given {@link BsonWriter}. This method assumes that the {@link BsonDocument} already exists.
+	 * The resulting document will have the following form:
+	 * { $geoWithin: 
+	 *  { $geometry: 
+	 *   { type: 'Polygon', 
+	 *     coordinates: [ [0,0], [0,1], [1,1], [1,0], [0,0] ]
+	 *   }  
+	 *  }  
+	 * }
+	 *  
+	 * @see org.bson.codecs.Encoder#encode(org.bson.BsonWriter, java.lang.Object, org.bson.codecs.EncoderContext)
+	 */
+	private void encodePolygon(final BsonWriter writer, final Polygon polygon) {
+		writer.writeStartDocument("$geoWithin");
+		writer.writeStartDocument("$geometry");
+		writer.writeString("type", "Polygon");
+		writer.writeStartArray("coordinates");
+		for(Ring ring : polygon.getRings()) {
+			writer.writeStartArray();
+			for(Location point : ring.getPoints()) {
+				writer.writeStartArray();
+				writer.writeDouble(point.getLatitude());
+				writer.writeDouble(point.getLongitude());
+				writer.writeEndArray();
+			}
+			writer.writeEndArray(); // ring
+		}
+		writer.writeEndArray(); // coordinates
+		writer.writeEndDocument(); // $geometry
+		writer.writeEndDocument(); // $geoWithin
 	}
 
 	/**

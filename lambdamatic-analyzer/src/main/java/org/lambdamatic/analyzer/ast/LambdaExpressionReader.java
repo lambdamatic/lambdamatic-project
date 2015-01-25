@@ -21,20 +21,19 @@ import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.Expression;
+import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.IfStatement;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
-import org.lambdamatic.analyzer.ast.node.StringLiteral;
-import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.LiteralFactory;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.ast.node.NullLiteral;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
+import org.lambdamatic.analyzer.ast.node.ObjectInstantiation;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.Statement;
-import org.lambdamatic.analyzer.ast.node.ObjectInstantiation;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
@@ -59,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * An internal utility class that uses ASM to read the bytecode of a (desugared lambda expression) method and converts it into an
  * {@link ASTNode}.
  * 
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public class LambdaExpressionReader {
@@ -154,7 +153,8 @@ public class LambdaExpressionReader {
 				LOGGER.debug(" Lambda Implementation: {}.{} ({})", serializedLambda.getImplClass(), serializedLambda.getImplMethodName(),
 						serializedLambda.getImplMethodSignature());
 				for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
-					LOGGER.debug("  with Captured Arg(" + i + "): " + serializedLambda.getCapturedArg(i));
+					LOGGER.debug("  with Captured Arg(" + i + "): '" + serializedLambda.getCapturedArg(i) + 
+							((serializedLambda.getCapturedArg(i) != null) ? "' (" + serializedLambda.getCapturedArg(i).getClass().getName() + ")" : ""));
 				}
 				return serializedLambda;
 			}
@@ -351,24 +351,39 @@ public class LambdaExpressionReader {
 			// applies for byte, short, int and boolean
 			expressionStack.add(LiteralFactory.getLiteral(0));
 			break;
-		case Opcodes.LCONST_0:
-			expressionStack.add(new NumberLiteral(0l));
-			break;
-		case Opcodes.FCONST_0:
-			expressionStack.add(new NumberLiteral(0f));
-			break;
-		case Opcodes.DCONST_0:
-			expressionStack.add(new NumberLiteral(0d));
-			break;
 		case Opcodes.ICONST_1:
 			// applies for byte, short, int and boolean
 			expressionStack.add(LiteralFactory.getLiteral(1));
 			break;
+		case Opcodes.ICONST_2:
+			expressionStack.add(LiteralFactory.getLiteral(2));
+			break;
+		case Opcodes.ICONST_3:
+			expressionStack.add(LiteralFactory.getLiteral(2));
+			break;
+		case Opcodes.ICONST_4:
+			expressionStack.add(LiteralFactory.getLiteral(2));
+			break;
+		case Opcodes.ICONST_5:
+			expressionStack.add(LiteralFactory.getLiteral(2));
+			break;
+		case Opcodes.LCONST_0:
+			expressionStack.add(new NumberLiteral(0l));
+			break;
 		case Opcodes.LCONST_1:
 			expressionStack.add(new NumberLiteral(1l));
 			break;
+		case Opcodes.FCONST_0:
+			expressionStack.add(new NumberLiteral(0f));
+			break;
 		case Opcodes.FCONST_1:
 			expressionStack.add(new NumberLiteral(1f));
+			break;
+		case Opcodes.FCONST_2:
+			expressionStack.add(new NumberLiteral(2f));
+			break;
+		case Opcodes.DCONST_0:
+			expressionStack.add(new NumberLiteral(0d));
 			break;
 		case Opcodes.DCONST_1:
 			expressionStack.add(new NumberLiteral(1d));

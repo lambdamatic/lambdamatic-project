@@ -53,13 +53,14 @@ public class LambdaExpressionAnalyzer {
 		try {
 			final SerializedLambda serializedLambda = LambdaExpressionReader.getSerializedLambda(filterExpression);
 			final Type[] argumentTypes = Type.getArgumentTypes(serializedLambda.getImplMethodSignature());
-			final String argumentClassName = argumentTypes[0].getClassName();
-			final Class<?> argumentClass = Class.forName(argumentClassName);
+			// parameter type is the last argument
+			final String argumentTypeClassName = argumentTypes[argumentTypes.length - 1].getClassName();
+			final Class<?> argumentTypeClass = Class.forName(argumentTypeClassName);
 			final Statement statement = new LambdaExpressionReader().readBytecodeStatement(serializedLambda);
 			final Expression thinedOutExpression = thinOut(statement);
 			final Expression simplifiedExpression = simplifyExpression(thinedOutExpression);
 			final Expression processedExpression = processMethodCalls(simplifiedExpression);
-			return new LambdaExpression(processedExpression, argumentClass);
+			return new LambdaExpression(processedExpression, argumentTypeClass);
 		} catch (IOException | ClassNotFoundException e) {
 			throw new AnalyzeException("Failed to analyze lambda expression", e);
 		}

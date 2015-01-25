@@ -12,12 +12,10 @@ import org.lambdamatic.FilterExpression;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.metadata.Metadata;
 
-import com.mongodb.client.FindFluent;
-
 /**
  * Database Collection for a given type of element (along with its associated metadata)
  * 
- * @author Xavier Coulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  * @param <T>
  *
  */
@@ -26,19 +24,19 @@ public interface LambdamaticMongoCollection<T, M extends Metadata<T>> {
 	/**
 	 * Finds one or many documents matching the given lambda {@link FilterExpression}.
 	 * @param expression the query in the form of a lambda expression 
-	 * @return the {@link FindFluent} element to carry on with the query
+	 * @return the {@link FindTerminalContext} element to carry on with the query
 	 */
-	public FindFluent<T> find(final FilterExpression<M> expression);
+	public FindTerminalContext<T> find(final FilterExpression<M> expression);
 
 	/**
-	 * Insert the given {@code domainObject} in the underlying MongoDB
+	 * Insert the given {@code domainObjects} in the underlying MongoDB
 	 * Collection. If no {@code id} attribute (ie, annotated with
 	 * {@link DocumentId}) was not set, a random value will be provided.
 	 * 
-	 * @param domainObject
-	 *            the object to convert into a BSON document
+	 * @param domainObjects
+	 *            the domain objects to insert
 	 */
-	public void insertOne(T domainObject);
+	public void insert(@SuppressWarnings("unchecked") T... domainObjects);
 	
 }
 

@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.lambdamatic.mongodb.testutils.CleanMongoCollectionsRule;
+import org.lambdamatic.mongodb.testutils.DropMongoCollectionsRule;
 
 import com.mongodb.MongoClient;
 import com.sample.EnumFoo;
@@ -30,18 +30,22 @@ import com.sample.Foo.FooBuilder;
  */
 public class MongoInsertionTest {
 	
+	private static final String COLLECTION_NAME = "users";
+
+	private static final String DATABASE_NAME = "lambdamatic-tests";
+
 	private MongoClient mongoClient = new MongoClient();
 	
 	@Rule
-	public CleanMongoCollectionsRule collectionCleaning = new CleanMongoCollectionsRule(mongoClient, "lambdamatic-tests", "users");
+	public DropMongoCollectionsRule collectionCleaning = new DropMongoCollectionsRule(mongoClient, DATABASE_NAME, COLLECTION_NAME);
 	
 	@Test
 	public void shouldInsertOneFoo() throws IOException {
 		// given
-		final FooCollection FooCollection = new FooCollection(mongoClient, "lambdamatic-tests");
-		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFool(EnumFoo.FOO).build();
+		final FooCollection FooCollection = new FooCollection(mongoClient, DATABASE_NAME, COLLECTION_NAME);
+		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).build();
 		// when
-		FooCollection.insertOne(foo);
+		FooCollection.insert(foo);
 		// then
 		assertThat(foo.getId()).isNotNull();
 	}

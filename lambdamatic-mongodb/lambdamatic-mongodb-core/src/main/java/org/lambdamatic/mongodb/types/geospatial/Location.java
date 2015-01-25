@@ -8,6 +8,9 @@
 
 package org.lambdamatic.mongodb.types.geospatial;
 
+import org.lambdamatic.mongodb.annotations.DocumentField;
+import org.lambdamatic.mongodb.codecs.ConversionException;
+
 /**
  * Geospatial Location for Spatial Queries
  * 
@@ -16,12 +19,14 @@ package org.lambdamatic.mongodb.types.geospatial;
  */
 public class Location {
 
-	/** The longitude value.*/
-	private double longitude;
-	
 	/** The latitude value.*/
+	@DocumentField(name="latitude")
 	private double latitude;
 
+	/** The longitude value.*/
+	@DocumentField(name="longitude")
+	private double longitude;
+	
 	/**
 	 * Default constructor
 	 */
@@ -31,12 +36,50 @@ public class Location {
 	
 	/**
 	 * Full constructor
-	 * @param longitude
 	 * @param latitude
+	 * @param longitude
 	 */
-	public Location(double longitude, double latitude) {
+	public Location(double latitude, double longitude) {
 		super();
+		this.latitude = latitude;
 		this.longitude = longitude;
+	}
+
+	/**
+	 * Converts the given {@link String} value to a {@link Location}, assuming the format is: {@code latitude,longitude}, where
+	 * {@code latitude} and {@code longitude} are (casted to) double values.
+	 * <p>Eg: {@code "40.782865,-73.965355"} (Central Park, NYC)</p> 
+	 * 
+	 * @param value
+	 * @return a location or
+	 */
+	public static Location fromString(final String value) {
+		final String[] coordinates = value.split(",");
+		try {
+			if (coordinates.length == 2) {
+				final double latitude = Double.parseDouble(coordinates[0]);
+				final double longitude = Double.parseDouble(coordinates[1]);
+				return new Location(latitude, longitude);
+			}
+		} catch (NullPointerException | NumberFormatException e) {
+			throw new ConversionException("Failed to convert value '" + value
+					+ "' to a valid location. Format must be '<latitude>,<logitude>'.", e);
+		}
+		throw new ConversionException("Failed to convert value '" + value
+				+ "' to a valid location. Format must be '<latitude>,<logitude>'.");
+	}
+	
+	/**
+	 * @return the latitude
+	 */
+	public double getLatitude() {
+		return latitude;
+	}
+
+	/**
+	 * @param latitude the latitude to set
+	 */
+	public void setLatitude(double latitude) {
 		this.latitude = latitude;
 	}
 
@@ -54,23 +97,9 @@ public class Location {
 		this.longitude = longitude;
 	}
 
-	/**
-	 * @return the latitude
-	 */
-	public double getLatitude() {
-		return latitude;
-	}
-
-	/**
-	 * @param latitude the latitude to set
-	 */
-	public void setLatitude(double latitude) {
-		this.latitude = latitude;
-	}
-
 	@Override
 	public String toString() {
-		return "[" + this.longitude + ", " + this.latitude + "]";
+		return "[" + this.latitude + ", " + this.longitude + "]";
 	}
 
 	/* (non-Javadoc)

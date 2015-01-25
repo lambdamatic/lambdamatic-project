@@ -48,7 +48,7 @@ public class Polygon {
 	public Polygon(final Location... points) {
 		this.rings = new Ring[] { new Ring(points) };
 	}
-
+	
 	/**
 	 * <p>
 	 * Polygon with a single ring.
@@ -119,7 +119,7 @@ public class Polygon {
 		 * A single ring of a {@link Polygon}.
 		 * <p>
 		 * Note: If the last point does not correspond to the first point, an
-		 * extra point will be added to close the ring.
+		 * extra point will be added to close the ring. Queries using unclosed ring fail with error #27287 
 		 * </p>
 		 * 
 		 * @param points
@@ -134,7 +134,7 @@ public class Polygon {
 			else {
 				this.points = new Location[points.length + 1];
 				System.arraycopy(points, 0, this.points, 0, points.length);
-				this.points[this.points.length - 1] = new Location(this.points[0].getLongitude(), this.points[0].getLatitude());
+				this.points[this.points.length - 1] = new Location(this.points[0].getLatitude(), this.points[0].getLongitude());
 			}
 		}
 		

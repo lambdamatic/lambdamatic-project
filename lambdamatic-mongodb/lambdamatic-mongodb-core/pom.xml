@@ -7,7 +7,7 @@
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>lambdamatic-mongodb-core</artifactId>
-	<name>Lambdamatic API and Runtime for MongoDB</name>
+	<name>Lambdamatic Core for MongoDB (API and Runtime)</name>
 
 	<dependencies>
 		<dependency>

@@ -56,7 +56,7 @@ public class LambdamaticFilterExpressionCodec implements Codec<FilterExpression<
 				// retrieved
 				final ByteArrayOutputStream jsonOutputStream = new ByteArrayOutputStream();
 				final BsonWriter debugWriter = new JsonWriter(new OutputStreamWriter(jsonOutputStream, "UTF-8"));
-				encodeExpression(filterExpression, debugWriter);
+				encodeExpression(filterExpression, debugWriter, encoderContext);
 				final String jsonContent = IOUtils.toString(jsonOutputStream.toByteArray(), "UTF-8");
 				LOGGER.debug("Encoded query: {}", jsonContent);
 				// now, write the document in the target writer
@@ -69,17 +69,19 @@ public class LambdamaticFilterExpressionCodec implements Codec<FilterExpression<
 
 			}
 		} else {
-			encodeExpression(filterExpression, writer);
+			encodeExpression(filterExpression, writer, encoderContext);
 		}
 	}
 
 	/**
-	 * @param filterExpression
-	 * @param writer
+	 * Encodes the given {@link LambdaExpression} into the given {@link BsonWriter}, using the {@link EncoderContext} if necessary.
+	 * @param filterExpression the expression to encode
+	 * @param writer the output writer
+	 * @param encoderContext then encoder context
 	 */
-	private void encodeExpression(final LambdaExpression filterExpression, final BsonWriter writer) {
+	private void encodeExpression(final LambdaExpression filterExpression, final BsonWriter writer, final EncoderContext encoderContext) {
 		final LambdamaticFilterExpressionEncoder expressionEncoder = new LambdamaticFilterExpressionEncoder(
-				filterExpression.getArgumentType(), writer);
+				filterExpression.getArgumentType(), writer, encoderContext);
 		writer.writeStartDocument();
 		filterExpression.getExpression().accept(expressionEncoder);
 		writer.writeEndDocument();
