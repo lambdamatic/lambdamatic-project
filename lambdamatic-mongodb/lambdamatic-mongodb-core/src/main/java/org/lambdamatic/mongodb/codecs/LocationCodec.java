@@ -39,16 +39,16 @@ import org.slf4j.LoggerFactory;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class LambdamaticLocationCodec extends LambdamaticDocumentCodec<Location> {
+public class LocationCodec extends DocumentCodec<Location> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticLocationCodec.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LocationCodec.class);
 
 	/**
 	 * Constructor
 	 * @param codecRegistry the {@link CodecRegistry} to use.
 	 */
-	public LambdamaticLocationCodec(final CodecRegistry codecRegistry) {
-		super(Location.class, codecRegistry);
+	public LocationCodec(final CodecRegistry codecRegistry, final BindingService bindingService) {
+		super(Location.class, codecRegistry, bindingService);
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class LambdamaticLocationCodec extends LambdamaticDocumentCodec<Location>
 		// now, convert the map key-pairs into an instance of the target
 		// document
 		final LocationDocument locationDocument = new LocationDocument();
-		final Map<String, Field> bindings = getBindings(LocationDocument.class);
+		final Map<String, Field> bindings = getBindingService().getBindings(LocationDocument.class);
 		for (Iterator<String> iterator = keyValuePairs.keySet().iterator(); iterator.hasNext();) {
 			final String key = iterator.next();
 			final Field field = bindings.get(key);

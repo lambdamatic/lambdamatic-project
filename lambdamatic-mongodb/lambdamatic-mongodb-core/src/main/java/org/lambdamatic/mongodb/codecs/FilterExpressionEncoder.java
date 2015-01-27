@@ -34,10 +34,10 @@ import org.slf4j.LoggerFactory;
  *
  * @param <M>
  */
-class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
+class FilterExpressionEncoder extends ExpressionVisitor {
 
 	/** the usual logger. */
-	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticFilterExpressionEncoder.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(FilterExpressionEncoder.class);
 
 	/**
 	 * The {@link Metadata} class associated with the domain class being
@@ -61,7 +61,7 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 	 *            representation will be written.
 	 * @see: http://docs.mongodb.org/manual/reference/operator/query/
 	 */
-	LambdamaticFilterExpressionEncoder(final Class<?> metadataClass, final BsonWriter writer, final EncoderContext encoderContext) {
+	FilterExpressionEncoder(final Class<?> metadataClass, final BsonWriter writer, final EncoderContext encoderContext) {
 		this.metadataClass = metadataClass;
 		this.writer = writer;
 		this.encoderContext = encoderContext;
@@ -74,7 +74,7 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 			// Syntax: { $and: [ { <expression1> }, { <expression2> } , ... , {
 			// <expressionN> } ] }
 			for (Expression operand : expr.getOperands()) {
-				final LambdamaticFilterExpressionEncoder operandEncoder = new LambdamaticFilterExpressionEncoder(
+				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(
 						metadataClass, writer, this.encoderContext);
 				operand.accept(operandEncoder);
 			}
@@ -86,7 +86,7 @@ class LambdamaticFilterExpressionEncoder extends ExpressionVisitor {
 			for (Expression operand : expr.getOperands()) {
 				final BsonDocument operandDocument = new BsonDocument();
 				final BsonWriter operandBsonWriter = new BsonDocumentWriter(operandDocument);
-				final LambdamaticFilterExpressionEncoder operandEncoder = new LambdamaticFilterExpressionEncoder(
+				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(
 						metadataClass, operandBsonWriter, this.encoderContext);
 				operandBsonWriter.writeStartDocument();
 				operand.accept(operandEncoder);

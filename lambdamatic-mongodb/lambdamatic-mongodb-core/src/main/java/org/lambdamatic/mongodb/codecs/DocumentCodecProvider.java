@@ -17,17 +17,31 @@ import org.lambdamatic.mongodb.annotations.Document;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class LambdamaticDocumentCodecProvider implements CodecProvider {
+public class DocumentCodecProvider implements CodecProvider {
+
+	/** The binding service. */
+	private final BindingService bindingService;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param bindingService
+	 *            the {@link BindingService}.
+	 */
+	public DocumentCodecProvider(final BindingService bindingService) {
+		this.bindingService = bindingService;
+	}
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.bson.codecs.configuration.CodecProvider#get(java.lang.Class, org.bson.codecs.configuration.CodecRegistry)
+	 * 
+	 * @see org.bson.codecs.configuration.CodecProvider#get(java.lang.Class,
+	 *      org.bson.codecs.configuration.CodecRegistry)
 	 */
 	@Override
 	public <T> Codec<T> get(final Class<T> clazz, final CodecRegistry registry) {
-		if(clazz != null && clazz.getAnnotation(Document.class) != null) {
-			//FIXME: the mappings should not be computed each time, so they need to be pulled out of the underlying LambdamaticDocumentCodec class
-			final LambdamaticDocumentCodec<T> lambdamaticDocumentCodec = new LambdamaticDocumentCodec<T>(clazz, registry);
+		if (clazz != null && clazz.getAnnotation(Document.class) != null) {
+			final DocumentCodec<T> lambdamaticDocumentCodec = new DocumentCodec<T>(clazz, registry, bindingService);
 			return lambdamaticDocumentCodec;
 		}
 		return null;

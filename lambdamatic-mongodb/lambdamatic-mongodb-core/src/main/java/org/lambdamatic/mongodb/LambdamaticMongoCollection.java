@@ -37,6 +37,14 @@ public interface LambdamaticMongoCollection<T, M extends Metadata<T>> {
 	 *            the domain objects to insert
 	 */
 	public void insert(@SuppressWarnings("unchecked") T... domainObjects);
+
+	/**
+	 * "Upserts" the given {@code domainObject} in the Database, ie, of the domain object exists, it is <strong>replaced</strong>, 
+	 * otherwise it is <strong>inserted</strong>.
+	 * 
+	 * @param domainObject the domain object to insert/update.
+	 */
+	public void upsert(T domainObject);
 	
 }
 

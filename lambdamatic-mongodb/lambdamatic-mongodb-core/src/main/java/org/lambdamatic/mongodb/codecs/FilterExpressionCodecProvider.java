@@ -21,10 +21,10 @@ import org.slf4j.LoggerFactory;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class LambdamaticFilterExpressionCodecProvider<M> implements CodecProvider {
+public class FilterExpressionCodecProvider<M> implements CodecProvider {
 
 	/** The usual Logger.*/
-	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticFilterExpressionCodecProvider.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(FilterExpressionCodecProvider.class);
 	
 	/**
 	 * {@inheritDoc}
@@ -37,7 +37,7 @@ public class LambdamaticFilterExpressionCodecProvider<M> implements CodecProvide
 	public <E> Codec<E> get(final Class<E> clazz, final CodecRegistry registry) {
 		try {
 			if(Arrays.stream(clazz.getInterfaces()).anyMatch(i -> i.equals(FilterExpression.class))) {
-				return (Codec<E>) new LambdamaticFilterExpressionCodec();
+				return (Codec<E>) new FilterExpressionCodec();
 			}
 		} catch (SecurityException | IllegalArgumentException e) {
 			LOGGER.error("Failed to check if class '{}' is an instance of ''", e, clazz.getName(), FilterExpression.class.getName());

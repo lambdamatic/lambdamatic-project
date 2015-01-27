@@ -47,7 +47,7 @@ import com.sample.Foo;
 import com.sample.Foo.FooBuilder;
 
 /**
- * Testing the {@link LambdamaticFilterExpressionCodec}
+ * Testing the {@link FilterExpressionCodec}
  * 
  * @author xcoulon
  *
@@ -65,7 +65,7 @@ public class LambdamaticDocumentCodecTest {
 
 	private static ch.qos.logback.classic.Logger getCodecLogger() {
 		final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-		return lc.getLogger(LambdamaticDocumentCodec.LOGGER_NAME);
+		return lc.getLogger(DocumentCodec.LOGGER_NAME);
 	}
 
 	@BeforeClass
@@ -118,7 +118,7 @@ public class LambdamaticDocumentCodecTest {
 			getCodecLogger().setLevel(Level.ERROR);
 		}
 		// when
-		new LambdamaticDocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY).encode(bsonWriter, foo, context);
+		new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY, new BindingService()).encode(bsonWriter, foo, context);
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
 		LOGGER.debug("Output JSON: {}", actual);
@@ -145,7 +145,7 @@ public class LambdamaticDocumentCodecTest {
 			getCodecLogger().setLevel(Level.ERROR);
 		}
 		// when
-		final Foo actualFoo = new LambdamaticDocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY).decode(bsonReader, decoderContext);
+		final Foo actualFoo = new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY, new BindingService()).decode(bsonReader, decoderContext);
 		// then
 		assertEquals(foo, actualFoo);
 	}

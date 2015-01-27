@@ -32,17 +32,16 @@ import org.slf4j.LoggerFactory;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class LambdamaticFilterExpressionCodec implements Codec<FilterExpression<?>> {
+public class FilterExpressionCodec implements Codec<FilterExpression<?>> {
 
 	/** The Logger name to use when logging conversion results.*/
-	static final String LOGGER_NAME = LambdamaticFilterExpressionCodec.class.getName();
+	static final String LOGGER_NAME = FilterExpressionCodec.class.getName();
 	
 	/** The usual Logger */
 	private static final Logger LOGGER = LoggerFactory.getLogger(LOGGER_NAME);
 
 	@Override
 	public Class<FilterExpression<?>> getEncoderClass() {
-		// return filterExpressionImplementationClass;
 		return null;
 	}
 
@@ -80,7 +79,7 @@ public class LambdamaticFilterExpressionCodec implements Codec<FilterExpression<
 	 * @param encoderContext then encoder context
 	 */
 	private void encodeExpression(final LambdaExpression filterExpression, final BsonWriter writer, final EncoderContext encoderContext) {
-		final LambdamaticFilterExpressionEncoder expressionEncoder = new LambdamaticFilterExpressionEncoder(
+		final FilterExpressionEncoder expressionEncoder = new FilterExpressionEncoder(
 				filterExpression.getArgumentType(), writer, encoderContext);
 		writer.writeStartDocument();
 		filterExpression.getExpression().accept(expressionEncoder);

@@ -10,13 +10,16 @@ package org.lambdamatic.mongodb.crud.impl;
 
 import java.util.Arrays;
 
+import org.bson.BsonDocument;
 import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.configuration.RootCodecRegistry;
 import org.lambdamatic.FilterExpression;
 import org.lambdamatic.mongodb.FindTerminalContext;
 import org.lambdamatic.mongodb.LambdamaticMongoCollection;
-import org.lambdamatic.mongodb.codecs.LambdamaticDocumentCodecProvider;
-import org.lambdamatic.mongodb.codecs.LambdamaticFilterExpressionCodecProvider;
+import org.lambdamatic.mongodb.codecs.BindingService;
+import org.lambdamatic.mongodb.codecs.DocumentCodecProvider;
+import org.lambdamatic.mongodb.codecs.FilterExpressionCodecProvider;
+import org.lambdamatic.mongodb.codecs.IdFilterCodecProvider;
 import org.lambdamatic.mongodb.metadata.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +46,12 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 	private final Class<T> targetClass;
 
 	/**
+	 * Internal cache of bindings to convert domain class instances from/to
+	 * {@link BsonDocument}.
+	 */
+	private final BindingService bindingService;
+	
+	/**
 	 * Constructor.
 	 * 
 	 * @param mongoClient
@@ -66,12 +75,9 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 	// this would avoid the need to subclass LambdamaticMongoCollectionImpl :-)
 	public LambdamaticMongoCollectionImpl(final MongoClient mongoClient, final String databaseName,
 			final String collectionName, final Class<T> targetClass) {
-		// final RootCodecRegistry codecRegistry =
-		// MongoClient.getDefaultCodecRegistry().withCodec(new
-		// LambdamaticCodec<T>(targetClass));
+		this.bindingService = new BindingService();
 		final RootCodecRegistry codecRegistry = new RootCodecRegistry(Arrays.asList(
-				new LambdamaticDocumentCodecProvider(), new LambdamaticFilterExpressionCodecProvider<M>(), new BsonValueCodecProvider()));
-		//final MongoCollectionOptions options = MongoCollectionOptions.builder().codecRegistry(codecRegistry).build();
+				new DocumentCodecProvider(bindingService), new FilterExpressionCodecProvider<M>(), new IdFilterCodecProvider(bindingService), new BsonValueCodecProvider()));
 		this.mongoCollection = mongoClient.getDatabase(databaseName).withCodecRegistry(codecRegistry)
 				.getCollection(collectionName, targetClass);
 		this.targetClass = targetClass;
@@ -93,6 +99,12 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 		}
 	}
 
+	@Override
+	public void upsert(T domainObject) {
+		mongoCollection.replaceOne(new IdFilter<T>(domainObject), domainObject);
+	}
+	
+	
 	/**
 	 * {@inheritDoc}
 	 */

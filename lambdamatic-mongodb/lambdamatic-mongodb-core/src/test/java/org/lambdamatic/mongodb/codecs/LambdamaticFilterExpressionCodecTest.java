@@ -33,7 +33,7 @@ import com.sample.EnumFoo;
 import com.sample.Foo_;
 
 /**
- * Testing the {@link LambdamaticFilterExpressionCodec}
+ * Testing the {@link FilterExpressionCodec}
  * @author xcoulon
  *
  */
@@ -99,7 +99,7 @@ public class LambdamaticFilterExpressionCodecTest {
 
 	private static Logger getCodecLogger() {
 		final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-		return lc.getLogger(LambdamaticFilterExpressionCodec.LOGGER_NAME);
+		return lc.getLogger(FilterExpressionCodec.LOGGER_NAME);
 	}
 
 	@BeforeClass
@@ -133,7 +133,7 @@ public class LambdamaticFilterExpressionCodecTest {
 			getCodecLogger().setLevel(Level.ERROR);
 		}
 		// when
-		new LambdamaticFilterExpressionCodec().encode(bsonWriter, expr, context);
+		new FilterExpressionCodec().encode(bsonWriter, expr, context);
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
 		LOGGER.debug("Comparing \n{} vs \n{}", expectedJSON, actual);
