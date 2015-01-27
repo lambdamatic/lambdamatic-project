@@ -8,6 +8,8 @@
 
 package com.sample;
 
+import java.util.Date;
+
 import org.bson.types.ObjectId;
 import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentField;
@@ -34,6 +36,7 @@ public class Foo {
 		private char primitiveCharField;
 		private EnumFoo enumFoo;
 		private Location location;
+		private Date date;
 
 		public FooBuilder withId(final ObjectId id) {
 			this.id = id;
@@ -95,9 +98,15 @@ public class Foo {
 			return this;
 		}
 		
+		public FooBuilder withDate(Date date) {
+			this.date = date;
+			return this;
+		}
+		
 		public Foo build() {
 			return new Foo(this);
 		}
+
 	}
 	
 	@DocumentId 
@@ -136,6 +145,9 @@ public class Foo {
 	@DocumentField
 	private Location location;
 	
+	@DocumentField
+	private Date date;
+	
 	public Foo() {
 		
 	}
@@ -154,6 +166,7 @@ public class Foo {
 		this.primitiveLongField = fooBuilder.primitiveLongField;
 		this.primitiveShortField = fooBuilder.primitiveShortField;
 		this.primitiveShortField = fooBuilder.primitiveShortField;
+		this.date = fooBuilder.date;
 	}
 
 	/**

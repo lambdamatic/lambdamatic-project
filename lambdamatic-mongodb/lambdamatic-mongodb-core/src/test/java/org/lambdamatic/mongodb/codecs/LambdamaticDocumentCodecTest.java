@@ -9,9 +9,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -81,10 +84,11 @@ public class LambdamaticDocumentCodecTest {
 	@Parameters(name = "[{index}] {1}")
 	public static Collection<Object[]> data() {
 		final List<Object[]> data = new ArrayList<>();
+		final Date date = new Date();
 		data.add(new Object[] {
 				new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
-						.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2).build(),
-				"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', primitiveIntField:42, enumFoo:'FOO', location:{type:'Point', coordinates:[40.1, -70.2]}}"
+						.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2).withDate(date).build(),
+				"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', primitiveIntField:42, enumFoo:'FOO', date: {$date:"+ date.getTime() + "}, location:{type:'Point', coordinates:[40.1, -70.2]}}"
 
 		});
 		return data;

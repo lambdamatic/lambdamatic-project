@@ -14,6 +14,7 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -276,6 +277,9 @@ public class DocumentCodec<T> implements Codec<T> {
 			case "java.lang.String":
 				writer.writeString(attributeName, (String) attributeValue);
 				break;
+			case "java.util.Date":
+				writer.writeDateTime(attributeName, ((Date) attributeValue).getTime());
+				break;
 			case "org.lambdamatic.mongodb.types.geospatial.Location":
 				writer.writeStartDocument(attributeName);
 				new LocationCodec(codecRegistry, bindingService).encode(writer, (Location)attributeValue, encoderContext);
@@ -402,6 +406,8 @@ public class DocumentCodec<T> implements Codec<T> {
 			return value.toString();
 		case "org.bson.types.ObjectId":
 			return new ObjectId(value.toString());
+		case "java.util.Date":
+			return new Date((long)value);
 		case "org.lambdamatic.mongodb.types.geospatial.Location":
 			return new LocationCodec(this.codecRegistry, bindingService).decode(new BsonDocumentReader((BsonDocument) value), DecoderContext.builder().build());
 		}
