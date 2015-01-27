@@ -49,7 +49,7 @@ public class FilterExpressionCodec implements Codec<FilterExpression<?>> {
 	public void encode(final BsonWriter writer, final FilterExpression<?> expression,
 			final EncoderContext encoderContext) {
 		final LambdaExpression filterExpression = new LambdaExpressionAnalyzer().analyzeLambdaExpression(expression);
-		if (LOGGER.isDebugEnabled()) {
+		if (LOGGER.isInfoEnabled()) {
 			try {
 				// use an intermediate JsonWriter whose Outputstream can be
 				// retrieved
@@ -57,7 +57,7 @@ public class FilterExpressionCodec implements Codec<FilterExpression<?>> {
 				final BsonWriter debugWriter = new JsonWriter(new OutputStreamWriter(jsonOutputStream, "UTF-8"));
 				encodeExpression(filterExpression, debugWriter, encoderContext);
 				final String jsonContent = IOUtils.toString(jsonOutputStream.toByteArray(), "UTF-8");
-				LOGGER.debug("Encoded query: {}", jsonContent);
+				LOGGER.info("Encoded query: {}", jsonContent);
 				// now, write the document in the target writer
 				final JsonReader jsonContentReader = new JsonReader(jsonContent);
 				writer.pipe(jsonContentReader);
