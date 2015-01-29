@@ -51,6 +51,8 @@ public abstract class ExpressionVisitor {
 				return visitClassLiteralExpression((ClassLiteral) expr);
 			case CAPTURED_ARGUMENT:
 				return visitCapturedArgument((CapturedArgument) expr);
+			case CAPTURED_ARGUMENT_REF:
+				return visitCapturedArgumentRef((CapturedArgumentRef) expr);
 			case LOCAL_VARIABLE:
 				return visitLocalVariable((LocalVariable) expr);
 			}
@@ -58,14 +60,18 @@ public abstract class ExpressionVisitor {
 		return true;
 	}
 
-	public boolean visitLocalVariable(LocalVariable expr) {
+	public boolean visitLocalVariable(final LocalVariable expr) {
 		return true;
 	}
 
-	public boolean visitCapturedArgument(CapturedArgument expr) {
+	public boolean visitCapturedArgument(final CapturedArgument expr) {
 		return true;
 	}
 
+	public boolean visitCapturedArgumentRef(final CapturedArgumentRef expr) {
+		return true;
+	}
+	
 	public boolean visitBooleanLiteralExpression(final BooleanLiteral expr) {
 		return true;
 	}

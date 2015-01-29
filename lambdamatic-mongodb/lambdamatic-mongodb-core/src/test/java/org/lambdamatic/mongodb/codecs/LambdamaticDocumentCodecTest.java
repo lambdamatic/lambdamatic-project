@@ -9,8 +9,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -102,25 +100,22 @@ public class LambdamaticDocumentCodecTest {
 
 	@Test
 	public void shouldEncodeFooDocumentWithLogging() throws IOException, JSONException {
-		shouldEncodeFooDocument(true);
+		getCodecLogger().setLevel(Level.DEBUG);
+		shouldEncodeFooDocument();
 	}
 
 	@Test
 	public void shouldEncodeFooDocumentWithoutLogging() throws IOException, JSONException {
-		shouldEncodeFooDocument(false);
+		getCodecLogger().setLevel(Level.ERROR);
+		shouldEncodeFooDocument();
 	}
 
-	private void shouldEncodeFooDocument(final boolean loggerEnabled) throws UnsupportedEncodingException, IOException,
+	private void shouldEncodeFooDocument() throws UnsupportedEncodingException, IOException,
 			JSONException {
 		// given
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8"));
 		final EncoderContext context = EncoderContext.builder().isEncodingCollectibleDocument(true).build();
-		if (loggerEnabled) {
-			getCodecLogger().setLevel(Level.DEBUG);
-		} else {
-			getCodecLogger().setLevel(Level.ERROR);
-		}
 		// when
 		new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY, new BindingService()).encode(bsonWriter, foo, context);
 		// then
@@ -131,11 +126,13 @@ public class LambdamaticDocumentCodecTest {
 
 	@Test
 	public void shouldDecodeFooDocumentWithLogging() throws IOException, JSONException {
+		getCodecLogger().setLevel(Level.DEBUG);
 		shouldDecodeFooDocument(true);
 	}
 
 	@Test
 	public void shouldDecodeFooDocumentWithoutLogging() throws IOException, JSONException {
+		getCodecLogger().setLevel(Level.ERROR);
 		shouldDecodeFooDocument(false);
 	}
 
@@ -143,11 +140,6 @@ public class LambdamaticDocumentCodecTest {
 		// given
 		final BsonReader bsonReader = new JsonReader(jsonString);
 		final DecoderContext decoderContext = DecoderContext.builder().build();
-		if (loggerEnabled) {
-			getCodecLogger().setLevel(Level.DEBUG);
-		} else {
-			getCodecLogger().setLevel(Level.ERROR);
-		}
 		// when
 		final Foo actualFoo = new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY, new BindingService()).decode(bsonReader, decoderContext);
 		// then

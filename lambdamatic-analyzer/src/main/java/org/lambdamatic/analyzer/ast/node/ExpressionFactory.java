@@ -5,23 +5,24 @@ package org.lambdamatic.analyzer.ast.node;
 
 
 /**
- * @author xcoulon
+ * {@link Expression} factory
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class LiteralFactory {
+public class ExpressionFactory {
 
 	/**
 	 * Private constructor of the utility class
 	 */
-	private LiteralFactory() {
+	private ExpressionFactory() {
 	}
 	
 	/**
-	 * Converts the given {@code value} to a literal {@link Expression}. 
+	 * Converts the given {@code value} to an {@link Expression}. 
 	 * @param value
-	 * @return the literal {@link Expression} wrapping the given value.
+	 * @return the {@link Expression} wrapping the given value.
 	 */
-	public static Expression getLiteral(final Object value) {
+	public static Expression getExpression(final Object value) {
 		if (value == null) {
 			return new NullLiteral();
 		} else if (value instanceof Boolean) {
@@ -32,8 +33,10 @@ public class LiteralFactory {
 			return new NumberLiteral((Number) value);
 		} else if (value instanceof Enum<?>) {
 			return new EnumLiteral((Enum<?>)value);
+		} else if (value instanceof String) {
+			return new StringLiteral(value.toString());
 		}
-		return new StringLiteral(value.toString());
+		return new CapturedArgument(value);
 	}
 
 	/**

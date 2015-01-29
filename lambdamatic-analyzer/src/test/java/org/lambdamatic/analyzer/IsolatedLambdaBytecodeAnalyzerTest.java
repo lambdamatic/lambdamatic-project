@@ -30,7 +30,7 @@ public class IsolatedLambdaBytecodeAnalyzerTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(IsolatedLambdaBytecodeAnalyzerTest.class);
 
-	private final LambdaExpressionAnalyzer analyzer = new LambdaExpressionAnalyzer();
+	private final LambdaExpressionAnalyzer analyzer = LambdaExpressionAnalyzer.getInstance();
 
 	@Test
 	public void shouldParseExpression() throws IOException {

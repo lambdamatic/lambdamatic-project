@@ -41,7 +41,7 @@ import com.sample.model.TestPojo;
 @RunWith(Parameterized.class)
 public class LambdaBytecodeAnalyzerTest {
 
-	private final LambdaExpressionAnalyzer analyzer = new LambdaExpressionAnalyzer();
+	private final LambdaExpressionAnalyzer analyzer = LambdaExpressionAnalyzer.getInstance();
 
 	@Rule
 	public TestWatcher watcher = new TestWatcher();
@@ -107,7 +107,7 @@ public class LambdaBytecodeAnalyzerTest {
 		final MethodInvocation t_dot_getStringValue_dot_equals_foo = new MethodInvocation(t_dot_getStringValue,
 				"equals", Boolean.class, new StringLiteral("foo"));
 		final MethodInvocation t_dot_getStringValue_dot_equals_captured_argument_foo = new MethodInvocation(t_dot_getStringValue,
-				"equals", Boolean.class, new CapturedArgument("foo"));
+				"equals", Boolean.class, new StringLiteral("foo"));
 		final MethodInvocation t_dot_getStringValue_dot_equals_bar = new MethodInvocation(t_dot_getStringValue,
 				"equals", Boolean.class, new StringLiteral("bar"));
 		final MethodInvocation t_dot_getStringValue_dot_equals_baz = new MethodInvocation(t_dot_getStringValue,
@@ -479,7 +479,7 @@ public class LambdaBytecodeAnalyzerTest {
 						new MethodInvocation(t_dot_getStringValue, "equals", Boolean.class, new NullLiteral()) },
 				new Object[] {
 						(FilterExpression<TestPojo>) (t -> !t.getStringValue().equals(stringValue_null)),
-						new MethodInvocation(t_dot_getStringValue, "equals", Boolean.class, new CapturedArgument(stringValue_null))
+						new MethodInvocation(t_dot_getStringValue, "equals", Boolean.class, new NullLiteral())
 								.inverse() },
 				new Object[] { (FilterExpression<TestPojo>) (t -> t.field != "foo"), t_dot_field_not_equals_foo },
 				new Object[] {

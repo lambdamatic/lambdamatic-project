@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 

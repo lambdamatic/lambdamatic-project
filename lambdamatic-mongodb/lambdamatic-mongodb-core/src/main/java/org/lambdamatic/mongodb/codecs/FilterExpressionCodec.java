@@ -48,7 +48,7 @@ public class FilterExpressionCodec implements Codec<FilterExpression<?>> {
 	@Override
 	public void encode(final BsonWriter writer, final FilterExpression<?> expression,
 			final EncoderContext encoderContext) {
-		final LambdaExpression filterExpression = new LambdaExpressionAnalyzer().analyzeLambdaExpression(expression);
+		final LambdaExpression filterExpression = LambdaExpressionAnalyzer.getInstance().analyzeLambdaExpression(expression);
 		if (LOGGER.isInfoEnabled()) {
 			try {
 				// use an intermediate JsonWriter whose Outputstream can be

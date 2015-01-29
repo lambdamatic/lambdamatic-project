@@ -114,24 +114,21 @@ public class LambdamaticFilterExpressionCodecTest {
 	
 	@Test
 	public void shouldConvertWithLoggerEnabled() throws IOException, JSONException {
-		performAndAssertConvertion(true);
+		getCodecLogger().setLevel(Level.DEBUG);
+		performAndAssertConvertion();
 	}
 	
 	@Test
 	public void shouldConvertWithLoggerDisabled() throws IOException, JSONException {
-		performAndAssertConvertion(false);
+		getCodecLogger().setLevel(Level.ERROR);
+		performAndAssertConvertion();
 	}
 
-	private void performAndAssertConvertion(final boolean loggerEnabled) throws UnsupportedEncodingException, IOException, JSONException {
+	private void performAndAssertConvertion() throws UnsupportedEncodingException, IOException, JSONException {
 		// given
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8")); 
 		final EncoderContext context = EncoderContext.builder().isEncodingCollectibleDocument(true).build();
-		if(loggerEnabled) {
-			getCodecLogger().setLevel(Level.DEBUG);
-		} else {
-			getCodecLogger().setLevel(Level.ERROR);
-		}
 		// when
 		new FilterExpressionCodec().encode(bsonWriter, expr, context);
 		// then

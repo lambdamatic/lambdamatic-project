@@ -11,7 +11,6 @@ package org.lambdamatic.analyzer.ast;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.EnumLiteral;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
@@ -32,42 +31,12 @@ import com.sample.model.TestPojo;
 public class ExpressionRewriterTest {
 
 	@Test
-	public void shouldSubstituteOneCapturedArgumentInMethodInvocation() {
-		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(new CapturedArgument(new TestPojo()), "getStringValue", String.class);
-		final MethodInvocation equalsGetStringValue = new MethodInvocation(testPojo, "equals", Boolean.class, getStringValueMethod);
-		// when
-		final ExpressionRewriter expressionRewriter = new ExpressionRewriter();
-		equalsGetStringValue.accept(expressionRewriter);
-		// then
-		final MethodInvocation expectedResult = new MethodInvocation(testPojo, "equals", Boolean.class, new StringLiteral("foo"));
-		assertThat(equalsGetStringValue).isEqualTo(expectedResult);
-	}
-
-	@Test
-	public void shouldSubstituteCapturedArgumentInTwoMethodInvocations() {
-		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
-		final MethodInvocation equalsMethodInvocation = new MethodInvocation(testPojo, "equals", Boolean.class, new MethodInvocation(new CapturedArgument(new TestPojo()), "getStringValue", String.class));
-		final MethodInvocation equalsFieldAccess = new MethodInvocation(testPojo, "equals", Boolean.class, new FieldAccess(new CapturedArgument(new TestPojo()), "field"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsMethodInvocation, equalsFieldAccess);
-		// when
-		final ExpressionRewriter expressionRewriter = new ExpressionRewriter();
-		expression.accept(expressionRewriter);
-		// then
-		final InfixExpression expectedResult = new InfixExpression(InfixOperator.CONDITIONAL_OR, new MethodInvocation(testPojo, "equals", Boolean.class, 
-				new StringLiteral("foo")), new MethodInvocation(testPojo, "equals", Boolean.class, new StringLiteral("bar")));
-		assertThat(expression).isEqualTo(expectedResult);
-	}
-
-	@Test
 	public void shouldNotSubstituteInfixExpressionOperands() {
 		// given
 		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class, new StringLiteral("foo"));
 		// when
-		final ExpressionRewriter expressionRewriter = new ExpressionRewriter();
+		final LambdaExpressionRewriter expressionRewriter = new LambdaExpressionRewriter();
 		equalsFooMethod.accept(expressionRewriter);
 		// then
 		assertThat(equalsFooMethod).isEqualTo(equalsFooMethod);
@@ -87,7 +56,7 @@ public class ExpressionRewriterTest {
 				new InfixExpression(InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42_2, getEnumPojoMethodEqualsFieldBar_1), 
 				new InfixExpression(InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42_3, getEnumPojoMethodEqualsFieldBar_2.inverse(), getStringValueMethodEqualsFoo1));
 		// when
-		final ExpressionRewriter expressionRewriter = new ExpressionRewriter();
+		final LambdaExpressionRewriter expressionRewriter = new LambdaExpressionRewriter();
 		expression.accept(expressionRewriter);
 		// then expect (foo || bar || baz)
 		final InfixExpression getEnumPojoMethodEqualsEnumBar_1 = new InfixExpression(InfixOperator.EQUALS, new MethodInvocation(var, "getEnumPojo", EnumPojo.class), new EnumLiteral(EnumPojo.BAR));
@@ -109,7 +78,7 @@ public class ExpressionRewriterTest {
 				new InfixExpression(InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsFieldBar), 
 				new InfixExpression(InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsFieldBar.inverse(), getStringValueMethodEqualsFoo));
 		// when
-		final ExpressionRewriter expressionRewriter = new ExpressionRewriter();
+		final LambdaExpressionRewriter expressionRewriter = new LambdaExpressionRewriter();
 		expression.accept(expressionRewriter);
 		// then expect (foo || bar || baz)
 		final InfixExpression getEnumPojoMethodEqualsEnumBar = new InfixExpression(InfixOperator.EQUALS, new MethodInvocation(var, "getEnumPojo", EnumPojo.class), new EnumLiteral(EnumPojo.BAR));
