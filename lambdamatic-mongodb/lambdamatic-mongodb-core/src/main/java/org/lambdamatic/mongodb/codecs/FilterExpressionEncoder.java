@@ -169,8 +169,25 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 				writer.writeStartDocument(((FieldAccess)sourceExpression).getFieldName());
 				encodePolygon(writer, polygon);
 				writer.writeEndDocument();
+			} else if(List.class.isInstance(argument) && listContains((List<?>)argument, Location.class)) {
+				@SuppressWarnings("unchecked")
+				final List<Location> locations = (List<Location>) argument;
+				final Polygon polygon = new Polygon(locations);
+				writer.writeStartDocument(((FieldAccess)sourceExpression).getFieldName());
+				encodePolygon(writer, polygon);
+				writer.writeEndDocument();
 			}
 		}
+	}
+
+	/**
+	 * Checks that the given list contains elements of the given element type
+	 * @param list
+	 * @param elementClass
+	 * @return {@code true} if the list contains elements of the given type, {@code false} otherwise.
+	 */
+	private boolean listContains(final List<?> list, final Class<?> elementClass) {
+		return !list.isEmpty() && list.get(0).getClass().equals(elementClass);
 	}
 
 	/**

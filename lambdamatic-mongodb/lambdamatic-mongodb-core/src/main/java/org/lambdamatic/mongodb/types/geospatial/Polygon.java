@@ -4,6 +4,7 @@
 package org.lambdamatic.mongodb.types.geospatial;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +48,26 @@ public class Polygon {
 	 */
 	public Polygon(final Location... points) {
 		this.rings = new Ring[] { new Ring(points) };
+	}
+
+	/**
+	 * Polygon with a single ring.
+	 * 
+	 * <p>
+	 * For Polygons with a single ring, the ring cannot self-intersect.
+	 * </p>
+	 * <p>
+	 * Note: If the last point does not correspond to the first point, an extra
+	 * point will be added to close the ring.
+	 * </p>
+	 * 
+	 * @param points
+	 *            the points making the single {@link Ring} of this
+	 *            {@link Polygon}
+	 * 
+	 */
+	public Polygon(final List<Location> points) {
+		this.rings = new Ring[] { new Ring(points.toArray(new Location[points.size()])) };
 	}
 	
 	/**

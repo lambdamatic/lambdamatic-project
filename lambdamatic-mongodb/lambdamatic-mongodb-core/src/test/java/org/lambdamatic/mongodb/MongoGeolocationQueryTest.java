@@ -12,6 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.assertj.core.api.Condition;
@@ -79,7 +81,7 @@ public class MongoGeolocationQueryTest {
 	}
 
 	@Test
-	public void shouldFindGeoWithinLocations() throws IOException {
+	public void shouldFindGeoWithinArrayOfLocations() throws IOException {
 		// when
 		final Location[] corners = new Location[] { new Location(40.70, -73.90), new Location(40.75, -73.90),
 				new Location(40.75, -73.95), new Location(40.70, -73.95) };
@@ -88,4 +90,17 @@ public class MongoGeolocationQueryTest {
 		assertThat(matches).isNotNull().hasSize(4);
 	}
 
+	@Test
+	public void shouldFindGeoWithinListOfLocations() throws IOException {
+		// when
+		final List<Location> corners = new ArrayList<>();
+		corners.add(new Location(40.70, -73.90));
+		corners.add(new Location(40.75, -73.90));
+		corners.add(new Location(40.75, -73.95));
+		corners.add(new Location(40.70, -73.95));
+		final List<Foo> matches = fooCollection.find(f -> f.location.geoWithin(corners)).toList();
+		// then
+		assertThat(matches).isNotNull().hasSize(4);
+	}
+	
 }

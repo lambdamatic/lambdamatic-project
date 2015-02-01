@@ -8,6 +8,8 @@
 
 package org.lambdamatic.mongodb.metadata;
 
+import java.util.List;
+
 import org.lambdamatic.mongodb.metadata.context.GeoNearContext;
 import org.lambdamatic.mongodb.metadata.context.NearContext;
 import org.lambdamatic.mongodb.types.geospatial.Location;
@@ -92,4 +94,21 @@ public interface LocationField {
 	// FIXME: add support for http://docs.mongodb.org/manual/core/2dsphere/#multipoint et al.
 	public boolean geoWithin(final Location[] points);
 
+	/**
+	 * Selects documents with geospatial data that exists entirely within a
+	 * specified shape. When determining inclusion, MongoDB considers the border
+	 * of a shape to be part of the shape, subject to the precision of floating
+	 * point numbers.
+	 *
+	 * {@link #geoWithin(Polygon)} does not require a geospatial index. However, a geospatial
+	 * index will improve query performance. Both 2dsphere and 2d geospatial
+	 * indexes support $geoWithin.
+	 * 
+	 * @param points the points defining the single ring of the polygon
+	 * @return
+	 * @see {@link Polygon.Ring}
+	 */
+	// FIXME: add support for http://docs.mongodb.org/manual/core/2dsphere/#multipoint et al.
+	public boolean geoWithin(final List<Location> points);
+	
 }
