@@ -8,13 +8,15 @@
 
 package org.lambdamatic.mongodb.apt.testutil;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 import org.assertj.core.api.AbstractAssert;
+import org.lambdamatic.mongodb.annotations.DocumentField;
 
 /**
- * Specific assertJ {@link AbstractAssert} for {@link DocumentField} objects
+ * Specific assertJ {@link AbstractAssert} for {@link DocumentField} objects.
  * 
  * @author Xavier Coulon
  *
@@ -53,6 +55,10 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
 			failWithMessage("Expected field <%s> *NOT* to be final", actual.getName());
 		}
 		return this;
+	}
+	
+	public <T extends Annotation> AnnotationAssertion hasAnnotation(final Class<T> annotationClass) {
+		return new AnnotationAssertion(actual.getAnnotation(annotationClass));
 	}
 	
 }

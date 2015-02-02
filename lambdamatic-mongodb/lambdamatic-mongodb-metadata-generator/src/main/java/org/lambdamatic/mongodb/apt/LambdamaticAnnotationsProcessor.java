@@ -32,7 +32,6 @@ import org.apache.commons.io.IOUtils;
 import org.lambdamatic.mongodb.LambdamaticMongoCollection;
 import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentField;
-import org.lambdamatic.mongodb.annotations.FetchType;
 import org.lambdamatic.mongodb.annotations.TransientField;
 import org.lambdamatic.mongodb.metadata.DateField;
 import org.lambdamatic.mongodb.metadata.LocationField;
@@ -47,7 +46,7 @@ import org.stringtemplate.v4.ST;
  * Processor for classes annotated with {@code Document}. Generates their associated metadata Java classes in the target folder given in the
  * constructor.
  * 
- * @author Xavier Coulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -290,8 +289,6 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 		private final String documentFieldName;
 		/** The java field type. */
 		private final String javaFieldType;
-		/** the document field fetch strategy. */
-		private final FetchType documentFieldFetchType;
 
 		/**
 		 * 
@@ -302,23 +299,6 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 			this.javaFieldName = getVariableName(variableElement);
 			this.javaFieldType = getVariableType(variableElement);
 			this.documentFieldName = getDocumentFieldName(documentFieldAnnotation, javaFieldName);
-			this.documentFieldFetchType = getDocumentFieldFetchType(documentFieldAnnotation);
-		}
-
-		/**
-		 * Returns the {@link DocumentField#fetch()} value if the given {@code documentFieldAnnotation} is not null, otherwise, returns the
-		 * default value configured in the {@link DocumentField} annotation.
-		 * 
-		 * @param documentFieldAnnotation
-		 *            the annotation to analyze
-		 * @return the {@link FetchType} strategy
-		 */
-		private FetchType getDocumentFieldFetchType(final DocumentField documentFieldAnnotation) {
-			if (documentFieldAnnotation != null) {
-				return documentFieldAnnotation.fetch();
-			}
-			// MUST match the default value in DocumentField
-			return FetchType.EAGER;
 		}
 
 		/**
@@ -332,7 +312,7 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 		 * @return the name of the field in the document
 		 */
 		private String getDocumentFieldName(final DocumentField documentFieldAnnotation, final String defaultDocumentFieldName) {
-			if (documentFieldAnnotation != null) {
+			if (documentFieldAnnotation != null && !documentFieldAnnotation.name().isEmpty()) {
 				return documentFieldAnnotation.name();
 			}
 			return defaultDocumentFieldName;
@@ -412,13 +392,6 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 		 */
 		public String getJavaFieldType() {
 			return javaFieldType;
-		}
-
-		/**
-		 * @return the documentFieldFetchType
-		 */
-		public FetchType getDocumentFieldFetchType() {
-			return documentFieldFetchType;
 		}
 
 	}

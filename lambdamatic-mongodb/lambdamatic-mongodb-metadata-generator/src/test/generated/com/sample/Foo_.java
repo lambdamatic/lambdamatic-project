@@ -4,7 +4,6 @@ import javax.annotation.Generated;
 import org.lambdamatic.mongodb.metadata.Metadata;
 
 import org.lambdamatic.mongodb.annotations.DocumentField;
-import org.lambdamatic.mongodb.annotations.FetchType;
 
 /**
  * The {@link Metadata} class associated with the {@link Foo} domain class.
@@ -13,40 +12,40 @@ import org.lambdamatic.mongodb.annotations.FetchType;
 @Generated(value="org.lambdamatic.mongodb.apt.LambdamaticAnnotationsProcessor")
 public class Foo_ implements Metadata<Foo> {
 
-	@DocumentField(name="id", fetch=FetchType.EAGER)
+	@DocumentField(name="id")
  	public org.lambdamatic.mongodb.metadata.StringField id;
 
-	@DocumentField(name="", fetch=FetchType.EAGER)
+	@DocumentField(name="stringField")
  	public org.lambdamatic.mongodb.metadata.StringField stringField;
 
-	@DocumentField(name="", fetch=FetchType.EAGER)
+	@DocumentField(name="primitiveByteField")
  	public byte primitiveByteField;
 
-	@DocumentField(name="", fetch=FetchType.EAGER)
+	@DocumentField(name="primitiveShortField")
  	public short primitiveShortField;
 
-	@DocumentField(name="", fetch=FetchType.EAGER)
+	@DocumentField(name="primitiveIntField")
  	public int primitiveIntField;
 
-	@DocumentField(name="", fetch=FetchType.EAGER)
+	@DocumentField(name="primitiveLongField")
  	public long primitiveLongField;
 
-	@DocumentField(name="", fetch=FetchType.EAGER)
+	@DocumentField(name="primitiveFloatField")
  	public float primitiveFloatField;
 
-	@DocumentField(name="", fetch=FetchType.EAGER)
+	@DocumentField(name="primitiveDoubleField")
  	public double primitiveDoubleField;
 
-	@DocumentField(name="", fetch=FetchType.EAGER)
+	@DocumentField(name="primitiveBooleanField")
  	public boolean primitiveBooleanField;
 
-	@DocumentField(name="", fetch=FetchType.EAGER)
+	@DocumentField(name="primitiveCharField")
  	public char primitiveCharField;
 
-	@DocumentField(name="", fetch=FetchType.EAGER)
+	@DocumentField(name="enumFoo")
  	public com.sample.EnumFoo enumFoo;
 
-	@DocumentField(name="", fetch=FetchType.EAGER)
+	@DocumentField(name="location")
  	public org.lambdamatic.mongodb.metadata.LocationField location;
 
 

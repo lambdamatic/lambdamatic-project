@@ -146,9 +146,9 @@ public class LambdaExpressionReader {
 		try {
 			final Method m = cl.getDeclaredMethod("writeReplace");
 			m.setAccessible(true);
-			Object replacement = m.invoke(expression);
-			if (replacement instanceof SerializedLambda) {
-				final SerializedLambda serializedLambda = (SerializedLambda) replacement;
+			final Object result = m.invoke(expression);
+			if (result instanceof SerializedLambda) {
+				final SerializedLambda serializedLambda = (SerializedLambda) result;
 				LOGGER.debug(" Lambda FunctionalInterface: {}.{} ({})", serializedLambda.getFunctionalInterfaceClass(),
 						serializedLambda.getFunctionalInterfaceMethodName(), serializedLambda.getFunctionalInterfaceMethodSignature());
 				LOGGER.debug(" Lambda Implementation: {}.{} ({})", serializedLambda.getImplClass(), serializedLambda.getImplMethodName(),

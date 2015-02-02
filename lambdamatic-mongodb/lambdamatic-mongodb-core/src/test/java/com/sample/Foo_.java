@@ -1,10 +1,9 @@
 package com.sample;
 
 import javax.annotation.Generated;
-import org.lambdamatic.mongodb.metadata.Metadata;
 
 import org.lambdamatic.mongodb.annotations.DocumentField;
-import org.lambdamatic.mongodb.annotations.FetchType;
+import org.lambdamatic.mongodb.metadata.Metadata;
 
 /**
  * The {@link Metadata} class associated with the {@link Foo} domain class.
@@ -13,40 +12,40 @@ import org.lambdamatic.mongodb.annotations.FetchType;
 @Generated(value="org.lambdamatic.mongodb.apt.LambdamaticAnnotationsProcessor")
 public class Foo_ implements Metadata<Foo> {
 
-  @DocumentField(name="id", fetch=FetchType.EAGER)
+  @DocumentField
   public org.lambdamatic.mongodb.metadata.StringField id;
   
-  @DocumentField(name="", fetch=FetchType.EAGER)
+  @DocumentField
   public org.lambdamatic.mongodb.metadata.StringField stringField;
   
-  @DocumentField(name="", fetch=FetchType.EAGER)
+  @DocumentField
   public byte primitiveByteField;
   
-  @DocumentField(name="", fetch=FetchType.EAGER)
+  @DocumentField
   public short primitiveShortField;
   
-  @DocumentField(name="", fetch=FetchType.EAGER)
+  @DocumentField
   public int primitiveIntField;
   
-  @DocumentField(name="", fetch=FetchType.EAGER)
+  @DocumentField
   public long primitiveLongField;
   
-  @DocumentField(name="", fetch=FetchType.EAGER)
+  @DocumentField
   public float primitiveFloatField;
   
-  @DocumentField(name="", fetch=FetchType.EAGER)
+  @DocumentField
   public double primitiveDoubleField;
   
-  @DocumentField(name="", fetch=FetchType.EAGER)
+  @DocumentField
   public boolean primitiveBooleanField;
   
-  @DocumentField(name="", fetch=FetchType.EAGER)
+  @DocumentField
   public char primitiveCharField;
   
-  @DocumentField(name="", fetch=FetchType.EAGER)
+  @DocumentField
   public com.sample.EnumFoo enumFoo;
   
-  @DocumentField(name="", fetch=FetchType.EAGER)
+  @DocumentField
   public org.lambdamatic.mongodb.metadata.LocationField location;
   
 }

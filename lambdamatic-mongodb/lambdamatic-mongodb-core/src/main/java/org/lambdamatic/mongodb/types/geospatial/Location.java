@@ -8,7 +8,6 @@
 
 package org.lambdamatic.mongodb.types.geospatial;
 
-import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.codecs.ConversionException;
 
 /**
@@ -20,11 +19,9 @@ import org.lambdamatic.mongodb.codecs.ConversionException;
 public class Location {
 
 	/** The latitude value.*/
-	@DocumentField(name="latitude")
 	private double latitude;
 
 	/** The longitude value.*/
-	@DocumentField(name="longitude")
 	private double longitude;
 	
 	/**

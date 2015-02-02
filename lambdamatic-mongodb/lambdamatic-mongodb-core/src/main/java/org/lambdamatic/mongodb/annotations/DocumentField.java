@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * Optional annotation for attributes of a class annotated with {@link Document}. Use this annotation to override the
  * default settings.
  * 
- * @author Xavier Coulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
@@ -23,9 +23,6 @@ public @interface DocumentField {
 	 * document field name.
 	 */
 	public String name() default "";
-
-	/** Fetch strategy for the annotated field. By default, the field is fetch when requesting the document. */
-	public FetchType fetch() default FetchType.EAGER;
 
 }
 
