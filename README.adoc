@@ -1,12 +1,120 @@
 = Lambdamatic: Query MongoDB with Lambda Expressions
 
+== Project Configuration
+
+In your pom.xml, add the following dependency:
+
+[code,xml]
+----
+<dependency>
+  <groupId>org.lambdamatic</groupId>
+  <artifactId>lambdamatic-mongodb-metadata-generator</artifactId>
+  <version>${version.dependency.lambdamatic-mongodb}</version>
+  <optional>true</optional>
+</dependency>
+----
+
+then, configure the following build plugins:
+
+[code,xml]
+----
+<plugin>
+  <artifactId>maven-compiler-plugin</artifactId>
+  <version>${version.plugin.compiler}</version>
+  <configuration>
+    <source>${maven.compiler.source}</source>
+    <target>${maven.compiler.target}</target>
+    <encoding>${project.build.sourceEncoding}</encoding>
+    <compilerArgument>-proc:none</compilerArgument>
+  </configuration>
+</plugin>
+<plugin>
+  <groupId>org.bsc.maven</groupId>
+  <artifactId>maven-processor-plugin</artifactId>
+  <version>3.1.0-beta1</version>
+  <executions>
+    <execution>
+      <id>process</id>
+      <goals>
+        <goal>process</goal>
+      </goals>
+      <phase>generate-sources</phase>
+    </execution>
+  </executions>
+</plugin>
+----
+
+Once this is done, if you use Eclipse, you should install https://github.com/jbosstools/m2e-apt[the m2e-apt plugin] to let Eclipse invoke the Lambdamatic Annotation Processor each time a class annotated with @Document is saved.
+
+Once this is done, you can annotate your domain class with @Document and its fields with @DocumentId/@DocumentField as follow:
+
+[code,java]
+----
+package com.example.domain;
+
+@Document(collection="bikestations")
+public class BikeStation {
+
+  @DocumentId
+  private String id;
+
+  @DocumentField
+  private String stationName;
+
+  @DocumentField
+  private int availableDocks;
+
+  @DocumentField
+  private int totalDocks;
+
+  @DocumentField
+  private int availableBikes;
+
+  @DocumentField
+  private Location location;
+
+  @DocumentField
+  private BikeStationStatus status;
+
+  @DocumentField
+  private boolean testStation;
+
+  @DocumentField
+  private Date executionTime;
+
+  ...
+}
+----
+
+From the class above, the Lambdamatic will generate the following classes:
+
+- com.example.domain.BikeStation_
+- com.example.domain.BikeStationCollection
+- com.example.domain.BikeStationCollectionProducer
+
+These classes are located in the target/generated-sources/apt folder of your project.
+
+In your code, you can now write queries as follow:
+
+[code,java]
+----
+public List<BikeStation> findWithin(final List<Location> corners) {
+  return bikeStationCollection.find(
+    s -> s.status == BikeStationStatus.IN_SERVICE
+      && s.location.geoWithin(corners)).toList();
+}
+----
+
+See the https://github.com/lambdamatic/lambdamatic-mongodb-citibikesnyc[Sample application] for more details.
+
 == Status
 
 Prototype (with its share of missing features and bugs)
 
-== Build
+== Installation/Build
 
-run
+Lambdamatic is not available on Maven repositories, so you'll need to build it.
+Run
 
 [code]
 ----
@@ -15,7 +123,7 @@ mvn clean install
 
 (requires a mongod running and listening on default port 27017)
 
-or 
+or
 
 [code]
 ----
@@ -27,4 +135,3 @@ if you don't want to run the tests
 == License
 
 This program is made available under the terms of the Eclipse Public License v1.0 which accompanies this distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
-
