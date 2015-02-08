@@ -5,6 +5,8 @@ package org.lambdamatic.mongodb.apt;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -116,9 +118,13 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 					generateMetadataSourceCode(templateContextProperties);
 					generateMongoCollectionSourceCode(templateContextProperties);
 					generateMongoCollectionProducerSourceCode(templateContextProperties);
-				} catch (IOException e) {
+				} 
+				// catch Throwable to avoid crashing the compiler.
+				catch (final Throwable e) {
+					final Writer writer = new StringWriter();
+					e.printStackTrace(new PrintWriter(writer));
 					processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-							"Failed to process annotated element '" + annotatedElement.getSimpleName() + "': " + e.getMessage());
+							"Failed to process annotated element '" + annotatedElement.getSimpleName() + "': " + writer.toString());
 				}
 			}
 		}
