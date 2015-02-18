@@ -3,10 +3,16 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
+import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.lambdamatic.analyzer.ast.ReflectionUtils;
+import org.lambdamatic.analyzer.exception.AnalyzeException;
 
 /**
  * A method call: {@code expression.methodName(arguments)}
@@ -16,8 +22,8 @@ import java.util.stream.Collectors;
  */
 public class MethodInvocation extends ComplexExpression {
 
-	/** the expression on which the method call is applied. */
-	private final Expression sourceExpression;
+	/** the expression on which the method call is applied (may change if evaluated). */
+	private Expression sourceExpression;
 
 	/** the name of the called method. */
 	private final String methodName;
@@ -83,12 +89,16 @@ public class MethodInvocation extends ComplexExpression {
 	public MethodInvocation(final int id, final Expression sourceExpression, final String methodName, final List<Expression> arguments,
 			final Class<?> returnType, final boolean inverted) {
 		super(id, inverted);
-		this.sourceExpression = sourceExpression;
-		this.sourceExpression.setParent(this);
+		setSourceExpression(sourceExpression);
 		this.methodName = methodName;
 		this.arguments = arguments;
 		this.arguments.stream().forEach(e -> e.setParent(this));
 		this.returnType = returnType;
+	}
+
+	private void setSourceExpression(final Expression sourceExpression) {
+		this.sourceExpression = sourceExpression;
+		this.sourceExpression.setParent(this);
 	}
 
 	/**
@@ -98,7 +108,7 @@ public class MethodInvocation extends ComplexExpression {
 	 */
 	@Override
 	public MethodInvocation duplicate(int id) {
-		return new MethodInvocation(id, getSourceExpression().duplicate(), getMethodName(), duplicateArguments(), getReturnType(), isInverted());
+		return new MethodInvocation(id, getSourceExpression().duplicate(), getMethodName(), Expression.duplicateExpressions(this.arguments), getReturnType(), isInverted());
 	}
 	
 	/**
@@ -111,15 +121,6 @@ public class MethodInvocation extends ComplexExpression {
 	}
 	
 	/**
-	 * @return a duplicate {@link List} of the {@link Expression} arguments
-	 */
-	private List<Expression> duplicateArguments() {
-		return this.arguments.stream().map(e -> {return e.duplicate();}).collect(Collectors.toList());
-	}
-	
-	
-	
-	/**
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
 	 */
@@ -127,6 +128,14 @@ public class MethodInvocation extends ComplexExpression {
 	public ExpressionType getExpressionType() {
 		return ExpressionType.METHOD_INVOCATION;
 	}
+	
+	@Override
+	public boolean anyElementMatches(ExpressionType type) {
+		return sourceExpression.anyElementMatches(type)
+				|| this.arguments.stream().anyMatch(a -> a.anyElementMatches(type));
+	}
+	
+
 
 	/**
 	 * Returns the return type of the method. If the return type is a primitive
@@ -195,30 +204,58 @@ public class MethodInvocation extends ComplexExpression {
 	public Object getValue() {
 		return null;
 	}
+	
+	/**
+	 * Will attempt to evaluate this {@link MethodInvocation} and return its result, even if the arguments contains
+	 * {@link CapturedArgument}.
+	 * 
+	 * @param capturedArgs the captured arguments provided by the {@link SerializedLambda} 
+	 * @return the underlying Java method result.
+	 * @throws AnalyzeException if the underlying Java {@link Method} could not be found or invoked. 
+	 */
+	public Object evaluate() {
+		final List<Object> args = new ArrayList<>();
+		final Class<?>[] argTypes = new Class<?>[this.arguments.size()];
+		final Object source = this.sourceExpression.getValue();
+		try {
+			for (int i = 0; i < this.arguments.size(); i++) {
+				final Object methodArgValue = arguments.get(i).getValue();
+				args.add(methodArgValue);
+				argTypes[i] = arguments.get(i).getJavaType();
+			}
+			final Method m = ReflectionUtils.getMethodToInvoke(source, this.methodName, argTypes);
+			m.setAccessible(true);
+			return m.invoke(source, args.toArray());
+		} catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new AnalyzeException("Failed to invoke method '" + methodName + "' on '" + source + "'", e);
+		}
+	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void accept(final ExpressionVisitor visitor) {
-		if (visitor.visit(this)) {
-			sourceExpression.accept(visitor);
-			for (Expression arg : this.arguments) {
-				arg.accept(visitor);
-			}
+		for (Expression arg : this.arguments) {
+			arg.accept(visitor);
 		}
+		sourceExpression.accept(visitor);
+		visitor.visit(this);
 	}
 
 	/**
-	 * Replace the given {@code oldArgument} with the given {@code newArgument} if it is part of this {@link MethodInvocation} arguments
-	 * only.
+	 * Replace the given {@code oldArgumoldExpressionent} with the given {@code newExpression} if it is part of this
+	 * {@link MethodInvocation} arguments or if it is the sourceExpression.
 	 * 
-	 *  {@inheritDoc}
+	 * {@inheritDoc}
 	 */
-	public void replaceElement(final Expression oldArgument, final Expression newArgument) {
-		final int oldExpressionIndex = this.arguments.indexOf(oldArgument);
+	public void replaceElement(final Expression oldExpression, final Expression newExpression) {
+		final int oldExpressionIndex = this.arguments.indexOf(oldExpression);
 		if (oldExpressionIndex > -1) {
-			this.arguments.set(oldExpressionIndex, newArgument);
+			this.arguments.set(oldExpressionIndex, newExpression);
+			newExpression.setParent(this);
+		} else if(oldExpression == this.sourceExpression) {
+			setSourceExpression(newExpression);
 		}
 	}
 
@@ -227,7 +264,7 @@ public class MethodInvocation extends ComplexExpression {
 	 */
 	@Override
 	public MethodInvocation inverse() {
-		return new MethodInvocation(generateId(), sourceExpression, methodName, duplicateArguments(), getReturnType(), !isInverted());
+		return new MethodInvocation(generateId(), sourceExpression, methodName, Expression.duplicateExpressions(this.arguments), getReturnType(), !isInverted());
 	};
 
 	/**

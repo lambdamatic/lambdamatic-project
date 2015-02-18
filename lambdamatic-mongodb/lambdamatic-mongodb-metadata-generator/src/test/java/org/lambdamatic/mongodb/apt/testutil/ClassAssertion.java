@@ -8,6 +8,8 @@
 
 package org.lambdamatic.mongodb.apt.testutil;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -32,6 +34,22 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
 		return new ClassAssertion(actual);
 	}
 
+	public ClassAssertion isAbstract() {
+		isNotNull();
+		if(!Modifier.isAbstract(actual.getModifiers())) {
+			failWithMessage("Expected class <%s> to be abstract.", actual.getName());
+		}
+		return this;
+	}
+	
+	public ClassAssertion isNotAbstract() {
+		isNotNull();
+		if(Modifier.isAbstract(actual.getModifiers())) {
+			failWithMessage("Expected class <%s> NOT to be abstract.", actual.getName());
+		}
+		return this;
+	}
+	
 	public ClassAssertion isImplementing(final String expectedInterface) {
 		isNotNull();
 		final List<String> interfaces = Arrays.asList(actual.getInterfaces()).stream().map(Class::getName).collect(Collectors.toList());
@@ -97,6 +115,19 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
 		}
 		
 		return this;
+	}
+
+	public ClassAssertion hasNoDeclaredField() {
+		isNotNull();
+		if(actual.getDeclaredFields().length > 0) {
+			failWithMessage("Expected class <%s> to have *no* declared field, but found %s", actual.getName(), actual.getDeclaredFields());
+		}
+		return this;
+	}
+	
+	public <A extends Annotation> AnnotationAssertion hasAnnotation(Class<A> annotationClass) {
+		isNotNull();
+		return new AnnotationAssertion(actual.getAnnotation(annotationClass));
 	}
 
 }

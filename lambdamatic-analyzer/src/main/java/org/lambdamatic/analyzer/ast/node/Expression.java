@@ -6,12 +6,13 @@ package org.lambdamatic.analyzer.ast.node;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 
 /**
  * Abstract base class of AST nodes that represent (bytecode) statements.
  *
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public abstract class Expression extends ASTNode implements Comparable<Expression> {
@@ -20,7 +21,7 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	private Expression parent;
 	
 	public enum ExpressionType {
-		BOOLEAN_LITERAL, CHARACTER_LITERAL, CLASS_LITERAL, NUMBER_LITERAL, NULL_LITERAL, STRING_LITERAL, OBJECT_INSTANTIATION, METHOD_INVOCATION, FIELD_ACCESS, INFIX, INSTANCE_OF, LOCAL_VARIABLE, CAPTURED_ARGUMENT, CAPTURED_ARGUMENT_REF, ENUM_LITERAL;
+		BOOLEAN_LITERAL, CHARACTER_LITERAL, CLASS_LITERAL, NUMBER_LITERAL, NULL_LITERAL, STRING_LITERAL, OBJECT_VARIABLE, ARRAY_VARIABLE, METHOD_INVOCATION, FIELD_ACCESS, INFIX, INSTANCE_OF, LOCAL_VARIABLE, CAPTURED_ARGUMENT, CAPTURED_ARGUMENT_REF, ENUM_LITERAL;
 	}
 
 	/** synthetic id generator based on {@link AtomicInteger}. */
@@ -69,6 +70,15 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	 * @return the {@link ExpressionType} of this {@link Expression}
 	 */
 	public abstract ExpressionType getExpressionType();
+	
+	/**
+	 * Checks if any {@link Expression} element of this {@link ComplexExpression} is of the given {@link ExpressionType}.
+	 * @param type the {@link ExpressionType} to look for
+	 * @return {@code true} if any matches, {@code false} otherwise.
+	 */
+	public boolean anyElementMatches(final ExpressionType type) {
+		return getExpressionType() == type;
+	}
 
 	/**
 	 * @return the type of the underlying Java element of this {@link Expression}
@@ -222,6 +232,14 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	 */
 	protected boolean canFurtherSimplify() {
 		return false;
+	}
+
+	/**
+	 * duplicates the given {@link Expression}, but <strong>does not modify the parent reference</strong>.
+	 * @return a duplicate {@link List} of the {@link Expression} arguments
+	 */
+	public static List<Expression> duplicateExpressions(final List<Expression> sourceExpressions) {
+		return sourceExpressions.stream().map(e -> {return e.duplicate();}).collect(Collectors.toList());
 	}
 
 	

@@ -5,7 +5,7 @@ package org.lambdamatic.analyzer.ast.node;
 
 
 /**
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public abstract class ExpressionVisitor {
@@ -35,8 +35,10 @@ public abstract class ExpressionVisitor {
 				return visitInfixExpression((InfixExpression) expr);
 			case INSTANCE_OF:
 				return visitInstanceOfExpression((InstanceOfExpression) expr);
-			case OBJECT_INSTANTIATION:
-				return visitObjectInstantiationExpression((ObjectInstantiation) expr);
+			case OBJECT_VARIABLE:
+				return visitObjectVariableExpression((ObjectVariable) expr);
+			case ARRAY_VARIABLE:
+				return visitArrayVariableExpression((ArrayVariable) expr);
 			case METHOD_INVOCATION:
 				return visitMethodInvocationExpression((MethodInvocation) expr);
 			case NULL_LITERAL:
@@ -55,6 +57,8 @@ public abstract class ExpressionVisitor {
 				return visitCapturedArgumentRef((CapturedArgumentRef) expr);
 			case LOCAL_VARIABLE:
 				return visitLocalVariable((LocalVariable) expr);
+			default:
+				break;
 			}
 		}
 		return true;
@@ -92,10 +96,14 @@ public abstract class ExpressionVisitor {
 		return true;
 	}
 
-	public boolean visitObjectInstantiationExpression(final ObjectInstantiation expr) {
+	public boolean visitObjectVariableExpression(final ObjectVariable expr) {
 		return true;
 	}
 
+	public boolean visitArrayVariableExpression(final ArrayVariable expr) {
+		return true;
+	}
+	
 	public boolean visitMethodInvocationExpression(final MethodInvocation expr) {
 		return true;
 	}

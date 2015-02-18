@@ -204,7 +204,7 @@ public class InfixExpression extends ComplexExpression {
 	 */
 	@Override
 	public InfixExpression duplicate(int id) {
-		return new InfixExpression(getId(), operator, duplicateOperands(), isInverted());
+		return new InfixExpression(getId(), operator, Expression.duplicateExpressions(operands), isInverted());
 	}
 
 	/**
@@ -239,7 +239,7 @@ public class InfixExpression extends ComplexExpression {
 	public ExpressionType getExpressionType() {
 		return ExpressionType.INFIX;
 	}
-
+	
 	/**
 	 * {@link InfixExpression} return a {@link Boolean} type.
 	 * {@inheritDoc}
@@ -256,7 +256,12 @@ public class InfixExpression extends ComplexExpression {
 	public List<Expression> getOperands() {
 		return operands;
 	}
-
+	
+	@Override
+	public boolean anyElementMatches(ExpressionType type) {
+		return operands.stream().anyMatch(e -> e.anyElementMatches(type));
+	}
+	
 	/**
 	 * Replaces the current operands with the given ones
 	 * @param operands the new operands
@@ -346,16 +351,10 @@ public class InfixExpression extends ComplexExpression {
 			// returns an InfixExpression with the inverted operator and the a *duplicate version* of all
 			// operands, because their parent expression (the one being init and returned) is not *this*
 			// The 'inverse' flag remains 'false', and the operands are not inverted, though.
-			return new InfixExpression(this.getId(), operator.inverse(), duplicateOperands(), false);
+			return new InfixExpression(this.getId(), operator.inverse(), Expression.duplicateExpressions(operands), false);
 		}
 	}
 
-	/**
-	 * @return a {@link List} containing a duplicate version of all {@link Expression} operands of {@code this}.
-	 */
-	private List<Expression> duplicateOperands() {
-		return this.operands.stream().map(e -> {return e.duplicate();}).collect(Collectors.toList());
-	}
 	
 	/**
 	 * @return a {@link List} containing a duplicate version of all {@link Expression} operands of {@code this}.

@@ -1,8 +1,9 @@
 package org.lambdamatic.mongodb.metadata;
 
+
 /**
  * 
- * @author Xavier Coulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public interface ObjectIdField {

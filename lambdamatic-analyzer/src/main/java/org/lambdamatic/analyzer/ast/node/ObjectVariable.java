@@ -3,45 +3,46 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Object created and used during the call to the Lambda Expression serialized method.
+ *
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class ObjectInstantiation extends Expression {
+public class ObjectVariable extends Expression {
 
 	/** the expression on which the method call is applied. */
 	private final Class<?> instanceType;
 
-	/** arguments the arguments passed as parameters during the call. */
-	private final List<Expression> arguments;
+	/** arguments the arguments passed as parameters during the call to &lt;init&gt;. */
+	private final List<Expression> arguments = new ArrayList<Expression>();
 
 	/**
 	 * Full constructor.
 	 * <p>
-	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
+	 * Note: the synthetic {@code id} is generated and the {@code inversion} flag is set to {@code false}.
 	 * </p>
 	 * @param instanceType the type of the instance to build
-	 * @param arguments the arguments to pass to the {@code <init>} method
 	 */
-	public ObjectInstantiation(final Class<?> instanceType, final Expression... arguments) {
-		this(generateId(), instanceType, Arrays.asList(arguments), false);
+	public ObjectVariable(final Class<?> instanceType) {
+		this(generateId(), instanceType, false);
 	}
 
 	/**
 	 * Full constructor.
 	 * <p>
-	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
+	 * Note: the synthetic {@code id} is generated.
 	 * </p>
 	 * @param instanceType the type of the instance to build
-	 * @param arguments the arguments to pass to the {@code <init>} method
+	 * @param inverted the inversion flag
 	 */
-	public ObjectInstantiation(final Class<?> instanceType, final List<Expression> arguments) {
-		this(generateId(), instanceType, arguments, false);
+	public ObjectVariable(final Class<?> instanceType, final boolean inverted) {
+		this(generateId(), instanceType, inverted);
 	}
-	
+
 	/**
 	 * Full constructor.
 	 * <p>
@@ -49,20 +50,27 @@ public class ObjectInstantiation extends Expression {
 	 * </p>
 	 * @param id the id of this expression
 	 * @param instanceType the type of the instance to build
-	 * @param arguments the arguments to pass to the {@code <init>} method
 	 */
-	public ObjectInstantiation(final int id, final Class<?> instanceType, final List<Expression> arguments, boolean inverted) {
+	public ObjectVariable(final int id, final Class<?> instanceType, boolean inverted) {
 		super(id, inverted);
 		this.instanceType = instanceType;
-		this.arguments = arguments;
 	}
 
+	/**
+	 * Sets the arguments passed during the call to the &lt;init&gt; method. 
+	 * 
+	 * @param arguments the arguments to pass to the {@code <init>} method
+	 */
+	public void setInitArguments(final List<Expression> arguments) {
+		this.arguments.addAll(arguments);
+	}
+	
 	/**
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
 	 */
 	@Override
 	public ExpressionType getExpressionType() {
-		return ExpressionType.OBJECT_INSTANTIATION;
+		return ExpressionType.OBJECT_VARIABLE;
 	}
 
 	/**
@@ -101,7 +109,9 @@ public class ObjectInstantiation extends Expression {
 	 */
 	@Override
 	public Expression duplicate(int id) {
-		return new ObjectInstantiation(id, instanceType, arguments, isInverted());
+		final ObjectVariable duplicateVariable = new ObjectVariable(id, instanceType, isInverted());
+		duplicateVariable.setInitArguments(this.arguments);
+		return duplicateVariable;
 	}
 
 	/**
@@ -109,7 +119,9 @@ public class ObjectInstantiation extends Expression {
 	 */
 	@Override
 	public Expression duplicate() {
-		return new ObjectInstantiation(instanceType, arguments);
+		final ObjectVariable duplicateVariable = new ObjectVariable(instanceType, isInverted());
+		duplicateVariable.setInitArguments(this.arguments);
+		return duplicateVariable;
 	}
 
 	@Override
@@ -140,7 +152,7 @@ public class ObjectInstantiation extends Expression {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ObjectInstantiation other = (ObjectInstantiation) obj;
+		ObjectVariable other = (ObjectVariable) obj;
 		if (arguments == null) {
 			if (other.arguments != null)
 				return false;
@@ -155,3 +167,4 @@ public class ObjectInstantiation extends Expression {
 	}
 	
 }
+

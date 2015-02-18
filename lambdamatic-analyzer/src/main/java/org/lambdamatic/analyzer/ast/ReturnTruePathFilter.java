@@ -8,10 +8,10 @@ import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
+import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.StatementVisitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.lambdamatic.analyzer.exception.AnalyzeException;
 
 /**
  * Custom {@link StatementVisitor} that will retrieve all branches of the
@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ReturnTruePathFilter extends StatementVisitor {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ReturnTruePathFilter.class);
-	
 	private final List<ReturnStatement> returnStmts = new ArrayList<>();
 
 	@Override
@@ -32,7 +30,14 @@ public class ReturnTruePathFilter extends StatementVisitor {
 		final Expression returnExpression = returnStatement.getExpression();
 		switch (returnExpression.getExpressionType()) {
 		case BOOLEAN_LITERAL:
-			if (((BooleanLiteral)returnExpression).getValue().equals(true)) {
+			final BooleanLiteral booleanLiteral = (BooleanLiteral)returnExpression;
+			if (booleanLiteral.getValue().equals(true)) {
+				getReturnStmts().add(returnStatement);
+			}
+			break;
+		case NUMBER_LITERAL:
+			final NumberLiteral numberLiteral = (NumberLiteral)returnExpression;
+			if (numberLiteral.getValue().equals(1)) {
 				getReturnStmts().add(returnStatement);
 			}
 			break;
@@ -41,8 +46,9 @@ public class ReturnTruePathFilter extends StatementVisitor {
 			getReturnStmts().add(returnStatement);
 			break;
 		default:
-			LOGGER.error("Unsupported expression type ({}) in return statement '{}'", returnExpression.getExpressionType().toString(), returnStatement.toString());
-			break;
+			throw new AnalyzeException("Unsupported expression type ("
+					+ returnExpression.getExpressionType().toString() + ") in return statement '"
+					+ returnStatement.toString() + "'");
 		}
 
 		// no need to carry on.

@@ -25,7 +25,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionsWithSameOrderShouldBeEqual() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
 		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
@@ -40,7 +40,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionsWithDifferentOrderShouldBeEqual() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
 		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
@@ -55,7 +55,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionsShouldNotBeEqual() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
 		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
@@ -72,7 +72,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionsWithNestedInfixShouldBeEqual() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
 		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
@@ -89,7 +89,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionsNestedInfixShouldNotBeEqual() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
 		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
@@ -107,7 +107,7 @@ public class ExpressionTest {
 	@Test
 	public void methodInvocationExpressionsShouldBeEqual() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		// when
 		final MethodInvocation expressionA = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation expressionB = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
@@ -119,7 +119,7 @@ public class ExpressionTest {
 	@Test
 	public void methodInvocationExpressionsShouldNotBeEqual() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		// when
 		final MethodInvocation expressionA = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation expressionB = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
@@ -131,7 +131,7 @@ public class ExpressionTest {
 	@Test
 	public void inversedMethodInvocationExpressionsShouldNotBeEqual() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		// when
 		final MethodInvocation expressionA = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation expressionB = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo")).inverse();
@@ -143,7 +143,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionWithMethodInvocationOperandsShouldBeFurtherSimplifiable() {
 		// given
-		final LocalVariable var = new LocalVariable("t", TestPojo.class);
+		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final InfixExpression primitiveIntValueEquals42Expression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
 		final InfixExpression fieldEqualsFooExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
 		final InfixExpression enumPojoEqualsFOOExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "enumPojo"), new EnumLiteral(EnumPojo.FOO));
@@ -159,7 +159,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionWithMethodInvocationOperandsShouldNotBeFurtherSimplifiable() {
 		// given
-		final LocalVariable var = new LocalVariable("t", TestPojo.class);
+		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final InfixExpression primitiveIntValueEquals42Expression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
 		final InfixExpression fieldEqualsFooExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
 		final InfixExpression enumPojoEqualsFOOExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "enumPojo"), new EnumLiteral(EnumPojo.FOO));
@@ -174,7 +174,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionWithInfixExpressionOperandsShouldBeFurtherSimplifiable() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
 		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
@@ -189,7 +189,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionWithMethodInvocationsShouldNotBeFurtherSimplifiable() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
 		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
@@ -203,7 +203,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionWithDuplicateMethodInvocationOperandsShouldBeFurtherSimplifiable() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
 		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
@@ -218,7 +218,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionWithDuplicateMethodInvocationOperandShouldBeFurtherSimplifiable() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
 		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));
@@ -232,7 +232,7 @@ public class ExpressionTest {
 	@Test
 	public void infixExpressionWithNestExpressionWithSameOperatorShouldBeFurtherSimplifiable() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
 		final MethodInvocation equalsBarMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("bar"));
 		final MethodInvocation equalsBazMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("baz"));

@@ -8,9 +8,10 @@
 
 package org.lambdamatic.mongodb;
 
-import org.lambdamatic.FilterExpression;
+import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.mongodb.annotations.DocumentId;
-import org.lambdamatic.mongodb.metadata.Metadata;
+import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
+import org.lambdamatic.mongodb.metadata.QueryMetadata;
 
 /**
  * Database Collection for a given type of element (along with its associated metadata)
@@ -19,14 +20,14 @@ import org.lambdamatic.mongodb.metadata.Metadata;
  * @param <T>
  *
  */
-public interface LambdamaticMongoCollection<T, M extends Metadata<T>> {
+public interface LambdamaticMongoCollection<T, QM extends QueryMetadata<T>, PM extends ProjectionMetadata<T>> {
 
 	/**
-	 * Finds one or many documents matching the given lambda {@link FilterExpression}.
+	 * Finds one or many documents matching the given lambda {@link SerializablePredicate}.
 	 * @param expression the query in the form of a lambda expression 
 	 * @return the {@link FindTerminalContext} element to carry on with the query
 	 */
-	public FindTerminalContext<T> find(final FilterExpression<M> expression);
+	public FindContext<T, PM> find(final SerializablePredicate<QM> expression);
 
 	/**
 	 * Insert the given {@code domainObjects} in the underlying MongoDB

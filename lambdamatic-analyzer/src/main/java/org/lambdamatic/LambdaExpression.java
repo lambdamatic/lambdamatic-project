@@ -6,23 +6,23 @@ package org.lambdamatic;
 import org.lambdamatic.analyzer.ast.node.Expression;
 
 /**
- * The {@link FilterExpression} and its relevant data in a form that can be manipulated.
+ * The AST form of the user-defined Lambda Expression and its relevant data in a form that can be further manipulated.
  * 
  * @author xcoulon
  *
  */
 public class LambdaExpression {
 
-	/** The {@link FilterExpression} AST with captured arguments. */
+	/** The AST form of the user-defined Lambda Expression AST with captured arguments. */
 	private final Expression expression;
 	
-	/** The type of the element being evaluated in the {@link FilterExpression}. */
+	/** The type of the element being evaluated in the AST form of the user-defined Lambda Expression. */
 	private final Class<?> argumentType;
 	
 	/**
 	 * Constructor
-	 * @param expression The {@link FilterExpression} AST with captured arguments.
-	 * @param argumentType The type of the element being evaluated in the {@link FilterExpression}.
+	 * @param expression The AST form of the user-defined Lambda Expression with its captured arguments.
+	 * @param argumentType The type of the element being evaluated in the AST form of the user-defined Lambda Expression.
 	 */
 	public LambdaExpression(final Expression expression, final Class<?> argumentType) {
 		this.expression = expression;
@@ -30,14 +30,14 @@ public class LambdaExpression {
 	}
 
 	/**
-	 * @return The {@link FilterExpression} AST with captured arguments.
+	 * @return The AST form of the user-defined Lambda Expression AST with captured arguments.
 	 */
 	public Expression getExpression() {
 		return expression;
 	}
 
 	/**
-	 * @return The type of the element being evaluated in the {@link FilterExpression}.
+	 * @return The type of the element being evaluated in the AST form of the user-defined Lambda Expression.
 	 */
 	public Class<?> getArgumentType() {
 		return argumentType;

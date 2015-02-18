@@ -7,6 +7,7 @@ import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.ComplexExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
+
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
@@ -94,7 +95,7 @@ public class LambdaExpressionRewriter extends ExpressionVisitor {
 			else if(sourceType.equals(Character.class) && methodName.equals("charValue")) {
 				methodInvocation.delete();
 			}
-		}
+		} 
 		return true;
 	}
 

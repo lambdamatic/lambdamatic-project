@@ -13,7 +13,7 @@ import com.mongodb.MongoClient;
  *
  */
 @Generated(value="$processorClassName$")
-public class $mongoCollectionClassName$ extends LambdamaticMongoCollectionImpl<$domainClassName$, $metadataDomainClassName$> {
+public class $mongoCollectionClassName$ extends LambdamaticMongoCollectionImpl<$domainClassName$, $queryMetadataClassName$, $projectionMetadataClassName$> {
 
 	public $mongoCollectionClassName$(final MongoClient mongoClient, final String databaseName, final String collectionName) {
 		super(mongoClient, databaseName, collectionName, $domainClassName$.class);

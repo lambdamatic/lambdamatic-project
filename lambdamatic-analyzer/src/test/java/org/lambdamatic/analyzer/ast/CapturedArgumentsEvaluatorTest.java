@@ -31,7 +31,7 @@ public class CapturedArgumentsEvaluatorTest {
 	@Test
 	public void shouldSubstituteCapturedArgumentInTwoMethodInvocationSourceExpressions() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsMethodInvocation = new MethodInvocation(testPojo, "equals", Boolean.class, new MethodInvocation(new CapturedArgument(new TestPojo()), "getStringValue", String.class));
 		final MethodInvocation equalsFieldAccess = new MethodInvocation(testPojo, "equals", Boolean.class, new FieldAccess(new CapturedArgument(new TestPojo()), "field"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsMethodInvocation, equalsFieldAccess);
@@ -47,7 +47,7 @@ public class CapturedArgumentsEvaluatorTest {
 	@Test
 	public void shouldSubstituteOneCapturedArgumentInMethodInvocationSourceExpression() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation getStringValueMethod = new MethodInvocation(new CapturedArgument(new TestPojo()), "getStringValue", String.class);
 		final MethodInvocation equalsGetStringValue = new MethodInvocation(testPojo, "equals", Boolean.class, getStringValueMethod);
 		// when
@@ -62,13 +62,13 @@ public class CapturedArgumentsEvaluatorTest {
 	public void shouldSubstituteCapturedArgumentRefInMethodInvocationSourceExpression() {
 		// given
 		final List<Object> capturedArguments = Arrays.asList(new TestPojo()); 
-		final MethodInvocation getStringValueMethod = new MethodInvocation(new CapturedArgumentRef(0), "getStringValue", String.class);
+		final MethodInvocation getStringValueMethod = new MethodInvocation(new CapturedArgumentRef(0, capturedArguments.get(0)), "getStringValue", String.class);
 		final MethodInvocation equalsGetStringValue = new MethodInvocation(getStringValueMethod, "equals", Boolean.class, getStringValueMethod);
 		// when
 		final CapturedArgumentsEvaluator expressionRewriter = new CapturedArgumentsEvaluator(capturedArguments);
 		equalsGetStringValue.accept(expressionRewriter);
 		// then
-		final MethodInvocation expectedResult = new MethodInvocation(getStringValueMethod, "equals", Boolean.class, new StringLiteral("foo"));
+		final MethodInvocation expectedResult = new MethodInvocation(new StringLiteral("foo"), "equals", Boolean.class, new StringLiteral("foo"));
 		assertThat(equalsGetStringValue).isEqualTo(expectedResult);
 	}
 
@@ -76,11 +76,11 @@ public class CapturedArgumentsEvaluatorTest {
 	public void shouldSubstituteCapturedArgumentRefInMethodInvocationArguments() {
 		// given
 		final List<Object> capturedArguments = Arrays.asList("bar", 42); 
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation getStringValueMethod = new MethodInvocation(testPojo, "getStringValue", String.class);
-		final MethodInvocation getStringValueEqualsBar = new MethodInvocation(getStringValueMethod, "equals", Boolean.class, new CapturedArgumentRef(0));
+		final MethodInvocation getStringValueEqualsBar = new MethodInvocation(getStringValueMethod, "equals", Boolean.class, new CapturedArgumentRef(0, capturedArguments.get(0)));
 		final MethodInvocation getPrimitiveIntValueMethod = new MethodInvocation(testPojo, "getPrimitiveIntValue", int.class);
-		final MethodInvocation getPrimitiveIntValueEquals42 = new MethodInvocation(getPrimitiveIntValueMethod, "equals", Boolean.class, new CapturedArgumentRef(1));
+		final MethodInvocation getPrimitiveIntValueEquals42 = new MethodInvocation(getPrimitiveIntValueMethod, "equals", Boolean.class, new CapturedArgumentRef(1, capturedArguments.get(1)));
 		final InfixExpression actualExpr = new InfixExpression(InfixOperator.CONDITIONAL_OR, getStringValueEqualsBar, getPrimitiveIntValueEquals42);
 		// when
 		final CapturedArgumentsEvaluator expressionRewriter = new CapturedArgumentsEvaluator(capturedArguments);

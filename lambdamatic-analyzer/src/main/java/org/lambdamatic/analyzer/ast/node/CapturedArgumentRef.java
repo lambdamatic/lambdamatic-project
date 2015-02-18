@@ -15,6 +15,9 @@ public class CapturedArgumentRef extends Expression {
 
 	/** index of the {@link CapturedArgument} in the {@link SerializedLambda}. */
 	private final int index;
+	
+	/** the actual captured argument value. */
+	private final Object value;
 
 	/**
 	 * Constructor
@@ -22,11 +25,12 @@ public class CapturedArgumentRef extends Expression {
 	 * <p>
 	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
 	 * </p>
+	 * @param index the captured value index
 	 * @param value
-	 *            the captured argument
+	 *            the actual captured argument value
 	 */
-	public CapturedArgumentRef(final int index) {
-		this(generateId(), index, false);
+	public CapturedArgumentRef(final int index, final Object value) {
+		this(generateId(), index, value, false);
 	}
 
 	/**
@@ -35,13 +39,14 @@ public class CapturedArgumentRef extends Expression {
 	 * @param id
 	 *            the synthetic id of this {@link Expression}.
 	 * @param value
-	 *            the literal value
+	 *            the actual captured argument value
 	 * @param inverted
 	 *            the inversion flag of this {@link Expression}.
 	 */
-	public CapturedArgumentRef(final int id, final int index, final boolean inverted) {
+	public CapturedArgumentRef(final int id, final int index, final Object value, final boolean inverted) {
 		super(id, inverted);
 		this.index = index;
+		this.value = value;
 	}
 
 	@Override
@@ -55,7 +60,7 @@ public class CapturedArgumentRef extends Expression {
 	 */
 	@Override
 	public CapturedArgumentRef duplicate(int id) {
-		return new CapturedArgumentRef(id, (int)getValue(), isInverted());
+		return new CapturedArgumentRef(id, this.index, this.value, isInverted());
 	}
 
 	/**
@@ -74,7 +79,7 @@ public class CapturedArgumentRef extends Expression {
 	 */
 	@Override
 	public Object getValue() {
-		return index;
+		return value;
 	}
 	
 	/**

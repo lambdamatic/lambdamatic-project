@@ -17,7 +17,7 @@ import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 
 /**
- * @author Xavier Coulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 @Document(collection="foos")
@@ -407,6 +407,19 @@ public class Foo {
 		} else if (!stringField.equals(other.stringField))
 			return false;
 		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Foo [id=" + id + ", stringField=" + stringField + ", primitiveByteField=" + primitiveByteField
+				+ ", primitiveShortField=" + primitiveShortField + ", primitiveIntField=" + primitiveIntField
+				+ ", primitiveLongField=" + primitiveLongField + ", primitiveFloatField=" + primitiveFloatField
+				+ ", primitiveDoubleField=" + primitiveDoubleField + ", primitiveBooleanField=" + primitiveBooleanField
+				+ ", primitiveCharField=" + primitiveCharField + ", enumFoo=" + enumFoo + ", location=" + location
+				+ ", date=" + date + "]";
 	}
 	
 	

@@ -43,6 +43,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Encode/decodes a given Domain object into a BSON document.
+ * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
@@ -322,7 +324,7 @@ public class DocumentCodec<T> implements Codec<T> {
 		// write the "_id" attribute first
 		final Optional<Entry<String, Field>> idBinding = bindings.entrySet().stream().filter(e -> bindingService.isIdBinding(e)).findFirst();
 		if(idBinding.isPresent()) {
-			final Object idValue = bindingService.getBindingValue(domainObject, idBinding.get().getValue());
+			final Object idValue = bindingService.getFieldValue(domainObject, idBinding.get().getValue());
 			if(idValue == null) {
 				final ObjectId generatedIdValue = new ObjectId();
 				idBinding.get().getValue().set(domainObject, generatedIdValue);
@@ -336,7 +338,7 @@ public class DocumentCodec<T> implements Codec<T> {
 		// write other attributes
 		bindings.entrySet().stream().filter(e -> !bindingService.isIdBinding(e)).forEach(
 				binding -> {
-					writeValue(writer, binding.getKey(), bindingService.getBindingValue(domainObject, binding.getValue()), encoderContext);
+					writeValue(writer, binding.getKey(), bindingService.getFieldValue(domainObject, binding.getValue()), encoderContext);
 				});
 	}
 	

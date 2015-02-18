@@ -1,18 +1,18 @@
 package com.sample;
 
 import javax.annotation.Generated;
-import org.lambdamatic.mongodb.metadata.Metadata;
+import org.lambdamatic.mongodb.metadata.QueryMetadata;
 
 import org.lambdamatic.mongodb.annotations.DocumentField;
 
 /**
- * The {@link Metadata} class associated with the {@link Foo} domain class.
+ * The {@link QueryMetadata} class associated with the {@link Foo} domain class.
  *
  */
 @Generated(value="org.lambdamatic.mongodb.apt.LambdamaticAnnotationsProcessor")
-public class Foo_ implements Metadata<Foo> {
+public class QFoo implements QueryMetadata<Foo> {
 
-	@DocumentField(name="id")
+	@DocumentField(name="_id")
  	public org.lambdamatic.mongodb.metadata.StringField id;
 
 	@DocumentField(name="stringField")

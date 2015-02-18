@@ -6,8 +6,7 @@ package org.lambdamatic.analyzer.ast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,24 +14,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.lambdamatic.FilterExpression;
 import org.lambdamatic.analyzer.ast.node.ASTNode;
+import org.lambdamatic.analyzer.ast.node.ArrayVariable;
 import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
-import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.CapturedArgumentRef;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
+import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.IfStatement;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
-import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.ast.node.NullLiteral;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
-import org.lambdamatic.analyzer.ast.node.ObjectInstantiation;
+import org.lambdamatic.analyzer.ast.node.ObjectVariable;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.Statement;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
@@ -51,6 +49,7 @@ import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,7 +101,7 @@ public class LambdaExpressionReader {
 	}
 
 	/** The usual Logger. */
-	private static final Logger LOGGER = LoggerFactory.getLogger(LambdaExpressionReader.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(LambdaExpressionReader.class);
 
 	/**
 	 * Reads the given {@link List} of (bytecode) {@link AbstractInsnNode} and computes a simplified {@link Statement} based tree
@@ -116,7 +115,7 @@ public class LambdaExpressionReader {
 	public <T> Statement readBytecodeStatement(final SerializedLambda serializedLambda) throws IOException {
 		final List<CapturedArgumentRef> capturedArgs = new ArrayList<>();
 		for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
-			capturedArgs.add(new CapturedArgumentRef(i));
+			capturedArgs.add(new CapturedArgumentRef(i, serializedLambda.getCapturedArg(i)));
 		}
 		final LambdaExpressionClassVisitor desugaredExpressionVisitor = new LambdaExpressionClassVisitor(serializedLambda.getImplClass(),
 				serializedLambda.getImplMethodName(), serializedLambda.getImplMethodSignature());
@@ -134,38 +133,6 @@ public class LambdaExpressionReader {
 	}
 	
 	/**
-	 * 
-	 * @param expression
-	 * @return
-	 * 
-	 * @see http://docs.oracle.com/javase/8/docs/api/java/lang/invoke/SerializedLambda.html
-	 * @see http ://stackoverflow.com/questions/21860875/printing-debug-info-on-errors-with-java-8-lambda-expressions/21879031 #21879031
-	 */
-	public static <T> SerializedLambda getSerializedLambda(final FilterExpression<T> expression) {
-		final Class<?> cl = expression.getClass();
-		try {
-			final Method m = cl.getDeclaredMethod("writeReplace");
-			m.setAccessible(true);
-			final Object result = m.invoke(expression);
-			if (result instanceof SerializedLambda) {
-				final SerializedLambda serializedLambda = (SerializedLambda) result;
-				LOGGER.debug(" Lambda FunctionalInterface: {}.{} ({})", serializedLambda.getFunctionalInterfaceClass(),
-						serializedLambda.getFunctionalInterfaceMethodName(), serializedLambda.getFunctionalInterfaceMethodSignature());
-				LOGGER.debug(" Lambda Implementation: {}.{} ({})", serializedLambda.getImplClass(), serializedLambda.getImplMethodName(),
-						serializedLambda.getImplMethodSignature());
-				for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
-					LOGGER.debug("  with Captured Arg(" + i + "): '" + serializedLambda.getCapturedArg(i) + 
-							((serializedLambda.getCapturedArg(i) != null) ? "' (" + serializedLambda.getCapturedArg(i).getClass().getName() + ")" : ""));
-				}
-				return serializedLambda;
-			}
-		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-			LOGGER.error("Failed to find the Serialized form for th given Lambda Expression", e);
-		}
-		return null;
-	}
-
-	/**
 	 * Reads the bytecode from the given {@link InsnCursor}'s <strong>current position</strong>, until there is no further instruction to proceed. It is the responsability of the caller to set the cursor position.
 	 * @param insnCursor 
 	 *            the instruction cursor used to read the bytecode.
@@ -175,7 +142,7 @@ public class LambdaExpressionReader {
 	 *            the local variables
 	 * @return
 	 */
-	private Statement readStatementSubTree(final InsnCursor insnCursor, final Stack<Expression> expressionStack,
+	private Statement readStatementSubTree(final InsnCursor insnCursor, final Stack<Expression> expressionStack, 
 			final List<CapturedArgumentRef> capturedArgs, final List<LocalVariableNode> localVariables) {
 		while (insnCursor.hasCurrent()) {
 			final AbstractInsnNode currentInstruction = insnCursor.getCurrent();
@@ -187,7 +154,7 @@ public class LambdaExpressionReader {
 					expressionStack.add(capturedArg);
 				} else {
 					final LocalVariableNode var = localVariables.get(varInstruction.var);
-					expressionStack.add(new LocalVariable(var.name, readSignature(var.desc)));
+					expressionStack.add(new LocalVariable(var.index, var.name, readSignature(var.desc)));
 				}
 				break;
 			case AbstractInsnNode.LDC_INSN:
@@ -202,8 +169,8 @@ public class LambdaExpressionReader {
 				final FieldInsnNode fieldInsnNode = (FieldInsnNode) currentInstruction;
 				switch (fieldInsnNode.getOpcode()) {
 				case Opcodes.GETSTATIC:
-					final String ownerClassName = Type.getType(fieldInsnNode.desc).getClassName();
-					final FieldAccess staticFieldAccess = new FieldAccess(new ClassLiteral(getType(ownerClassName)), fieldInsnNode.name);
+					final Type ownerType = Type.getType(fieldInsnNode.desc);
+					final FieldAccess staticFieldAccess = new FieldAccess(new ClassLiteral(getType(ownerType)), fieldInsnNode.name);
 					expressionStack.add(staticFieldAccess);
 					break;
 				
@@ -222,31 +189,28 @@ public class LambdaExpressionReader {
 				}
 				// arguments appear in reverse order in the bytecode
 				Collections.reverse(args);
-				final String returnTypeName = Type.getReturnType(methodInsnNode.desc).getClassName();
-				final Class<?> returnType = getType(returnTypeName);
+				final Class<?> returnType = getType(Type.getReturnType(methodInsnNode.desc));
 				switch (methodInsnNode.getOpcode()) {
 				case Opcodes.INVOKEINTERFACE:
 				case Opcodes.INVOKEVIRTUAL:
 				case Opcodes.INVOKESPECIAL:
 					// object instantiation
 					if(methodInsnNode.name.equals("<init>")) {
-						final String instanceName = Type.getObjectType(methodInsnNode.owner).getClassName();
-						final ObjectInstantiation objectInstantiation = new ObjectInstantiation(getType(instanceName), args);
-						expressionStack.add(objectInstantiation);
+						final ObjectVariable objectVariable = (ObjectVariable) expressionStack.pop();
+						objectVariable.setInitArguments(args);
 					} else {
 						final MethodInvocation invokedMethod = new MethodInvocation(expressionStack.pop(), methodInsnNode.name, args, returnType);
 						expressionStack.add(invokedMethod);
 					}
 					break;
 				case Opcodes.INVOKESTATIC:
-					final LocalVariableNode var = localVariables.get(0);
-					final Type type = Type.getType(var.desc);
+					final Type type = Type.getObjectType(methodInsnNode.owner);
 					try {
-						final MethodInvocation invokedStaticMethod = new MethodInvocation(new CapturedArgument(Class.forName(type
+						final MethodInvocation invokedStaticMethod = new MethodInvocation(new ClassLiteral(Class.forName(type
 								.getClassName())), methodInsnNode.name, args, returnType);
 						expressionStack.add(invokedStaticMethod);
 					} catch (ClassNotFoundException e) {
-						LOGGER.error("Failed to retrieve class for " + var.name, e);
+						LOGGER.error("Failed to retrieve class for " + methodInsnNode.owner, e);
 					}
 					break;
 				default:
@@ -256,7 +220,7 @@ public class LambdaExpressionReader {
 			case AbstractInsnNode.JUMP_INSN:
 				return readJumpInstruction(insnCursor, expressionStack, capturedArgs, localVariables);
 			case AbstractInsnNode.INT_INSN:
-				readInstruction((IntInsnNode)currentInstruction, expressionStack, localVariables);
+				readIntInstruction((IntInsnNode)currentInstruction, expressionStack, localVariables);
 				break;
 			case AbstractInsnNode.INSN:
 				final Statement instructionStmt = readInstruction(insnCursor, expressionStack, capturedArgs, localVariables);
@@ -265,10 +229,10 @@ public class LambdaExpressionReader {
 				}
 				break;
 			case AbstractInsnNode.TYPE_INSN:
-				// ignore this one, this is called during new type instanciation, but we'll catch the call to <init> instead.
+				readTypeInstruction((TypeInsnNode)currentInstruction, expressionStack, localVariables);
 				break;
 			default:
-				LOGGER.error("Ouch, this is embarrassing... We've reached an unexpected instruction operator: {}",
+				throw new AnalyzeException("This is embarrassing... We've reached an unexpected instruction operator: " +
 						currentInstruction.getType());
 			}
 			insnCursor.next();
@@ -279,34 +243,57 @@ public class LambdaExpressionReader {
 	/**
 	 * @param typeName the fully qualified name of the type (primitive or Objecttype )
 	 * @return the returned Java type.
+	 * @throws NegativeArraySizeException 
 	 * @throws AnalyzeException if the Class could not be found
 	 */
-	private Class<?> getType(final String typeName) {
+	private Class<?> getArrayType(final Type type) throws NegativeArraySizeException {
 		try {
-			switch(typeName) {
-			case "boolean":
-				return boolean.class;
-			case "byte":
-				return byte.class;
-			case "short":
-				return short.class;
-			case "int":
-				return int.class;
-			case "long":
-				return long.class;
-			case "float":
-				return float.class;
-			case "double":
-				return double.class;
-			case "char":
-				return char.class;
-			case "void":
-				return void.class;
-			default:
-				return Class.forName(typeName);
+			//FIXME: can we avoid the array instantiation ?
+			final Type elementType = Type.getType(type.getDescriptor());
+			return Array.newInstance(Class.forName(elementType.getClassName()), 0).getClass();
+		} catch (ClassNotFoundException e) {
+			throw new AnalyzeException("Failed to retrieve type named " + type.getClassName(), e);
+		}
+	}
+	
+	/**
+	 * @param typeName the fully qualified name of the type (primitive or Objecttype )
+	 * @return the returned Java type.
+	 * @throws AnalyzeException if the Class could not be found
+	 */
+	private Class<?> getType(final Type type) {
+		try {
+			if(type.getSort() == Type.ARRAY) {
+				//FIXME: can we avoid the array instantiation ?
+				final Type elementType = type.getElementType();
+				return Array.newInstance(Class.forName(elementType.getClassName()), 0).getClass();
+			}
+			else {
+				switch(type.getClassName()) {
+				case "boolean":
+					return boolean.class;
+				case "byte":
+					return byte.class;
+				case "short":
+					return short.class;
+				case "int":
+					return int.class;
+				case "long":
+					return long.class;
+				case "float":
+					return float.class;
+				case "double":
+					return double.class;
+				case "char":
+					return char.class;
+				case "void":
+					return void.class;
+				default:
+					return Class.forName(type.getClassName());
+				}
 			}
 		} catch (ClassNotFoundException e) {
-			throw new AnalyzeException("Failed to retrieve type named " + typeName, e);
+			throw new AnalyzeException("Failed to retrieve type named " + type.getClassName(), e);
 		}
 	}
 
@@ -339,11 +326,9 @@ public class LambdaExpressionReader {
 			final List<CapturedArgumentRef> capturedArgRefs, final List<LocalVariableNode> localVariables) {
 		final AbstractInsnNode insnNode = insnCursor.getCurrent();
 		switch (insnNode.getOpcode()) {
+		case Opcodes.ARETURN:
 		case Opcodes.IRETURN:
-			// here, we know that the return value should be a boolean literal
-			// or an expression whose result will be a boolean, no matter what's
-			// on the ExpressionStack (it should be converted)
-			final Expression returnExpression = convert(expressionStack.pop());
+			final Expression returnExpression = expressionStack.pop();
 			return new ReturnStatement(returnExpression);
 		case Opcodes.ACONST_NULL:
 			expressionStack.add(new NullLiteral());
@@ -360,13 +345,13 @@ public class LambdaExpressionReader {
 			expressionStack.add(ExpressionFactory.getExpression(2));
 			break;
 		case Opcodes.ICONST_3:
-			expressionStack.add(ExpressionFactory.getExpression(2));
+			expressionStack.add(ExpressionFactory.getExpression(3));
 			break;
 		case Opcodes.ICONST_4:
-			expressionStack.add(ExpressionFactory.getExpression(2));
+			expressionStack.add(ExpressionFactory.getExpression(4));
 			break;
 		case Opcodes.ICONST_5:
-			expressionStack.add(ExpressionFactory.getExpression(2));
+			expressionStack.add(ExpressionFactory.getExpression(5));
 			break;
 		case Opcodes.LCONST_0:
 			expressionStack.add(new NumberLiteral(0l));
@@ -393,12 +378,94 @@ public class LambdaExpressionReader {
 		case Opcodes.DCMPL:
 		case Opcodes.FCMPL:
 			return readJumpInstruction(insnCursor.next(), expressionStack, capturedArgRefs, localVariables);
+		case Opcodes.IADD:
+			expressionStack.add(addIntegers(expressionStack));
+			break;
+		case Opcodes.ISUB:
+			expressionStack.add(substractIntegers(expressionStack));
+			break;
+		case Opcodes.INEG:
+			expressionStack.add(inverseInteger(expressionStack));
+			break;
+		case Opcodes.POP:
+			expressionStack.pop();
+			break;
+		case Opcodes.DUP:
+			final Expression lastExpression = expressionStack.peek();
+			expressionStack.push(lastExpression);
+			break;
+		case Opcodes.AASTORE:
+			readArrayStoreInstruction(insnNode, expressionStack);
+			break;
 		default:
-			LOGGER.warn("Instruction with OpCode {} was ignored.", insnNode.getOpcode());
+			LOGGER.warn("InsnNode with OpCode {} was ignored.", insnNode.getOpcode());
 		}
 		// no statement to return for now, instruction was put on top of
 		// ExpressionStack for further usage
 		return null;
+	}
+
+	/**
+	 * Takes the 2 first {@link Expression} from the given {@link Stack}, assuming they are both {@link NumberLiteral},
+	 * performs a subtraction and returns the result.
+	 * 
+	 * @param expressionStack the stack of {@link Expression} from which to take the operands
+	 * @return the result
+	 * @throws AnalyzeException if the 2 operands are not {@link NumberLiteral}
+	 * 
+	 */
+	private NumberLiteral addIntegers(final Stack<Expression> expressionStack) {
+		final Expression operand1 = expressionStack.pop();
+		final Expression operand2 = expressionStack.pop();
+		try {
+			final Number value1 = ((NumberLiteral)operand1).getValue();
+			final Number value2 = ((NumberLiteral)operand2).getValue();
+			return new NumberLiteral(value2.intValue() + value1.intValue());
+		} catch(ClassCastException e) {
+			throw new AnalyzeException("Cannot perform the addition between operands of type "
+					+ operand1.getExpressionType() + " and " + operand2.getExpressionType());
+		}
+	}
+
+	/**
+	 * Takes the 2 first {@link Expression} from the given {@link Stack}, assuming they are both {@link NumberLiteral},
+	 * performs a subtraction and returns the result.
+	 * 
+	 * @param expressionStack the stack of {@link Expression} from which to take the operands
+	 * @return the result
+	 * @throws AnalyzeException if the 2 operands are not {@link NumberLiteral}
+	 * 
+	 */
+	private NumberLiteral substractIntegers(final Stack<Expression> expressionStack) {
+		final Expression operand1 = expressionStack.pop();
+		final Expression operand2 = expressionStack.pop();
+		try {
+			final Number value1 = ((NumberLiteral)operand1).getValue();
+			final Number value2 = ((NumberLiteral)operand2).getValue();
+			return new NumberLiteral(value2.intValue() - value1.intValue());
+		} catch(ClassCastException e) {
+			throw new AnalyzeException("Cannot perform the subtraction between operands of type "
+					+ operand1.getExpressionType() + " and " + operand2.getExpressionType());
+		}
+	}
+
+	/**
+	 * Takes the first {@link Expression} from the given {@link Stack}, assuming it is a {@link NumberLiteral},
+	 * and returns a new {@link NumberLiteral} with its negated value.
+	 * 
+	 * @param expressionStack the stack of {@link Expression} from which to take the operand
+	 * @return the result
+	 * @throws AnalyzeException if the operand is not {@link NumberLiteral}
+	 * 
+	 */
+	private NumberLiteral inverseInteger(final Stack<Expression> expressionStack) {
+		final Expression operand = expressionStack.pop();
+		try {
+			final Number value = ((NumberLiteral)operand).getValue();
+			return new NumberLiteral(-value.intValue());
+		} catch(ClassCastException e) {
+			throw new AnalyzeException("Cannot perform the inversion of operand of type " + operand.getExpressionType());
+		}
 	}
 
 	/**
@@ -436,8 +503,7 @@ public class LambdaExpressionReader {
 	}
 
 	/**
-	 * Reads the current {@link IntInsnNode} instruction and returns a {@link Statement} or {@code null} if the instruction is not a
-	 * full statement (in that case, the instruction is stored in the given Expression {@link Stack}).
+	 * Reads the given {@link IntInsnNode} instruction and adds the associated {@link Expression} to the given {@link Stack}.
 	 * 
 	 * @param intInsnNode
 	 *            the instruction to read
@@ -446,7 +512,7 @@ public class LambdaExpressionReader {
 	 * @param localVariables
 	 *            the local variables
 	 */
-	private void readInstruction(final IntInsnNode intInsnNode, final Stack<Expression> expressionStack,
+	private void readIntInstruction(final IntInsnNode intInsnNode, final Stack<Expression> expressionStack,
 			final List<LocalVariableNode> localVariables) {
 		switch (intInsnNode.getOpcode()) {
 		case Opcodes.BIPUSH:
@@ -456,7 +522,7 @@ public class LambdaExpressionReader {
 			expressionStack.add(literal);
 			break;
 		default:
-			LOGGER.warn("Instruction with OpCode {} was ignored.", intInsnNode.getOpcode());
+			LOGGER.warn("IntInsnNode with OpCode {} was ignored.", intInsnNode.getOpcode());
 		}
 	}
 	
@@ -653,6 +719,49 @@ public class LambdaExpressionReader {
 		}
 		throw new AnalyzeException("Sorry, I can't give a default comparison operand for '" + expression + "'");
 	}
+	
+	/**
+	 * Reads the given {@link TypeInsnNode} instruction.
+	 * 
+	 * @param typeInsnNode
+	 *            the instruction to read
+	 * @param expressionStack
+	 *            the expression stack to put on or pop from.
+	 * @param localVariables
+	 *            the local variables
+	 */
+	private void readTypeInstruction(final TypeInsnNode typeInsnNode, final Stack<Expression> expressionStack,
+			final List<LocalVariableNode> localVariables) {
+		switch (typeInsnNode.getOpcode()) {
+		case Opcodes.NEW:
+			final Type instanceType = Type.getObjectType(typeInsnNode.desc);
+			final ObjectVariable objectVariable = new ObjectVariable(getType(instanceType));
+			expressionStack.push(objectVariable);
+			break;
+		case Opcodes.ANEWARRAY:
+			final Type parameterType = Type.getObjectType(typeInsnNode.desc);
+			final NumberLiteral arrayLength = (NumberLiteral) expressionStack.pop();
+			final ArrayVariable arrayVariable = new ArrayVariable(getArrayType(parameterType), arrayLength.getValue().intValue());
+			expressionStack.push(arrayVariable);
+			break;
+		default:
+			LOGGER.warn("TypeInsnNode with OpCode {} was ignored.", typeInsnNode.getOpcode());
+		}
+	}
+	
+	/**
+	 * Reads the current ASTORE instruction, using elements from the given {@code expressionStack}.
+	 * 
+	 * @param storeInsn the store instruction
+	 * @param expressionStack the stack of {@link Expression}
+	 */
+	private void readArrayStoreInstruction(final AbstractInsnNode storeInsn, final Stack<Expression> expressionStack) {
+		final Expression element = expressionStack.pop();
+		final NumberLiteral elementIndex = (NumberLiteral) expressionStack.pop();
+		final ArrayVariable targetArray = (ArrayVariable) expressionStack.pop();
+		targetArray.setElement(elementIndex.getValue().intValue(), element);
+	}
 
 }
+
 

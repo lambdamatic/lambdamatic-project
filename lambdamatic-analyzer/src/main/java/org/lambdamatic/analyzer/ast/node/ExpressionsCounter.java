@@ -12,8 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
-
 /**
  * {@link Expression} visitor that will count the {@link Expression}s or counters in an {@link InfixExpression}.
  * 
@@ -48,8 +46,13 @@ public class ExpressionsCounter extends ExpressionVisitor {
 	
 	@Override
 	public boolean visit(final Expression expr) {
-		// for anything except Infix Expression, just count the expression itself. 
-		if(expr.getExpressionType() != ExpressionType.INFIX) {
+		// for anything except Local variables, count the expression itself.
+		switch(expr.getExpressionType()) {
+		case LOCAL_VARIABLE:
+		case CAPTURED_ARGUMENT_REF:
+			// skip those elements, they can probably not be simplified here
+			break;
+		default:
 			count(expr);
 		}
 		return super.visit(expr);

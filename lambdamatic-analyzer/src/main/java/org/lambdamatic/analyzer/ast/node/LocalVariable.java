@@ -3,32 +3,45 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
+import java.util.List;
+
 
 /**
- * @author xcoulon
+ * Variable passed during the call to the Lambda Expression serialized method.
+ * 
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public class LocalVariable extends Expression {
 
-	/** The variable's name. */
+	/** The variable index (in the bytecode). */
+	private final int index;
+	
+	/** The variable name. */
 	private final String name;
-
+	
 	/** The variable type's associated {@link Class}. */
 	private final Class<?> type;
 
 	/**
-	 * Full constructor
+	 * Constructor when local variable is provided
 	 * <p>
 	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
 	 * </p>
 	 * 
+	 * @param index
+	 *            The variable index (as specified in the method bytecode).
 	 * @param name
-	 *            The variable's name.
-	 * @param type
-	 *            The variable's type.
+	 *            The variable name.
+	 * @param value
+	 *            The variable value.
 	 */
-	public LocalVariable(final String name, final Class<?> type) {
-		this(generateId(), name, type, false);
+	public LocalVariable(final int index, final String name, final Class<?> type) {
+		this(generateId(), index, name, type, false);
+		if(type == null) {
+			throw new IllegalArgumentException("Type of local variable '" + name + "' must not be null");
+		}
+
 	}
 
 	/**
@@ -36,14 +49,18 @@ public class LocalVariable extends Expression {
 	 * 
 	 * @param id
 	 *            the synthetic id of this {@link Expression}.
+	 * @param index the variable index (as defined in the bytecode)
+	 * @param name
+	 *            The variable name
 	 * @param value
-	 *            the literal value
+	 *            the local variable value
 	 * @param type the fully qualified type name of the variable.
 	 * @param inverted
 	 *            the inversion flag of this {@link Expression}.
 	 */
-	public LocalVariable(final int id, final String name, final Class<?> type, final boolean inverted) {
+	public LocalVariable(final int id, final int index, final String name, final Class<?> type, final boolean inverted) {
 		super(id, inverted);
+		this.index = index;
 		this.name = name;
 		this.type = type;
 	}
@@ -55,7 +72,7 @@ public class LocalVariable extends Expression {
 	 */
 	@Override
 	public LocalVariable duplicate(int id) {
-		return new LocalVariable(id, getName(), getType(), isInverted());
+		return new LocalVariable(id, this.index, this.name, this.type, isInverted());
 	}
 
 	/**
@@ -65,6 +82,13 @@ public class LocalVariable extends Expression {
 	@Override
 	public LocalVariable duplicate() {
 		return duplicate(generateId());
+	}
+	
+	/**
+	 * @return index the variable index (as defined in the bytecode)
+	 */
+	public int getIndex() {
+		return index;
 	}
 	
 	/**
@@ -80,6 +104,10 @@ public class LocalVariable extends Expression {
 	public Class<?> getType() {
 		return type;
 	}
+	
+	public Object getValue(final List<Object> localVariables) {
+		return localVariables.get(index);
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -91,6 +119,11 @@ public class LocalVariable extends Expression {
 		return ExpressionType.LOCAL_VARIABLE;
 	}
 	
+	@Override
+	public ComplexExpression getParent() {
+		return (ComplexExpression)super.getParent();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getJavaType()
@@ -169,4 +202,5 @@ public class LocalVariable extends Expression {
 	}
 
 }
+
 

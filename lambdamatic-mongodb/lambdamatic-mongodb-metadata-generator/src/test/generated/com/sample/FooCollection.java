@@ -13,7 +13,7 @@ import com.mongodb.MongoClient;
  *
  */
 @Generated(value="org.lambdamatic.mongodb.apt.LambdamaticAnnotationsProcessor")
-public class FooCollection extends LambdamaticMongoCollectionImpl<Foo, Foo_> {
+public class FooCollection extends LambdamaticMongoCollectionImpl<Foo, QFoo, PFoo> {
 
 	public FooCollection(final MongoClient mongoClient, final String databaseName, final String collectionName) {
 		super(mongoClient, databaseName, collectionName, Foo.class);

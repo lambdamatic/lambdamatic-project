@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
@@ -43,12 +44,12 @@ public class BindingService {
 	 * @return the field value or {@code null} if it was not set
 	 * @throws ConversionException 
 	 */
-	public Object getBindingValue(final Object domainObject, final Field domainInstanceField) {
-		domainInstanceField.setAccessible(true);
+	public Object getFieldValue(final Object domainObject, final Field domainField) {
+		domainField.setAccessible(true);
 		try {
-			return domainInstanceField.get(domainObject);
+			return domainField.get(domainObject);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new ConversionException("Failed to retrieve value for field '" + domainInstanceField.getName()
+			throw new ConversionException("Failed to retrieve value for field '" + domainField.getName()
 					+ "' in domain object '" + domainObject + "'", e);
 		}
 	}
@@ -81,7 +82,9 @@ public class BindingService {
 					classBindings.put(field.getName(), field);
 				} else if (documentFieldAnnotation != null && !documentFieldAnnotation.name().isEmpty()) {
 					classBindings.put(documentFieldAnnotation.name(), field);
-				} else {
+				} 
+				// custom requirement: ignore Jacoco/EclEmma fields introduced at for code coverage 
+				else if(!field.getName().startsWith("$jacoco")) {
 					classBindings.put(field.getName(), field);
 				}
 			}
@@ -89,5 +92,21 @@ public class BindingService {
 		}
 		return Collections.unmodifiableMap(bindings.get(targetClass));
 	}
-	
+
+	/**
+	 * @param targetClass
+	 * @return the {@link Field} annotated with {@link DocumentField} with {@code name} attribute equals {@link DocumentCodec#MONGOBD_DOCUMENT_ID}.
+	 * @throws ConversionException if none was found.
+	 */
+	public Field getIdBinding(final Class<?> targetClass) {
+		final Map<String, Field> targetClassBindings = getBindings(targetClass);
+		final Optional<Field> idBinding = targetClassBindings.values().stream()
+				.filter(f -> f.getAnnotation(DocumentField.class).name().equals(DocumentCodec.MONGOBD_DOCUMENT_ID))
+				.findFirst();
+		if (idBinding.isPresent()) {
+			return idBinding.get();
+		}
+		throw new ConversionException("Could not find binding for field annotated with '"
+				+ DocumentCodec.MONGOBD_DOCUMENT_ID + "' for class " + targetClass.getName());
+	}
 }

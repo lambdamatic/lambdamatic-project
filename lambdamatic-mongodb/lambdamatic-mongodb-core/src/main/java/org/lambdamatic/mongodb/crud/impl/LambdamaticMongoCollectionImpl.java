@@ -13,14 +13,16 @@ import java.util.Arrays;
 import org.bson.BsonDocument;
 import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.configuration.RootCodecRegistry;
-import org.lambdamatic.FilterExpression;
-import org.lambdamatic.mongodb.FindTerminalContext;
+import org.lambdamatic.SerializablePredicate;
+import org.lambdamatic.mongodb.FindContext;
 import org.lambdamatic.mongodb.LambdamaticMongoCollection;
 import org.lambdamatic.mongodb.codecs.BindingService;
 import org.lambdamatic.mongodb.codecs.DocumentCodecProvider;
 import org.lambdamatic.mongodb.codecs.FilterExpressionCodecProvider;
 import org.lambdamatic.mongodb.codecs.IdFilterCodecProvider;
-import org.lambdamatic.mongodb.metadata.Metadata;
+import org.lambdamatic.mongodb.codecs.ProjectionExpressionCodecProvider;
+import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
+import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +32,12 @@ import com.mongodb.client.MongoDatabase;
 
 /**
  * Database Collection for a given type of element (along with its associated
- * metadata)
+ * metadata).
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements LambdamaticMongoCollection<T, M> {
+public class LambdamaticMongoCollectionImpl<T, QM extends QueryMetadata<T>, PM extends ProjectionMetadata<T>> implements LambdamaticMongoCollection<T, QM, PM> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticMongoCollectionImpl.class);
 
@@ -76,8 +78,9 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 	public LambdamaticMongoCollectionImpl(final MongoClient mongoClient, final String databaseName,
 			final String collectionName, final Class<T> targetClass) {
 		this.bindingService = new BindingService();
-		final RootCodecRegistry codecRegistry = new RootCodecRegistry(Arrays.asList(
-				new DocumentCodecProvider(bindingService), new FilterExpressionCodecProvider<M>(), new IdFilterCodecProvider(bindingService), new BsonValueCodecProvider()));
+		final RootCodecRegistry codecRegistry = new RootCodecRegistry(Arrays.asList(new DocumentCodecProvider(
+				bindingService), new FilterExpressionCodecProvider(), new ProjectionExpressionCodecProvider(),
+				new IdFilterCodecProvider(bindingService), new BsonValueCodecProvider()));
 		this.mongoCollection = mongoClient.getDatabase(databaseName).withCodecRegistry(codecRegistry)
 				.getCollection(collectionName, targetClass);
 		this.targetClass = targetClass;
@@ -88,8 +91,8 @@ public class LambdamaticMongoCollectionImpl<T, M extends Metadata<T>> implements
 	 * {@inheritDoc}
 	 */
 	@Override
-	public FindTerminalContext<T> find(final FilterExpression<M> filterExpression) {
-		return new FindTerminalContextImpl<T>(mongoCollection.find(filterExpression));
+	public FindContext<T, PM> find(final SerializablePredicate<QM> filterExpression) {
+		return new FindContextImpl<T, PM>(mongoCollection.find(filterExpression));
 	}
 
 	@Override

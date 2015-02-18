@@ -1,11 +1,12 @@
 package org.lambdamatic.mongodb.metadata;
 
+
 /**
  * 
- * @author Xavier Coulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public interface StringField {
+public interface StringField extends QueryField {
 
 	
 }

@@ -10,11 +10,12 @@ package org.lambdamatic.mongodb.metadata;
 
 
 /**
- * Marker interface for generated metadata classes
- * @author Xavier Coulon
+ * Marker interface for generated metadata classes used to express query filters.
+ * 
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public interface Metadata<T> {
+public interface QueryMetadata<T> {
 
 }
 

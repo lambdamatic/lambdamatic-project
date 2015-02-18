@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Test domain class
+ * Test domain class.
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
@@ -21,11 +21,12 @@ public class TestPojo {
 	
 	public EnumPojo enumPojo = EnumPojo.FOO;
 	
-	public List<Object> elements = new ArrayList<>();
+	public List<Object> elementList = new ArrayList<>();
 
 	public TestPojo() {
 	}
 	
+	// constructor for testing purpose only
 	public TestPojo(String stringValue, int primitiveIntValue) {
 		super();
 		this.stringValue = stringValue;
@@ -114,13 +115,74 @@ public class TestPojo {
 		return "TestPojo";
 	}
 	
-	public boolean matches(final TestPojo[] otherPojos) {
+	public boolean include(final Object... values) {
 		return true;
 	}
 
+	public boolean matches(final TestPojo[] otherPojos) {
+		return true;
+	}
+	
 	public boolean matches(final String[] values) {
 		return true;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((dateValue == null) ? 0 : dateValue.hashCode());
+		result = prime * result + ((elementList == null) ? 0 : elementList.hashCode());
+		result = prime * result + ((enumPojo == null) ? 0 : enumPojo.hashCode());
+		result = prime * result + ((field == null) ? 0 : field.hashCode());
+		result = prime * result + primitiveIntValue;
+		result = prime * result + ((stringValue == null) ? 0 : stringValue.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TestPojo other = (TestPojo) obj;
+		if (dateValue == null) {
+			if (other.dateValue != null)
+				return false;
+		} else if (!dateValue.equals(other.dateValue))
+			return false;
+		if (elementList == null) {
+			if (other.elementList != null)
+				return false;
+		} else if (!elementList.equals(other.elementList))
+			return false;
+		if (enumPojo != other.enumPojo)
+			return false;
+		if (field == null) {
+			if (other.field != null)
+				return false;
+		} else if (!field.equals(other.field))
+			return false;
+		if (primitiveIntValue != other.primitiveIntValue)
+			return false;
+		if (stringValue == null) {
+			if (other.stringValue != null)
+				return false;
+		} else if (!stringValue.equals(other.stringValue))
+			return false;
+		return true;
+	}
+	
+	
 }
 
 

@@ -24,7 +24,7 @@ public class InfixExpressionSimplificationMonitorTest {
 	@Test
 	public void shouldRecognizeForm() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class, 
 				new StringLiteral("foo"));
 		final MethodInvocation equalsBarMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class, 

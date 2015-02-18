@@ -33,7 +33,7 @@ public class ExpressionRewriterTest {
 	@Test
 	public void shouldNotSubstituteInfixExpressionOperands() {
 		// given
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class, new StringLiteral("foo"));
 		// when
 		final LambdaExpressionRewriter expressionRewriter = new LambdaExpressionRewriter();
@@ -45,7 +45,7 @@ public class ExpressionRewriterTest {
 	@Test
 	public void shouldSubstituteTwoEnumLiterals() {
 		// given '(foo + (!foo.bar) + (!foo.bar.!baz)'
-		final LocalVariable var = new LocalVariable("t", TestPojo.class);
+		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final InfixExpression getPrimitiveIntMethodEquals42_1 = new InfixExpression(InfixOperator.EQUALS, new MethodInvocation(var, "getPrimitiveIntValue", int.class), new NumberLiteral(42));
 		final InfixExpression getPrimitiveIntMethodEquals42_2 = new InfixExpression(InfixOperator.NOT_EQUALS, new MethodInvocation(var, "getPrimitiveIntValue", int.class), new NumberLiteral(42));
 		final InfixExpression getPrimitiveIntMethodEquals42_3 = new InfixExpression(InfixOperator.NOT_EQUALS, new MethodInvocation(var, "getPrimitiveIntValue", int.class), new NumberLiteral(42));
@@ -70,7 +70,7 @@ public class ExpressionRewriterTest {
 	@Test
 	public void shouldSubstituteTwoEnumLiteralsFromDuplicateExpressions() {
 		// given '(foo + (!foo.bar) + (!foo.bar.!baz)'
-		final LocalVariable var = new LocalVariable("t", TestPojo.class);
+		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final InfixExpression getPrimitiveIntMethodEquals42 = new InfixExpression(InfixOperator.EQUALS, new MethodInvocation(var, "getPrimitiveIntValue", int.class), new NumberLiteral(42));
 		final InfixExpression getEnumPojoMethodEqualsFieldBar = new InfixExpression(InfixOperator.EQUALS, new MethodInvocation(var, "getEnumPojo", EnumPojo.class), new FieldAccess(new ClassLiteral(EnumPojo.class), "BAR"));
 		final InfixExpression getStringValueMethodEqualsFoo = new InfixExpression(InfixOperator.EQUALS, new MethodInvocation(var, "getStringValue", String.class), new StringLiteral("foo"));

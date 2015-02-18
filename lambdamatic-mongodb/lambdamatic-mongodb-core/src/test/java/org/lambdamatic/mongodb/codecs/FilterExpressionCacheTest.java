@@ -14,26 +14,24 @@ import org.bson.BsonWriter;
 import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonWriter;
 import org.json.JSONException;
-import org.junit.Assert;
 import org.junit.Test;
-import org.lambdamatic.FilterExpression;
+import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.analyzer.LambdaExpressionAnalyzer;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.LoggerFactory;
 
 import com.sample.EnumFoo;
-import com.sample.Foo_;
+import com.sample.QFoo;
 
 /**
- * Testing that a lambda expression is analyzed once but filter query is
+ * Testing that a Lambda expression is analyzed once but filter query is
  * generated with proper captured argument for each call.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
- *
  */
-public class LambdamaticFilterExpressionCacheTest {
+public class FilterExpressionCacheTest {
 	
-	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LambdamaticFilterExpressionCodecTest.class);
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FilterExpressionCodecTest.class);
 	
 	@Test
 	public void shouldAnalyzeOnce() throws UnsupportedEncodingException, IOException, JSONException {
@@ -50,7 +48,7 @@ public class LambdamaticFilterExpressionCacheTest {
 
 	private void performAndAssertConvertion(final String stringField, final int primitiveIntField, final EnumFoo enumFoo) throws UnsupportedEncodingException, IOException, JSONException {
 		// given
-		final FilterExpression<Foo_> expr = ((Foo_ foo) -> foo.stringField.equals(stringField) || foo.primitiveIntField == primitiveIntField || foo.enumFoo == enumFoo);
+		final SerializablePredicate<QFoo> expr = ((QFoo foo) -> foo.stringField.equals(stringField) || foo.primitiveIntField == primitiveIntField || foo.enumFoo == enumFoo);
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8")); 
 		final EncoderContext context = EncoderContext.builder().isEncodingCollectibleDocument(true).build();

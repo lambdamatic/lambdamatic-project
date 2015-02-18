@@ -20,7 +20,7 @@ import org.lambdamatic.mongodb.types.geospatial.Polygon;
  *
  * @see http://docs.mongodb.org/manual/core/2dsphere
  */
-public interface LocationField {
+public interface LocationField extends QueryField {
 
 	/**
 	 * <p>

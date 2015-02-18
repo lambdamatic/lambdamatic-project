@@ -13,7 +13,8 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<!-- sticking to a particular version to avoid API breakage before conference and demo ;-) -->
+		<!-- sticking to a particular version to avoid API breakage before conference 
+			and demo ;-) -->
 		<mongodb.driver.version>3.0.0-20150116.202756-173</mongodb.driver.version>
 		<!-- mongodb.driver.version>3.0.0-SNAPSHOT</mongodb.driver.version -->
 		<jackson.version>2.4.0</jackson.version>
@@ -37,7 +38,7 @@
 				<groupId>org.antlr</groupId>
 				<artifactId>stringtemplate</artifactId>
 				<version>${stringtemplate.version}</version>
-		</dependency>
+			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-core</artifactId>

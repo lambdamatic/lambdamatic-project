@@ -11,7 +11,7 @@ import org.bson.BsonDocumentWriter;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.codecs.EncoderContext;
-import org.lambdamatic.FilterExpression;
+import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
@@ -20,7 +20,7 @@ import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.mongodb.annotations.DocumentField;
-import org.lambdamatic.mongodb.metadata.Metadata;
+import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 import org.lambdamatic.mongodb.types.geospatial.Polygon;
 import org.lambdamatic.mongodb.types.geospatial.Polygon.Ring;
@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
  * Writes a given {@link Expression} into a MongoDB {@link BsonWriter}.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
- *
  * @param <M>
  */
 class FilterExpressionEncoder extends ExpressionVisitor {
@@ -40,10 +39,10 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FilterExpressionEncoder.class);
 
 	/**
-	 * The {@link Metadata} class associated with the domain class being
+	 * The {@link QueryMetadata} class associated with the domain class being
 	 * queried.
 	 */
-	private final Class<?> metadataClass;
+	private final Class<?> queryMetadataClass;
 
 	/** The {@link BsonWriter} to use. */
 	private final BsonWriter writer;
@@ -54,15 +53,15 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	/**
 	 * Full constructor
 	 * 
-	 * @param metadataClass
+	 * @param queryMetadataClass
 	 *            the {@link Class} linked to the {@link Expression} to visit.
 	 * @param writer
-	 *            the {@link BsonWriter} in which the {@link FilterExpression}
+	 *            the {@link BsonWriter} in which the {@link SerializablePredicate}
 	 *            representation will be written.
 	 * @see: http://docs.mongodb.org/manual/reference/operator/query/
 	 */
-	FilterExpressionEncoder(final Class<?> metadataClass, final BsonWriter writer, final EncoderContext encoderContext) {
-		this.metadataClass = metadataClass;
+	FilterExpressionEncoder(final Class<?> queryMetadataClass, final BsonWriter writer, final EncoderContext encoderContext) {
+		this.queryMetadataClass = queryMetadataClass;
 		this.writer = writer;
 		this.encoderContext = encoderContext;
 	}
@@ -75,7 +74,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			// <expressionN> } ] }
 			for (Expression operand : expr.getOperands()) {
 				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(
-						metadataClass, writer, this.encoderContext);
+						queryMetadataClass, writer, this.encoderContext);
 				operand.accept(operandEncoder);
 			}
 			break;
@@ -87,7 +86,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 				final BsonDocument operandDocument = new BsonDocument();
 				final BsonWriter operandBsonWriter = new BsonDocumentWriter(operandDocument);
 				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(
-						metadataClass, operandBsonWriter, this.encoderContext);
+						queryMetadataClass, operandBsonWriter, this.encoderContext);
 				operandBsonWriter.writeStartDocument();
 				operand.accept(operandEncoder);
 				operandBsonWriter.writeEndDocument();
@@ -297,7 +296,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	}
 
 	private String extractKey(final LocalVariable expr) {
-		if (expr.getType().equals(metadataClass)) {
+		if (expr.getType().equals(queryMetadataClass)) {
 			LOGGER.trace("Skipping variable '{}' ({})", expr.getName(), expr.getJavaType().getName());
 			return null;
 		}
@@ -312,7 +311,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		}
 		final String fieldName = expr.getFieldName();
 		try {
-			final java.lang.reflect.Field field = metadataClass.getField(fieldName);
+			final java.lang.reflect.Field field = queryMetadataClass.getField(fieldName);
 			if (field != null) {
 				final DocumentField fieldAnnotation = field.getAnnotation(DocumentField.class);
 				if (fieldAnnotation != null) {
@@ -326,7 +325,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			}
 		} catch (NoSuchFieldException | SecurityException cause) {
 			throw new ConversionException("Failed to get field '" + fieldName + "' on class '"
-					+ metadataClass.getName() + "'", cause);
+					+ queryMetadataClass.getName() + "'", cause);
 		}
 		return builder.toString();
 	}

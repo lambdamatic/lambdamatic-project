@@ -3,6 +3,7 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 
 /**
@@ -10,10 +11,10 @@ import org.lambdamatic.analyzer.exception.AnalyzeException;
  * @author xcoulon
  *
  */
-public class FieldAccess extends Expression {
+public class FieldAccess extends ComplexExpression {
 
-	/** the Expression on containing the field to access.*/
-	private final Expression sourceExpression;
+	/** the Expression on containing the field to access (may change if it is evaluated).*/
+	private Expression sourceExpression;
 	
 	/** the name of the accessed field. */
 	private final String fieldName;
@@ -42,13 +43,39 @@ public class FieldAccess extends Expression {
 	 */
 	public FieldAccess(final int id, final Expression expression, final String fieldName, final boolean inverted) {
 		super(id, inverted);
-		this.sourceExpression = expression;
+		setSourceExpression(expression);
 		this.fieldName = fieldName;
+	}
+
+	private void setSourceExpression(final Expression expression) {
+		this.sourceExpression = expression;
+		this.sourceExpression.setParent(this);
 	}
 	
 	@Override
 	public ComplexExpression getParent() {
 		return (ComplexExpression) super.getParent();
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void accept(final ExpressionVisitor visitor) {
+		sourceExpression.accept(visitor);
+		visitor.visit(this);
+	}
+	
+	@Override
+	public void replaceElement(final Expression oldSourceExpression, final Expression newSourceExpression) {
+		if(oldSourceExpression == this.sourceExpression) {
+			setSourceExpression(newSourceExpression);
+		}
+	}
+
+	@Override
+	public boolean anyElementMatches(ExpressionType type) {
+		return sourceExpression.anyElementMatches(type);
 	}
 	
 	/**
@@ -64,7 +91,7 @@ public class FieldAccess extends Expression {
 	 */
 	@Override
 	public FieldAccess duplicate(int id) {
-		return new FieldAccess(id, getSourceExpression(), getFieldName(), isInverted());
+		return new FieldAccess(id, getSourceExpression().duplicate(), getFieldName(), isInverted());
 	}
 
 	/**
@@ -103,6 +130,18 @@ public class FieldAccess extends Expression {
 	 */
 	public String getFieldName() {
 		return fieldName;
+	}
+
+	/**
+	 * Returns the underlying Java field 
+	 */
+	@Override
+	public Object getValue() {
+		try {
+			return FieldUtils.getField(sourceExpression.getJavaType(), getFieldName());
+		} catch (IllegalArgumentException e) {
+			throw new AnalyzeException("Cannot retrieve field named '" + fieldName + "' on class " + sourceExpression.getJavaType(), e);
+		}
 	}
 
 	@Override

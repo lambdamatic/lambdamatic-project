@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Utility class for all {@link ASTNode} things.
  * 
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  * 
  */
 public class ASTNodeUtils {
@@ -60,6 +60,6 @@ public class ASTNodeUtils {
 			return null;
 		}
 	}
-
+	
 }
 

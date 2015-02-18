@@ -54,13 +54,13 @@ import com.sample.Foo.FooBuilder;
  *
  */
 @RunWith(Parameterized.class)
-public class LambdamaticDocumentCodecTest {
+public class DocumentCodecTest {
 
 	private static final RootCodecRegistry DEFAULT_CODEC_REGISTRY = new RootCodecRegistry(Arrays.asList(
 			new ValueCodecProvider(), new DBRefCodecProvider(), new DBObjectCodecProvider(),
 			new BsonValueCodecProvider()));
 	/** The usual Logger. */
-	private static final Logger LOGGER = LoggerFactory.getLogger(LambdamaticDocumentCodecTest.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DocumentCodecTest.class);
 
 	private static Level previousLoggerLevel;
 
@@ -99,18 +99,18 @@ public class LambdamaticDocumentCodecTest {
 	public String jsonString;
 
 	@Test
-	public void shouldEncodeFooDocumentWithLogging() throws IOException, JSONException {
+	public void shouldEncodeDocumentWithLogging() throws IOException, JSONException {
 		getCodecLogger().setLevel(Level.DEBUG);
-		shouldEncodeFooDocument();
+		shouldEncodeDocument();
 	}
 
 	@Test
-	public void shouldEncodeFooDocumentWithoutLogging() throws IOException, JSONException {
+	public void shouldEncodeDocumentWithoutLogging() throws IOException, JSONException {
 		getCodecLogger().setLevel(Level.ERROR);
-		shouldEncodeFooDocument();
+		shouldEncodeDocument();
 	}
 
-	private void shouldEncodeFooDocument() throws UnsupportedEncodingException, IOException,
+	private void shouldEncodeDocument() throws UnsupportedEncodingException, IOException,
 			JSONException {
 		// given
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -127,16 +127,16 @@ public class LambdamaticDocumentCodecTest {
 	@Test
 	public void shouldDecodeFooDocumentWithLogging() throws IOException, JSONException {
 		getCodecLogger().setLevel(Level.DEBUG);
-		shouldDecodeFooDocument(true);
+		shouldDecodeDocument(true);
 	}
 
 	@Test
-	public void shouldDecodeFooDocumentWithoutLogging() throws IOException, JSONException {
+	public void shouldDecodeDocumentWithoutLogging() throws IOException, JSONException {
 		getCodecLogger().setLevel(Level.ERROR);
-		shouldDecodeFooDocument(false);
+		shouldDecodeDocument(false);
 	}
 
-	private void shouldDecodeFooDocument(boolean loggerEnabled) {
+	private void shouldDecodeDocument(boolean loggerEnabled) {
 		// given
 		final BsonReader bsonReader = new JsonReader(jsonString);
 		final DecoderContext decoderContext = DecoderContext.builder().build();

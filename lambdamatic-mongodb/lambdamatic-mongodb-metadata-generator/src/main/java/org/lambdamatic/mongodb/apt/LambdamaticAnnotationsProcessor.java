@@ -34,11 +34,14 @@ import org.apache.commons.io.IOUtils;
 import org.lambdamatic.mongodb.LambdamaticMongoCollection;
 import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentField;
+import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.TransientField;
+import org.lambdamatic.mongodb.codecs.DocumentCodec;
 import org.lambdamatic.mongodb.metadata.DateField;
 import org.lambdamatic.mongodb.metadata.LocationField;
-import org.lambdamatic.mongodb.metadata.Metadata;
 import org.lambdamatic.mongodb.metadata.ObjectIdField;
+import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
+import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.lambdamatic.mongodb.metadata.StringField;
 import org.stringtemplate.v4.AutoIndentWriter;
 import org.stringtemplate.v4.ST;
@@ -55,27 +58,36 @@ import org.stringtemplate.v4.ST;
 @SupportedAnnotationTypes("org.lambdamatic.mongodb.annotations.Document")
 public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 
-	/** Name of the template file for {@link Metadata} classes. */
-	private static final String METACLASS_TEMPLATE = "metadata_template.st";
+	/** Name of the template file for {@link QueryMetadata} classes. */
+	private static final String QUERY_METADATA_TEMPLATE = "query_metadata_template.st";
 
-	/** Suffix to use for the generated metadata classes. */
-	private static String METACLASS_NAME_SUFFIX = "_";
+	/** Suffix to use for the generated {@link QueryMetadata} classes. */
+	private static String QUERY_METADATA_CLASSNAME_PREFIX = "Q";
+	
+	/** Name of the template file for {@link ProjectionMetadata} classes. */
+	private static final String PROJECTION_METADATA_TEMPLATE = "projection_metadata_template.st";
+	
+	/** Suffix to use for the generated {@link ProjectionMetadata} classes. */
+	private static String PREOJECTION_METADATA_CLASSNAME_PREFIX = "P";
 	
 	/** Name of the template file for the {@link LambdamaticMongoCollection} implementation classes. */
 	private static final String MONGO_COLLECTION_TEMPLATE = "mongo_collection_template.st";
 
 	/** Suffix to use for the generated {@link LambdamaticMongoCollection} implementation classes. */
-	private static String MONGO_COLLECTION_NAME_SUFFIX = "Collection";
+	private static String MONGO_COLLECTION_CLASSNAME_SUFFIX = "Collection";
 	
 	/** Name of the template file for the {@link LambdamaticMongoCollection} implementation producer classes. */
 	private static final String MONGO_COLLECTION_PRODUCER_TEMPLATE = "mongo_collection_producer_template.st";
 	
 	/** Suffix to use for the generated {@link LambdamaticMongoCollection} implementation producer classes. */
-	private static String MONGO_COLLECTION_PRODUCER_NAME_SUFFIX = "CollectionProducer";
+	private static String MONGO_COLLECTION_PRODUCER_CLASSNAME_SUFFIX = "CollectionProducer";
 	
-	/** StringTemplate for the metadata classes. */
-	private ST metadataTemplate;
+	/** StringTemplate for the {@link QueryMetadata} classes. */
+	private ST queryMetadataTemplate;
 
+	/** StringTemplate for the {@link ProjectionMetadata} classes. */
+	private ST projectionMetadataTemplate;
+	
 	/** StringTemplate for the {@link LambdamaticMongoCollection} implementation classes. */
 	private ST mongoCollectionTemplate;
 
@@ -87,7 +99,8 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	 * @throws IOException if templates could not be loaded.
 	 */
 	public LambdamaticAnnotationsProcessor() throws IOException {
-		this.metadataTemplate = getStringTemplate(METACLASS_TEMPLATE);
+		this.queryMetadataTemplate = getStringTemplate(QUERY_METADATA_TEMPLATE);
+		this.projectionMetadataTemplate = getStringTemplate(PROJECTION_METADATA_TEMPLATE);
 		this.mongoCollectionTemplate = getStringTemplate(MONGO_COLLECTION_TEMPLATE);
 		this.mongoCollectionProducerTemplate = getStringTemplate(MONGO_COLLECTION_PRODUCER_TEMPLATE);
 	}
@@ -99,7 +112,7 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	 * @throws IOException
 	 */
 	private ST getStringTemplate(final String templateFileName) throws IOException {
-		// FIXME: the way the templateContent is retrieve causes problem when jar is reloaded in another IDE for a sample project. Current workaround that seems to work is closing/reopening the project. 
+		// FIXME: the way the templateContent is retrieved causes problem when jar is reloaded in another IDE for a sample project. Current workaround that seems to work is closing/reopening the project. 
 		final ClassLoader contextClassLoader = getClass().getClassLoader();
 		final InputStream resourceAsStream = contextClassLoader.getResourceAsStream(templateFileName);
 		final String templateContent = IOUtils.toString(resourceAsStream, "UTF-8");
@@ -115,7 +128,8 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 					processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "annotated class: " + domainElement.getQualifiedName(),
 							domainElement);
 					final Map<String, Object> templateContextProperties = initializeTemplateContextProperties(domainElement);
-					generateMetadataSourceCode(templateContextProperties);
+					generateQueryMetadataSourceCode(templateContextProperties);
+					generateProjectionMetadataSourceCode(templateContextProperties);
 					generateMongoCollectionSourceCode(templateContextProperties);
 					generateMongoCollectionProducerSourceCode(templateContextProperties);
 				} 
@@ -138,8 +152,9 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 		properties.put("processorClassName", LambdamaticAnnotationsProcessor.class.getName());
 		properties.put("packageName", packageElement.getQualifiedName().toString());
 		properties.put("domainClassName", domainElement.getSimpleName().toString());
-		properties.put("fields", getFields(domainElement));
-		properties.put("metadataDomainClassName", generateMetadataSimpleClassName(domainElement));
+		properties.put("queryFields", getQueryFields(domainElement));
+		properties.put("queryMetadataClassName", generateQueryMetadataSimpleClassName(domainElement));
+		properties.put("projectionMetadataClassName", generateProjectionMetadataSimpleClassName(domainElement));
 		properties.put("mongoCollectionName", documentAnnotation.collection());
 		properties.put("mongoCollectionClassName", generateMongoCollectionSimpleClassName(domainElement));
 		properties.put("mongoCollectionProducerClassName", generateMongoCollectionProviderSimpleClassName(domainElement));
@@ -147,31 +162,57 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	}
 
 	/**
-	 * Generates the metadata source code for the given {@code classElement} in the given target {@code packageElement}.
+	 * Generates the {@link QueryMetadata} source code for the given {@code classElement} in the given target {@code packageElement}.
 	 * 
 	 * @param allContextProperties
 	 *            all properties to use when running the engine to generate the source code.
 	 * 
 	 * @throws IOException
 	 */
-	private void generateMetadataSourceCode(final Map<String, Object> allContextProperties) throws IOException {
-		if (this.metadataTemplate == null) {
+	private void generateQueryMetadataSourceCode(final Map<String, Object> allContextProperties) throws IOException {
+		if (this.queryMetadataTemplate == null) {
 			processingEnv.getMessager().printMessage(
 					Diagnostic.Kind.WARNING,
-					"Could not create the metadata class for the given '" + allContextProperties.get("packageName") + "."
+					"Could not create the QueryMetadata class for the given '" + allContextProperties.get("packageName") + "."
 							+ allContextProperties.get("domainClassName") + "' class");
 			return;
 		}
 		// fill the template with all the properties (even if we don't need them all)
-		allContextProperties.keySet().stream().forEach(k -> this.metadataTemplate.add(k, allContextProperties.get(k)));
-		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(allContextProperties.get("packageName").toString() + "." + allContextProperties.get("metadataDomainClassName").toString());
+		allContextProperties.keySet().stream().forEach(k -> this.queryMetadataTemplate.add(k, allContextProperties.get(k)));
+		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(allContextProperties.get("packageName").toString() + "." + allContextProperties.get("queryMetadataClassName").toString());
 		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
 		final Writer writer = jfo.openWriter();
-		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying template: " + metadataTemplate.getName());
-		this.metadataTemplate.write(new AutoIndentWriter(writer));
+		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying template: " + queryMetadataTemplate.getName());
+		this.queryMetadataTemplate.write(new AutoIndentWriter(writer));
 		writer.close();
 	}
 
+	/**
+	 * Generates the {@link ProjectionMetadata} source code for the given {@code classElement} in the given target {@code packageElement}.
+	 * 
+	 * @param allContextProperties
+	 *            all properties to use when running the engine to generate the source code.
+	 * 
+	 * @throws IOException
+	 */
+	private void generateProjectionMetadataSourceCode(final Map<String, Object> allContextProperties) throws IOException {
+		if (this.projectionMetadataTemplate == null) {
+			processingEnv.getMessager().printMessage(
+					Diagnostic.Kind.WARNING,
+					"Could not create the ProjectionMetadata class for the given '" + allContextProperties.get("packageName") + "."
+							+ allContextProperties.get("domainClassName") + "' class");
+			return;
+		}
+		// fill the template with all the properties (even if we don't need them all)
+		allContextProperties.keySet().stream().forEach(k -> this.projectionMetadataTemplate.add(k, allContextProperties.get(k)));
+		final JavaFileObject jfo = processingEnv.getFiler().createSourceFile(allContextProperties.get("packageName").toString() + "." + allContextProperties.get("projectionMetadataClassName").toString());
+		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
+		final Writer writer = jfo.openWriter();
+		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "applying template: " + queryMetadataTemplate.getName());
+		this.projectionMetadataTemplate.write(new AutoIndentWriter(writer));
+		writer.close();
+	}
+	
 	/**
 	 * Generates the {@code LambdamaticMongoCollection} implementation source code for the underlying MongoDB collection.
 	 * 
@@ -231,8 +272,8 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	 *            the element to scan
 	 * @return the map of fields
 	 */
-	private List<FieldMetadata> getFields(final TypeElement classElement) {
-		final List<FieldMetadata> fields = new ArrayList<>();
+	private List<QueryFieldMetadata> getQueryFields(final TypeElement classElement) {
+		final List<QueryFieldMetadata> fields = new ArrayList<>();
 		for (Element childElement : classElement.getEnclosedElements()) {
 			if (childElement.getKind() == ElementKind.FIELD) {
 				final TransientField transientFieldAnnotation = childElement.getAnnotation(TransientField.class);
@@ -240,34 +281,52 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 				if (transientFieldAnnotation != null) {
 					continue;
 				}
-				final DocumentField documentFieldAnnotation = childElement.getAnnotation(DocumentField.class);
 				final VariableElement variableElement = (VariableElement) childElement;
-				fields.add(new FieldMetadata(variableElement, documentFieldAnnotation));
+				final DocumentId documentIdAnnotation = childElement.getAnnotation(DocumentId.class);
+				if(documentIdAnnotation != null) {
+					fields.add(new QueryFieldMetadata(variableElement, documentIdAnnotation));
+				} else {
+					final DocumentField documentFieldAnnotation = childElement.getAnnotation(DocumentField.class);
+					fields.add(new QueryFieldMetadata(variableElement, documentFieldAnnotation));
+				}
 			}
 		}
 		return fields;
 	}
 
 	/**
-	 * Builds the simple name of the Metadata class associated with the given {@code typeElement}
+	 * Builds the simple name of the {@link QueryMetadata} class associated with the given {@code typeElement}
 	 * 
 	 * @param typeElement
 	 *            the type element from which the name will be generated
-	 * @return the simple name of the given type element, followed by {@link LambdamaticAnnotationsProcessor#METACLASS_SUFFIX}.
+	 * @return the simple name of the given type element, prefixed by
+	 *         {@link LambdamaticAnnotationsProcessor#QUERY_METADATA_CLASSNAME_PREFIX}.
 	 */
-	public static String generateMetadataSimpleClassName(final TypeElement typeElement) {
-		return typeElement.getSimpleName().toString() + METACLASS_NAME_SUFFIX;
+	public static String generateQueryMetadataSimpleClassName(final TypeElement typeElement) {
+		return QUERY_METADATA_CLASSNAME_PREFIX + typeElement.getSimpleName().toString();
 	}
 
+	/**
+	 * Builds the simple name of the {@link ProjectionMetadata} class associated with the given {@code typeElement}
+	 * 
+	 * @param typeElement
+	 *            the type element from which the name will be generated
+	 * @return the simple name of the given type element, prefixed by
+	 *         {@link LambdamaticAnnotationsProcessor#PREOJECTION_METADATA_CLASSNAME_PREFIX}.
+	 */
+	public static String generateProjectionMetadataSimpleClassName(final TypeElement typeElement) {
+		return PREOJECTION_METADATA_CLASSNAME_PREFIX + typeElement.getSimpleName().toString();
+	}
+	
 	/**
 	 * Builds the simple name of the {@link LambdamaticMongoCollection} class associated with the given  {@code typeElement}
 	 * 
 	 * @param typeElement
 	 *            the type element from which the name will be generated
-	 * @return the simple name of the given type element, followed by {@link LambdamaticAnnotationsProcessor#MONGO_COLLECTION_NAME_SUFFIX}.
+	 * @return the simple name of the given type element, followed by {@link LambdamaticAnnotationsProcessor#MONGO_COLLECTION_CLASSNAME_SUFFIX}.
 	 */
 	public static String generateMongoCollectionSimpleClassName(final TypeElement typeElement) {
-		return typeElement.getSimpleName().toString() + MONGO_COLLECTION_NAME_SUFFIX;
+		return typeElement.getSimpleName().toString() + MONGO_COLLECTION_CLASSNAME_SUFFIX;
 	}
 	
 	/**
@@ -275,19 +334,19 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 	 * 
 	 * @param typeElement
 	 *            the type element from which the name will be generated
-	 * @return the simple name of the given type element, followed by {@link LambdamaticAnnotationsProcessor#MONGO_COLLECTION_PRODUCER_NAME_SUFFIX}.
+	 * @return the simple name of the given type element, followed by {@link LambdamaticAnnotationsProcessor#MONGO_COLLECTION_PRODUCER_CLASSNAME_SUFFIX}.
 	 */
 	public static String generateMongoCollectionProviderSimpleClassName(final TypeElement typeElement) {
-		return typeElement.getSimpleName().toString() + MONGO_COLLECTION_PRODUCER_NAME_SUFFIX;
+		return typeElement.getSimpleName().toString() + MONGO_COLLECTION_PRODUCER_CLASSNAME_SUFFIX;
 	}
 	
 	/**
-	 * Information about a given field that should be generated in a {@link Metadata} class.
+	 * Information about a given field that should be generated in a {@link QueryMetadata} class.
 	 * 
 	 * @author Xavier Coulon <xcoulon@redhat.com>
 	 *
 	 */
-	public class FieldMetadata {
+	public class QueryFieldMetadata {
 
 		/** The java field name. */
 		private final String javaFieldName;
@@ -297,11 +356,22 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 		private final String javaFieldType;
 
 		/**
-		 * 
-		 * @param variableElement
-		 * @param documentFieldAnnotation
+		 * Creates a {@link QueryFieldMetadata} from a field annotated with {@link DocumentId}.
+		 * @param variableElement the field element 
+		 * @param documentFieldAnnotation the {@link DocumentId} annotation
 		 */
-		public FieldMetadata(final VariableElement variableElement, final DocumentField documentFieldAnnotation) {
+		public QueryFieldMetadata(final VariableElement variableElement, final DocumentId documentIdAnnotation) {
+			this.javaFieldName = getVariableName(variableElement);
+			this.javaFieldType = getVariableType(variableElement);
+			this.documentFieldName = DocumentCodec.MONGOBD_DOCUMENT_ID;
+		}
+		
+		/**
+		 * Creates a {@link QueryFieldMetadata} from a field optionally annotated with {@link DocumentField}.
+		 * @param variableElement the field element 
+		 * @param documentFieldAnnotation the optional {@link DocumentField} annotation
+		 */
+		public QueryFieldMetadata(final VariableElement variableElement, final DocumentField documentFieldAnnotation) {
 			this.javaFieldName = getVariableName(variableElement);
 			this.javaFieldType = getVariableType(variableElement);
 			this.documentFieldName = getDocumentFieldName(documentFieldAnnotation, javaFieldName);
@@ -400,6 +470,82 @@ public class LambdamaticAnnotationsProcessor extends AbstractProcessor {
 			return javaFieldType;
 		}
 
+	}
+
+	/**
+	 * Information about a given field that should be generated in a {@link ProjectionMetadata} class.
+	 * 
+	 * @author Xavier Coulon <xcoulon@redhat.com>
+	 *
+	 */
+	public class ProjectionFieldMetadata {
+		
+		/** The java field name. */
+		private final String javaFieldName;
+		/** The document field name. */
+		private final String documentFieldName;
+		/** The document field name. */
+		private final int value;
+		
+		/**
+		 * 
+		 * @param variableElement
+		 * @param documentFieldAnnotation
+		 */
+		public ProjectionFieldMetadata(final VariableElement variableElement, final DocumentField documentFieldAnnotation, final int value) {
+			this.javaFieldName = getVariableName(variableElement);
+			this.documentFieldName = getDocumentFieldName(documentFieldAnnotation, javaFieldName);
+			this.value = value;
+		}
+		
+		/**
+		 * Returns the simple name of the given {@link VariableElement}
+		 * 
+		 * @param variableElement
+		 *            the variable to analyze
+		 * @return the java field name to use in the metadata class
+		 */
+		private String getVariableName(final VariableElement variableElement) {
+			return variableElement.getSimpleName().toString();
+		}
+		
+		/**
+		 * Returns the {@link DocumentField#name()} value if the given {@code documentFieldAnnotation} is not null, otherwise it returns the
+		 * given {@code defaultDocumentFieldName}.
+		 * 
+		 * @param documentFieldAnnotation
+		 *            the annotation to analyze
+		 * @param defaultDocumentFieldName
+		 *            the default value if the given annotation was {@code null}
+		 * @return the name of the field in the document
+		 */
+		private String getDocumentFieldName(final DocumentField documentFieldAnnotation, final String defaultDocumentFieldName) {
+			if (documentFieldAnnotation != null && !documentFieldAnnotation.name().isEmpty()) {
+				return documentFieldAnnotation.name();
+			}
+			return defaultDocumentFieldName;
+		}
+
+		/**
+		 * @return the documentFieldName
+		 */
+		public String getDocumentFieldName() {
+			return documentFieldName;
+		}
+
+		/**
+		 * @return the javaFieldName
+		 */
+		public String getJavaFieldName() {
+			return javaFieldName;
+		}
+		
+		/**
+		 * @return the value
+		 */
+		public int getValue() {
+			return value;
+		}
 	}
 }
 

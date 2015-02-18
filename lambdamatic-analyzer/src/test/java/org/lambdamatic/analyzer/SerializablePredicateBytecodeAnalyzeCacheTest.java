@@ -5,8 +5,8 @@ package org.lambdamatic.analyzer;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-import org.lambdamatic.FilterExpression;
 import org.lambdamatic.LambdaExpression;
+import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
@@ -17,16 +17,15 @@ import com.sample.model.TestPojo;
 
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
- *
  */
-public class LambdaExpressionBytecodeAnalyzeCacheTest {
+public class SerializablePredicateBytecodeAnalyzeCacheTest {
 
 	@Test
 	public void shouldNotAnalyzeTwice() {
 		// given
 		final LambdaExpressionAnalyzer lambdaAnalyzer = LambdaExpressionAnalyzer.getInstance();
 		lambdaAnalyzer.resetHitCounters();
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation getStringValue = new MethodInvocation(testPojo, "getStringValue", String.class);
 		// when (first call) 
 		final LambdaExpression lambdaExpression1 = getLambdaExpression();
@@ -55,7 +54,7 @@ public class LambdaExpressionBytecodeAnalyzeCacheTest {
 		// given
 		final LambdaExpressionAnalyzer lambdaAnalyzer = LambdaExpressionAnalyzer.getInstance();
 		lambdaAnalyzer.resetHitCounters();
-		final LocalVariable testPojo = new LocalVariable("t", TestPojo.class);
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation getStringValue = new MethodInvocation(testPojo, "getStringValue", String.class);
 		// when (first call) 
 		final LambdaExpression lambdaExpression1 = getLambdaExpression("john1", "jack1");
@@ -82,16 +81,16 @@ public class LambdaExpressionBytecodeAnalyzeCacheTest {
 	
 	private LambdaExpression getLambdaExpression() {
 		// given
-		final FilterExpression<TestPojo> expr = ((TestPojo t) -> t.getStringValue().equals("john") || t.getStringValue().equals("jack"));
+		final SerializablePredicate<TestPojo> expr = ((TestPojo t) -> t.getStringValue().equals("john") || t.getStringValue().equals("jack"));
 		// when
-		return LambdaExpressionAnalyzer.getInstance().analyzeLambdaExpression(expr);
+		return LambdaExpressionAnalyzer.getInstance().analyzeExpression(expr);
 	}
 
 	private LambdaExpression getLambdaExpression(final String stringField1, final String stringField2) {
 		// given
-		final FilterExpression<TestPojo> expr = ((TestPojo t) -> t.getStringValue().equals(stringField1) || t.getStringValue().equals(stringField2));
+		final SerializablePredicate<TestPojo> expr = ((TestPojo t) -> t.getStringValue().equals(stringField1) || t.getStringValue().equals(stringField2));
 		// when
-		return LambdaExpressionAnalyzer.getInstance().analyzeLambdaExpression(expr);
+		return LambdaExpressionAnalyzer.getInstance().analyzeExpression(expr);
 	}
 
 }

@@ -46,9 +46,9 @@ public class Location {
 	 * Converts the given {@link String} value to a {@link Location}, assuming the format is: {@code latitude,longitude}, where
 	 * {@code latitude} and {@code longitude} are (casted to) double values.
 	 * <p>Eg: {@code "40.782865,-73.965355"} (Central Park, NYC)</p> 
-	 * 
+	 * <p>This method can be used by JAX-RS 2.0 implementations to unmarshall incoming HTTP reauest parameters.</p>
 	 * @param value
-	 * @return a location or
+	 * @return a location
 	 */
 	public static Location fromString(final String value) {
 		final String[] coordinates = value.split(",");

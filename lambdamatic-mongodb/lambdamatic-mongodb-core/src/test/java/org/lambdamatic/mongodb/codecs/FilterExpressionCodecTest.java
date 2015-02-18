@@ -19,7 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.lambdamatic.FilterExpression;
+import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 import org.lambdamatic.mongodb.types.geospatial.Polygon;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -30,7 +30,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 
 import com.sample.EnumFoo;
-import com.sample.Foo_;
+import com.sample.QFoo;
 
 /**
  * Testing the {@link FilterExpressionCodec}
@@ -38,61 +38,61 @@ import com.sample.Foo_;
  *
  */
 @RunWith(Parameterized.class)
-public class LambdamaticFilterExpressionCodecTest {
+public class FilterExpressionCodecTest {
 	
-	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LambdamaticFilterExpressionCodecTest.class);
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FilterExpressionCodecTest.class);
 	
 	@Parameters(name = "[{index}] {1}")
 	public static Object[][] data() {
 		final Polygon singleRing = new Polygon(new Location(0, 0), new Location(0, 1), new Location(1, 1), new Location(1, 0), new Location(0, 0));
 		return new Object[][]{
 				new Object[]{
-						(FilterExpression<Foo_>)((Foo_ foo) -> foo.stringField.equals("john")),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.equals("john")),
 						"{stringField: 'john'}"
 				},
 				new Object[]{
-						(FilterExpression<Foo_>)((Foo_ foo) -> foo.stringField.equals("john") || foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.equals("john") || foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO),
 						"{$or: [{primitiveIntField: 42}, {enumFoo: 'FOO'}, {stringField: 'john'}]}"
 				},
 				new Object[]{
-						(FilterExpression<Foo_>)((Foo_ foo) -> foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO),
 						"{$or: [{primitiveIntField: 42}, {enumFoo: 'FOO'}]}"
 				},
 				new Object[]{
-						(FilterExpression<Foo_>)((Foo_ foo) -> foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO),
 						"{primitiveIntField: 42, enumFoo: 'FOO'}"
 				},
 				new Object[]{
-						(FilterExpression<Foo_>)((Foo_ foo) -> foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO && foo.stringField.equals("john")),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO && foo.stringField.equals("john")),
 						"{primitiveIntField: 42, enumFoo: 'FOO', stringField: 'john'}"
 				},
 				new Object[]{
-						(FilterExpression<Foo_>)((Foo_ foo) -> foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO || foo.stringField.equals("john")),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO || foo.stringField.equals("john")),
 						"{$or: [{primitiveIntField: 42}, {enumFoo: 'FOO'}, {stringField: 'john'}]}"
 				},
 				new Object[]{
-						(FilterExpression<Foo_>)((Foo_ foo) -> (foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO) || foo.stringField.equals("john")),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> (foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO) || foo.stringField.equals("john")),
 						"{$or: [{primitiveIntField: 42, enumFoo: 'FOO'}, {stringField: 'john'}]}"
 				},
 				// polygon with single (closed) ring defined by an array of Locations
 				new Object[]{
-						(FilterExpression<Foo_>)((Foo_ foo) -> foo.location.geoWithin(singleRing)),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.location.geoWithin(singleRing)),
 						"{location: { $geoWithin: { $geometry: {type: 'Polygon', coordinates: [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]] } } } }"
 				},
 		};
 	}
 
-	private final FilterExpression<Foo_> expr;
+	private final SerializablePredicate<QFoo> expr;
 	private final String expectedJSON;
 	private static Level previousLoggerLevel;
 	
 	/**
 	 * Test contructor
-	 * @param expr the {@link FilterExpression} to convert
+	 * @param expr the {@link SerializablePredicate} to convert
 	 * @param expectedJSON the expected JSON output
 	 * @param debug if the logger should set the level to DEBUG or not
 	 */
-	public LambdamaticFilterExpressionCodecTest(final FilterExpression<Foo_> expr, final String expectedJSON) {
+	public FilterExpressionCodecTest(final SerializablePredicate<QFoo> expr, final String expectedJSON) {
 		this.expr = expr;
 		this.expectedJSON = expectedJSON;
 	}

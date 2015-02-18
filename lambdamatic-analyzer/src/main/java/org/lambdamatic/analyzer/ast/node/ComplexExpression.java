@@ -8,6 +8,7 @@
 
 package org.lambdamatic.analyzer.ast.node;
 
+
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
  *

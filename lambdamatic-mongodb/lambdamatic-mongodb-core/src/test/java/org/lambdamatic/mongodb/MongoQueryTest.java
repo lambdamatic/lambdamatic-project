@@ -14,10 +14,12 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 import org.assertj.core.api.Condition;
+import org.assertj.core.description.TextDescription;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.lambdamatic.mongodb.annotations.Document;
+import static org.lambdamatic.mongodb.metadata.Projection.*;
 import org.lambdamatic.mongodb.testutils.DropMongoCollectionsRule;
 
 import com.mongodb.MongoClient;
@@ -50,6 +52,7 @@ public class MongoQueryTest {
 		this.fooCollection = new FooCollection(mongoClient, DATABASE_NAME, COLLECTION_NAME);
 		// insert test data
 		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO)
+				.withLocation(40, -70)
 				.build();
 		this.fooCollection.insert(foo);
 	}
@@ -66,6 +69,23 @@ public class MongoQueryTest {
 						&& value.getEnumFoo() == EnumFoo.FOO;
 			}
 		});
+	}
+
+	@Test
+	public void shouldFindOneFooWithFieldInclusionProjection() throws IOException {
+		// when
+		final Foo foo = fooCollection
+				.find(f -> f.stringField.equals("jdoe"))
+				.projection(f -> include(f.stringField, f.location))
+				.first();
+		// then
+		assertThat(foo).isNotNull().has(new Condition<Foo>() {
+			@Override
+			public boolean matches(final Foo value) {
+				return value.getId() == null && value.getStringField().equals("jdoe") && value.getPrimitiveIntField() == 0
+						&& value.getEnumFoo() == null && value.getLocation() != null;
+			}
+		}.as(new TextDescription("only a 'stringField' and 'location' fields initialized")));
 	}
 
 }

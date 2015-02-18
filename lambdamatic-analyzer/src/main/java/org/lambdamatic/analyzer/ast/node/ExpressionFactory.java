@@ -3,6 +3,10 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
+import java.lang.reflect.Field;
+
+
+
 
 /**
  * {@link Expression} factory
@@ -23,7 +27,9 @@ public class ExpressionFactory {
 	 * @return the {@link Expression} wrapping the given value.
 	 */
 	public static Expression getExpression(final Object value) {
-		if (value == null) {
+		if(value instanceof Expression) {
+			return (Expression)value;
+		} else if (value == null) {
 			return new NullLiteral();
 		} else if (value instanceof Boolean) {
 			return new BooleanLiteral((Boolean) value);
@@ -35,9 +41,28 @@ public class ExpressionFactory {
 			return new EnumLiteral((Enum<?>)value);
 		} else if (value instanceof String) {
 			return new StringLiteral(value.toString());
+		} else if (value instanceof Field) {
+			final Field field = (Field)value;
+			return new FieldAccess(new ClassLiteral(field.getDeclaringClass()), field.getName());
+		} else if(value.getClass().isArray()) {
+			final Class<?> componentType = value.getClass().getComponentType();
+			// value is already an array of Expression, just need to wrap it in an ArrayVariable
+			if(Expression.class.isAssignableFrom(componentType)) {
+				return new ArrayVariable(componentType, (Expression[])value);
+			} 
+			// wrap each element in an expression and add it into an ArrayVariable
+			else {
+				final Object[] values = (Object[]) value;
+				final ArrayVariable arrayVariable = new ArrayVariable(componentType, values.length);
+				for(int i = 0; i < values.length; i++) {
+					arrayVariable.setElement(i, getExpression(values[i]));
+				}
+				return arrayVariable;
+			}
 		}
 		return new CapturedArgument(value);
 	}
+
 
 	/**
 	 * Converts the given {@code value} to a literal {@link Expression}, in the context of the given {@code expression}
