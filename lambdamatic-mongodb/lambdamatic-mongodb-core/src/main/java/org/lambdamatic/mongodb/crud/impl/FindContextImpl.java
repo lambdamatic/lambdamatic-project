@@ -11,7 +11,7 @@ import org.lambdamatic.mongodb.FindContext;
 import org.lambdamatic.mongodb.FindTerminalContext;
 import org.lambdamatic.mongodb.metadata.Projection;
 
-import com.mongodb.client.FindFluent;
+import com.mongodb.client.FindIterable;
 
 /**
  * {@link FindContext} implementation.
@@ -22,13 +22,13 @@ import com.mongodb.client.FindFluent;
 public class FindContextImpl<T, PM> implements FindContext<T, PM> {
 	
 	/** the underlying Mongo {@link FindFluent}.*/ 
-	private final FindFluent<T> find;
+	private final FindIterable<T> find;
 	
 	/**
 	 * Constructor
 	 * @param find the {@link FindFluent} element built with a Filter argument.
 	 */
-	public FindContextImpl(final FindFluent<T> find) {
+	public FindContextImpl(final FindIterable<T> find) {
 		this.find = find;
 	}
 
