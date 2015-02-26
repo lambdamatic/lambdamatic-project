@@ -79,9 +79,7 @@ public class FilterExpressionCodec implements Codec<SerializablePredicate<?>> {
 	private void encodeExpression(final LambdaExpression lambdaExpression, final BsonWriter writer, final EncoderContext encoderContext) {
 		final FilterExpressionEncoder expressionEncoder = new FilterExpressionEncoder(
 				lambdaExpression.getArgumentType(), writer, encoderContext);
-		writer.writeStartDocument();
 		lambdaExpression.getExpression().accept(expressionEncoder);
-		writer.writeEndDocument();
 		writer.flush();
 	}
 

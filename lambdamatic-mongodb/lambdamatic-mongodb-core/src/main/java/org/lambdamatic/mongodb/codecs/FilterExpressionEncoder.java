@@ -68,38 +68,25 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 
 	@Override
 	public boolean visitInfixExpression(final InfixExpression expr) {
+		writer.writeStartDocument();
 		switch (expr.getOperator()) {
 		case CONDITIONAL_AND:
 			// Syntax: { $and: [ { <expression1> }, { <expression2> } , ... , {
 			// <expressionN> } ] }
-			for (Expression operand : expr.getOperands()) {
-				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(
-						queryMetadataClass, writer, this.encoderContext);
-				operand.accept(operandEncoder);
-			}
+			writeLogicalOperation("$and", expr.getOperands());
 			break;
 		case CONDITIONAL_OR:
 			// syntax: { $or: [ { <expression1> }, { <expression2> }, ... , {
 			// <expressionN> } ] }
-			writer.writeStartArray("$or");
-			for (Expression operand : expr.getOperands()) {
-				final BsonDocument operandDocument = new BsonDocument();
-				final BsonWriter operandBsonWriter = new BsonDocumentWriter(operandDocument);
-				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(
-						queryMetadataClass, operandBsonWriter, this.encoderContext);
-				operandBsonWriter.writeStartDocument();
-				operand.accept(operandEncoder);
-				operandBsonWriter.writeEndDocument();
-				final BsonReader operandBsonReader = new BsonDocumentReader(operandDocument);
-				writer.pipe(operandBsonReader);
-			}
-			writer.writeEndArray();
+			writeLogicalOperation("$or", expr.getOperands());
 			break;
 		case EQUALS:
+			// eg: int == 3
 			// Syntax: {field: value} }
 			writeEquals(expr.getOperands().get(0), expr.getOperands().get(1));
 			break;
 		case NOT_EQUALS:
+			// eg: int != 3
 			// Syntax: {field: {$ne: value} }
 			// FIXME: this needs testing
 			writeNotEquals(expr.getOperands().get(0), expr.getOperands().get(1));
@@ -108,22 +95,112 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			throw new UnsupportedOperationException("Generating a query with '" + expr.getOperator()
 					+ "' is not supported yet (shame...)");
 		}
+		writer.writeEndDocument();
+		writer.flush();
 		return false;
 	}
 
+	/**
+	 * Writes a logical operation of the following form:
+	 * <pre>
+	 * { $operator: [ { <expression1> }, { <expression2> } , ... , {<expressionN> } ] }
+	 * </pre>
+	 * @param operator the operator to write (<pre>$or</pre> or <pre>$and</pre>)
+	 * @param operands the operands to write 
+	 */
+	private void writeLogicalOperation(final String operator, List<Expression> operands) {
+		writer.writeStartArray(operator);
+		for (Expression operand : operands) {
+			final BsonDocument operandDocument = new BsonDocument();
+			final BsonWriter operandBsonWriter = new BsonDocumentWriter(operandDocument);
+			final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(
+					queryMetadataClass, operandBsonWriter, this.encoderContext);
+			operand.accept(operandEncoder);
+			final BsonReader operandBsonReader = new BsonDocumentReader(operandDocument);
+			writer.pipe(operandBsonReader);
+		}
+		writer.writeEndArray();
+	}
+
 	@Override
-	public boolean visitMethodInvocationExpression(final MethodInvocation expr) {
-		if (expr.getArguments().size() > 1) {
+	public boolean visitMethodInvocationExpression(final MethodInvocation methodInvocation) {
+		if (methodInvocation.getArguments().size() > 1) {
 			throw new ConversionException(
 					"Generating a BSON document from a method invocation with multiple arguments is not supported yet");
 		}
+		writer.writeStartDocument();
 		// FIXME: support other methods here
-		if (expr.getMethodName().equals("equals")) {
-			writeEquals(expr.getSourceExpression(), expr.getArguments().get(0));
-		} else if (expr.getMethodName().equals("geoWithin")) {
-			writeGeoWithin(expr.getSourceExpression(), expr.getArguments());
+		if (methodInvocation.getMethodName().equals("equals") && !methodInvocation.isInverted()) {
+			writeEquals(methodInvocation.getSourceExpression(), methodInvocation.getArguments().get(0));
+		} else if (methodInvocation.getMethodName().equals("equals") && methodInvocation.isInverted()) {
+			writeNotEquals(methodInvocation.getSourceExpression(), methodInvocation.getArguments().get(0));
+		} else if (methodInvocation.getMethodName().equals("geoWithin")) {
+			writeGeoWithin(methodInvocation.getSourceExpression(), methodInvocation.getArguments());
 		}
+		writer.writeEndDocument();
 		return false;
+	}
+
+	/**
+	 * Writes the equals query member for the given key/value pair
+	 * <p>
+	 * Eg: <code>{key: value}</code>
+	 * </p>
+	 * 
+	 * @param key
+	 *            the key
+	 * @param value
+	 *            the value
+	 */
+	private void writeEquals(final Expression keyExpr, final Expression valueExpr) {
+		final String key = extractKey(keyExpr);
+		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
+		if (value == null) {
+			writer.writeNull(key);
+		} else if (value instanceof Integer) {
+			writer.writeInt32(key, (Integer) value);
+		} else if (value instanceof Long) {
+			writer.writeInt64(key, (Long) value);
+		} else if (value instanceof String) {
+			writer.writeString(key, (String) value);
+		} else if (value instanceof Enum) {
+			writer.writeString(key, ((Enum<?>) value).name());
+		} else {
+			throw new UnsupportedOperationException("Writing value of a '" + valueExpr.getExpressionType()
+					+ "' is not supported yet");
+		}
+	}
+
+	/**
+	 * Writes the equals query member for the given key/value pair
+	 * <p>
+	 * Eg: <code>{key: {$ne: value}}</code>
+	 * </p>
+	 * 
+	 * @param key
+	 *            the key
+	 * @param value
+	 *            the value
+	 */
+	private void writeNotEquals(final Expression keyExpr, final Expression valueExpr) {
+		final String key = extractKey(keyExpr);
+		writer.writeStartDocument(key);
+		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
+		if (value == null) {
+			writer.writeNull(NOT_EQUALS);
+		} else if (value instanceof Integer) {
+			writer.writeInt32(NOT_EQUALS, (Integer) value);
+		} else if (value instanceof Long) {
+			writer.writeInt64(NOT_EQUALS, (Long) value);
+		} else if (value instanceof String) {
+			writer.writeString(NOT_EQUALS, (String) value);
+		} else if (value instanceof Enum) {
+			writer.writeString(NOT_EQUALS, ((Enum<?>) value).name());
+		} else {
+			throw new UnsupportedOperationException("Writing value of a '" + valueExpr.getExpressionType()
+					+ "' is not supported yet");
+		}
+		writer.writeEndDocument();
 	}
 
 	/**
@@ -222,68 +299,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		writer.writeEndDocument(); // $geoWithin
 	}
 
-	/**
-	 * Writes the equals query member for the given key/value pair
-	 * <p>
-	 * Eg: <code>{key: value}</code>
-	 * </p>
-	 * 
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
-	 */
-	private void writeEquals(final Expression keyExpr, final Expression valueExpr) {
-		final String key = extractKey(keyExpr);
-		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
-		if (value == null) {
-			writer.writeNull(key);
-		} else if (value instanceof Integer) {
-			writer.writeInt32(key, (Integer) value);
-		} else if (value instanceof Long) {
-			writer.writeInt64(key, (Long) value);
-		} else if (value instanceof String) {
-			writer.writeString(key, (String) value);
-		} else if (value instanceof Enum) {
-			writer.writeString(key, ((Enum<?>) value).name());
-		} else {
-			throw new UnsupportedOperationException("Writing value of a '" + valueExpr.getExpressionType()
-					+ "' is not supported yet");
-		}
-	}
-
-	/**
-	 * Writes the equals query member for the given key/value pair
-	 * <p>
-	 * Eg: <code>{key: {$ne: value}}</code>
-	 * </p>
-	 * 
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
-	 */
-	private void writeNotEquals(final Expression keyExpr, final Expression valueExpr) {
-		final String key = extractKey(keyExpr);
-		writer.writeStartDocument(key);
-		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
-		if (value == null) {
-			writer.writeNull(NOT_EQUALS);
-		} else if (value instanceof Integer) {
-			writer.writeInt32(NOT_EQUALS, (Integer) value);
-		} else if (value instanceof Long) {
-			writer.writeInt64(NOT_EQUALS, (Long) value);
-		} else if (value instanceof String) {
-			writer.writeString(NOT_EQUALS, (String) value);
-		} else if (value instanceof Enum) {
-			writer.writeString(NOT_EQUALS, ((Enum<?>) value).name());
-		} else {
-			throw new UnsupportedOperationException("Writing value of a '" + valueExpr.getExpressionType()
-					+ "' is not supported yet");
-		}
-		writer.writeEndDocument();
-	}
-
+	//TODO: move 'extract' methods to ExpressionUtils ?
 	private String extractKey(final Expression expr) {
 		switch (expr.getExpressionType()) {
 		case LOCAL_VARIABLE:

@@ -51,6 +51,10 @@ public class FilterExpressionCodecTest {
 						"{stringField: 'john'}"
 				},
 				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> !foo.stringField.equals("john")),
+						"{stringField: {$ne: 'john'}}"
+				},
+				new Object[]{
 						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.equals("john") || foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO),
 						"{$or: [{primitiveIntField: 42}, {enumFoo: 'FOO'}, {stringField: 'john'}]}"
 				},
@@ -60,11 +64,11 @@ public class FilterExpressionCodecTest {
 				},
 				new Object[]{
 						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO),
-						"{primitiveIntField: 42, enumFoo: 'FOO'}"
+						"{$and:[{primitiveIntField: 42}, {enumFoo: 'FOO'}]}"
 				},
 				new Object[]{
 						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO && foo.stringField.equals("john")),
-						"{primitiveIntField: 42, enumFoo: 'FOO', stringField: 'john'}"
+						"{$and:[{primitiveIntField: 42}, {enumFoo: 'FOO'}, {stringField: 'john'}]}"
 				},
 				new Object[]{
 						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO || foo.stringField.equals("john")),
@@ -72,7 +76,11 @@ public class FilterExpressionCodecTest {
 				},
 				new Object[]{
 						(SerializablePredicate<QFoo>)((QFoo foo) -> (foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO) || foo.stringField.equals("john")),
-						"{$or: [{primitiveIntField: 42, enumFoo: 'FOO'}, {stringField: 'john'}]}"
+						"{$or: [{$and:[{primitiveIntField: 42}, {enumFoo: 'FOO'}]}, {stringField: 'john'}]}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> (foo.primitiveIntField != 42 && foo.enumFoo != EnumFoo.FOO) || !foo.stringField.equals("john")),
+						"{$or: [{$and:[{primitiveIntField: {$ne: 42}}, {enumFoo: {$ne:'FOO'}}]}, {stringField: {$ne:'john'}}]}"
 				},
 				// polygon with single (closed) ring defined by an array of Locations
 				new Object[]{
@@ -133,7 +141,7 @@ public class FilterExpressionCodecTest {
 		new FilterExpressionCodec().encode(bsonWriter, expr, context);
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
-		LOGGER.debug("Comparing \n{} vs \n{}", expectedJSON, actual);
+		LOGGER.debug("Comparing \nexpected: {}\nresult:   {}", expectedJSON, actual);
 		JSONAssert.assertEquals(expectedJSON, actual, false);
 	}
 
