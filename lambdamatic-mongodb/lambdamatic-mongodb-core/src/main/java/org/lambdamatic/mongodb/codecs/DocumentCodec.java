@@ -203,9 +203,7 @@ public class DocumentCodec<T> implements Codec<T> {
 	private String getTargetClassName(final Map<String, BsonElement> keyValuePairs) {
 		if (keyValuePairs.containsKey(TARGET_CLASS_FIELD)) {
 			final BsonElement targetClassElement = keyValuePairs.get(TARGET_CLASS_FIELD);
-			if (targetClassElement.getValue().isString()) {
-				return targetClassElement.getValue().asString().getValue();
-			}
+			return targetClassElement.getValue().asString().getValue();
 		}
 		return this.targetClass.getName();
 	}

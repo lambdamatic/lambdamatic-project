@@ -52,7 +52,7 @@ public class FilterExpressionCodecTest {
 				},
 				new Object[]{
 						(SerializablePredicate<QFoo>)((QFoo foo) -> !foo.stringField.equals("john")),
-						"{stringField: {$ne: 'john'}}"
+						"{stringField:{$not:{$eq:'john'}}}"
 				},
 				new Object[]{
 						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.equals("john") || foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO),
@@ -80,7 +80,7 @@ public class FilterExpressionCodecTest {
 				},
 				new Object[]{
 						(SerializablePredicate<QFoo>)((QFoo foo) -> (foo.primitiveIntField != 42 && foo.enumFoo != EnumFoo.FOO) || !foo.stringField.equals("john")),
-						"{$or: [{$and:[{primitiveIntField: {$ne: 42}}, {enumFoo: {$ne:'FOO'}}]}, {stringField: {$ne:'john'}}]}"
+						"{$or: [{$and:[{primitiveIntField: {$ne: 42}}, {enumFoo: {$ne:'FOO'}}]},  {stringField:{$not:{$eq:'john'}}}]}"
 				},
 				// polygon with single (closed) ring defined by an array of Locations
 				new Object[]{

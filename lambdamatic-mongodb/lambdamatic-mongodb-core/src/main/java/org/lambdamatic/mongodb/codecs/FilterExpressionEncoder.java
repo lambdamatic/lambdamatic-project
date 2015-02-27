@@ -1,7 +1,5 @@
 package org.lambdamatic.mongodb.codecs;
 
-import static org.lambdamatic.mongodb.codecs.MongoOperators.NOT_EQUALS;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,28 +37,27 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FilterExpressionEncoder.class);
 
 	/**
-	 * The {@link QueryMetadata} class associated with the domain class being
-	 * queried.
+	 * The {@link QueryMetadata} class associated with the domain class being queried.
 	 */
 	private final Class<?> queryMetadataClass;
 
 	/** The {@link BsonWriter} to use. */
 	private final BsonWriter writer;
 
-	/** The {@link EncoderContext} to use.*/
+	/** The {@link EncoderContext} to use. */
 	private final EncoderContext encoderContext;
-	
+
 	/**
 	 * Full constructor
 	 * 
 	 * @param queryMetadataClass
 	 *            the {@link Class} linked to the {@link Expression} to visit.
 	 * @param writer
-	 *            the {@link BsonWriter} in which the {@link SerializablePredicate}
-	 *            representation will be written.
+	 *            the {@link BsonWriter} in which the {@link SerializablePredicate} representation will be written.
 	 * @see: http://docs.mongodb.org/manual/reference/operator/query/
 	 */
-	FilterExpressionEncoder(final Class<?> queryMetadataClass, final BsonWriter writer, final EncoderContext encoderContext) {
+	FilterExpressionEncoder(final Class<?> queryMetadataClass, final BsonWriter writer,
+			final EncoderContext encoderContext) {
 		this.queryMetadataClass = queryMetadataClass;
 		this.writer = writer;
 		this.encoderContext = encoderContext;
@@ -83,13 +80,14 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		case EQUALS:
 			// eg: int == 3
 			// Syntax: {field: value} }
-			writeEquals(expr.getOperands().get(0), expr.getOperands().get(1));
+			writeOperation(MongoOperators.EQUALS, expr.getOperands().get(0), expr.getOperands().get(1),
+					expr.isInverted());
 			break;
 		case NOT_EQUALS:
 			// eg: int != 3
 			// Syntax: {field: {$ne: value} }
-			// FIXME: this needs testing
-			writeNotEquals(expr.getOperands().get(0), expr.getOperands().get(1));
+			writeOperation(MongoOperators.NOT_EQUALS, expr.getOperands().get(0), expr.getOperands().get(1),
+					expr.isInverted());
 			break;
 		default:
 			throw new UnsupportedOperationException("Generating a query with '" + expr.getOperator()
@@ -102,19 +100,35 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 
 	/**
 	 * Writes a logical operation of the following form:
+	 * 
 	 * <pre>
 	 * { $operator: [ { <expression1> }, { <expression2> } , ... , {<expressionN> } ] }
 	 * </pre>
-	 * @param operator the operator to write (<pre>$or</pre> or <pre>$and</pre>)
-	 * @param operands the operands to write 
+	 * 
+	 * @param operator
+	 *            the operator to write (
+	 * 
+	 *            <pre>
+	 * $or
+	 * </pre>
+	 * 
+	 *            or
+	 * 
+	 *            <pre>
+	 * $and
+	 * </pre>
+	 * 
+	 *            )
+	 * @param operands
+	 *            the operands to write
 	 */
 	private void writeLogicalOperation(final String operator, List<Expression> operands) {
 		writer.writeStartArray(operator);
 		for (Expression operand : operands) {
 			final BsonDocument operandDocument = new BsonDocument();
 			final BsonWriter operandBsonWriter = new BsonDocumentWriter(operandDocument);
-			final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(
-					queryMetadataClass, operandBsonWriter, this.encoderContext);
+			final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(queryMetadataClass,
+					operandBsonWriter, this.encoderContext);
 			operand.accept(operandEncoder);
 			final BsonReader operandBsonReader = new BsonDocumentReader(operandDocument);
 			writer.pipe(operandBsonReader);
@@ -129,42 +143,66 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 					"Generating a BSON document from a method invocation with multiple arguments is not supported yet");
 		}
 		writer.writeStartDocument();
-		// FIXME: support other methods here
-		if (methodInvocation.getMethodName().equals("equals") && !methodInvocation.isInverted()) {
-			writeEquals(methodInvocation.getSourceExpression(), methodInvocation.getArguments().get(0));
-		} else if (methodInvocation.getMethodName().equals("equals") && methodInvocation.isInverted()) {
-			writeNotEquals(methodInvocation.getSourceExpression(), methodInvocation.getArguments().get(0));
+		// FIXME: support other operands
+		// FIXME: use $not: http://docs.mongodb.org/manual/reference/operator/query/not/#op._S_not
+		if (methodInvocation.getMethodName().equals("equals")) {
+			writeOperation(MongoOperators.EQUALS, methodInvocation.getSourceExpression(), methodInvocation
+					.getArguments().get(0), methodInvocation.isInverted());
 		} else if (methodInvocation.getMethodName().equals("geoWithin")) {
-			writeGeoWithin(methodInvocation.getSourceExpression(), methodInvocation.getArguments());
+			writeGeoWithin(methodInvocation.getSourceExpression(), methodInvocation.getArguments(),
+					methodInvocation.isInverted());
 		}
 		writer.writeEndDocument();
 		return false;
 	}
 
 	/**
-	 * Writes the equals query member for the given key/value pair
+	 * Writes the operation for the given key/value pair
 	 * <p>
 	 * Eg: <code>{key: value}</code>
 	 * </p>
 	 * 
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
+	 * @param operator
+	 *            the operator
+	 * @param keyExpr
+	 *            the key expression
+	 * @param valueExpr
+	 *            the value expression
+	 * @param inverted
+	 *            if the operation is inverted (ie, using the {@link MongoOperators#NOT} operand
+	 * @see MongoOperators
 	 */
-	private void writeEquals(final Expression keyExpr, final Expression valueExpr) {
+	private void writeOperation(final String operator, final Expression keyExpr, final Expression valueExpr,
+			final boolean inverted) {
 		final String key = extractKey(keyExpr);
+		// simplified formula for EQUALS operator (when not inverted)
+		if (operator.equals(MongoOperators.EQUALS) && !inverted) {
+			writeNamedValue(key, valueExpr);
+		} else {
+			writer.writeStartDocument(key);
+			if (inverted) {
+				writer.writeStartDocument(MongoOperators.NOT);
+				writeNamedValue(operator, valueExpr);
+				writer.writeEndDocument();
+			} else {
+				writeNamedValue(operator, valueExpr);
+			}
+			writer.writeEndDocument();
+		}
+	}
+
+	private void writeNamedValue(final String name, final Expression valueExpr) {
 		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
 		if (value == null) {
-			writer.writeNull(key);
+			writer.writeNull(name);
 		} else if (value instanceof Integer) {
-			writer.writeInt32(key, (Integer) value);
+			writer.writeInt32(name, (Integer) value);
 		} else if (value instanceof Long) {
-			writer.writeInt64(key, (Long) value);
+			writer.writeInt64(name, (Long) value);
 		} else if (value instanceof String) {
-			writer.writeString(key, (String) value);
+			writer.writeString(name, (String) value);
 		} else if (value instanceof Enum) {
-			writer.writeString(key, ((Enum<?>) value).name());
+			writer.writeString(name, ((Enum<?>) value).name());
 		} else {
 			throw new UnsupportedOperationException("Writing value of a '" + valueExpr.getExpressionType()
 					+ "' is not supported yet");
@@ -172,84 +210,60 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	}
 
 	/**
-	 * Writes the equals query member for the given key/value pair
-	 * <p>
-	 * Eg: <code>{key: {$ne: value}}</code>
-	 * </p>
+	 * Encodes the given <code>sourceExpression</code> and <code>arguments</code> into a geoWithin query member, such
+	 * as:
 	 * 
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
-	 */
-	private void writeNotEquals(final Expression keyExpr, final Expression valueExpr) {
-		final String key = extractKey(keyExpr);
-		writer.writeStartDocument(key);
-		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
-		if (value == null) {
-			writer.writeNull(NOT_EQUALS);
-		} else if (value instanceof Integer) {
-			writer.writeInt32(NOT_EQUALS, (Integer) value);
-		} else if (value instanceof Long) {
-			writer.writeInt64(NOT_EQUALS, (Long) value);
-		} else if (value instanceof String) {
-			writer.writeString(NOT_EQUALS, (String) value);
-		} else if (value instanceof Enum) {
-			writer.writeString(NOT_EQUALS, ((Enum<?>) value).name());
-		} else {
-			throw new UnsupportedOperationException("Writing value of a '" + valueExpr.getExpressionType()
-					+ "' is not supported yet");
-		}
-		writer.writeEndDocument();
-	}
-
-	/**
-	 * Encodes the given <code>sourceExpression</code> and <code>arguments</code> into a geoWithin query member, such as:
 	 * <pre>
 	 * loc: {
-     *   $geoWithin: {
-     *     $geometry: {
-     *       type : "Polygon" ,
-     *       coordinates: [ 
-     *         [ [ 0, 0 ], [ 3, 6 ], [ 6, 1 ], [ 0, 0 ] ] 
-     *       ]
-     *     }
-     *   }
-     * }
+	 *   $geoWithin: {
+	 *     $geometry: {
+	 *       type : "Polygon" ,
+	 *       coordinates: [ 
+	 *         [ [ 0, 0 ], [ 3, 6 ], [ 6, 1 ], [ 0, 0 ] ] 
+	 *       ]
+	 *     }
+	 *   }
+	 * }
 	 * 
 	 * </pre>
+	 * 
 	 * @param sourceExpression
-	 * @param arguments a list of Array of {@link Location} or {@link Polygon}
+	 * @param arguments
+	 *            a list of Array of {@link Location} or {@link Polygon}
+	 * @param inverted
+	 *            if the operation is inverted (ie, using the {@link MongoOperators#NOT} operand
 	 */
-	private void writeGeoWithin(final Expression sourceExpression, final List<Expression> arguments) {
-		if(arguments == null || arguments.isEmpty()) {
+	private void writeGeoWithin(final Expression sourceExpression, final List<Expression> arguments,
+			final boolean inverted) {
+		if (arguments == null || arguments.isEmpty()) {
 			throw new ConversionException("Cannot generate geoWithin query with empty arguments");
 		}
-		if(sourceExpression.getExpressionType() != ExpressionType.FIELD_ACCESS) {
-			throw new ConversionException("Did not expect to generate a 'geoWithin' query from a element of type " + sourceExpression.getExpressionType());
+		if (sourceExpression.getExpressionType() != ExpressionType.FIELD_ACCESS) {
+			throw new ConversionException("Did not expect to generate a 'geoWithin' query from a element of type "
+					+ sourceExpression.getExpressionType());
 		}
 		final List<Object> argumentValues = arguments.stream().map(e -> e.getValue()).collect(Collectors.toList());
-		if(argumentValues.size() == 1) {
+		if (argumentValues.size() == 1) {
 			final Object argument = argumentValues.get(0);
 			// argument is an instance of Polygon
-			if(argument instanceof Polygon) {
+			if (argument instanceof Polygon) {
 				final Polygon polygon = (Polygon) argument;
-				writer.writeStartDocument(((FieldAccess)sourceExpression).getFieldName());
+				writer.writeStartDocument(((FieldAccess) sourceExpression).getFieldName());
 				encodePolygon(writer, polygon);
 				writer.writeEndDocument();
-			} 
+			}
 			// argument is an array of Location
-			else if(argument.getClass().isArray() && argument.getClass().getComponentType().equals(Location.class)) {
+			else if (argument.getClass().isArray() && argument.getClass().getComponentType().equals(Location.class)) {
 				final Location[] locations = (Location[]) argument;
 				final Polygon polygon = new Polygon(locations);
-				writer.writeStartDocument(((FieldAccess)sourceExpression).getFieldName());
+				writer.writeStartDocument(((FieldAccess) sourceExpression).getFieldName());
 				encodePolygon(writer, polygon);
 				writer.writeEndDocument();
-			} else if(List.class.isInstance(argument) && listContains((List<?>)argument, Location.class)) {
+			} else if (List.class.isInstance(argument) && listContains((List<?>) argument, Location.class)) {
 				@SuppressWarnings("unchecked")
 				final List<Location> locations = (List<Location>) argument;
 				final Polygon polygon = new Polygon(locations);
-				writer.writeStartDocument(((FieldAccess)sourceExpression).getFieldName());
+				writer.writeStartDocument(((FieldAccess) sourceExpression).getFieldName());
 				encodePolygon(writer, polygon);
 				writer.writeEndDocument();
 			}
@@ -258,6 +272,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 
 	/**
 	 * Checks that the given list contains elements of the given element type
+	 * 
 	 * @param list
 	 * @param elementClass
 	 * @return {@code true} if the list contains elements of the given type, {@code false} otherwise.
@@ -267,16 +282,10 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	}
 
 	/**
-	 * Encodes the given {@link Polygon} into the given {@link BsonWriter}. This method assumes that the {@link BsonDocument} already exists.
-	 * The resulting document will have the following form:
-	 * { $geoWithin: 
-	 *  { $geometry: 
-	 *   { type: 'Polygon', 
-	 *     coordinates: [ [0,0], [0,1], [1,1], [1,0], [0,0] ]
-	 *   }  
-	 *  }  
-	 * }
-	 *  
+	 * Encodes the given {@link Polygon} into the given {@link BsonWriter}. This method assumes that the
+	 * {@link BsonDocument} already exists. The resulting document will have the following form: { $geoWithin: {
+	 * $geometry: { type: 'Polygon', coordinates: [ [0,0], [0,1], [1,1], [1,0], [0,0] ] } } }
+	 * 
 	 * @see org.bson.codecs.Encoder#encode(org.bson.BsonWriter, java.lang.Object, org.bson.codecs.EncoderContext)
 	 */
 	private void encodePolygon(final BsonWriter writer, final Polygon polygon) {
@@ -284,9 +293,9 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		writer.writeStartDocument("$geometry");
 		writer.writeString("type", "Polygon");
 		writer.writeStartArray("coordinates");
-		for(Ring ring : polygon.getRings()) {
+		for (Ring ring : polygon.getRings()) {
 			writer.writeStartArray();
-			for(Location point : ring.getPoints()) {
+			for (Location point : ring.getPoints()) {
 				writer.writeStartArray();
 				writer.writeDouble(point.getLatitude());
 				writer.writeDouble(point.getLongitude());
@@ -299,7 +308,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		writer.writeEndDocument(); // $geoWithin
 	}
 
-	//TODO: move 'extract' methods to ExpressionUtils ?
+	// TODO: move 'extract' methods to ExpressionUtils ?
 	private String extractKey(final Expression expr) {
 		switch (expr.getExpressionType()) {
 		case LOCAL_VARIABLE:
