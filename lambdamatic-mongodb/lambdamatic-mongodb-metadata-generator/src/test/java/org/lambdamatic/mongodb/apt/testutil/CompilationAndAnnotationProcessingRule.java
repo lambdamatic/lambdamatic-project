@@ -27,7 +27,8 @@ import javax.tools.ToolProvider;
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
-import org.lambdamatic.mongodb.apt.LambdamaticAnnotationsProcessor;
+import org.lambdamatic.mongodb.apt.DocumentAnnotationProcessor;
+import org.lambdamatic.mongodb.apt.EmbeddedDocumentAnnotationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,7 +126,7 @@ public class CompilationAndAnnotationProcessingRule implements MethodRule {
 		// final List<String> options = Arrays.asList("-proc:only");
 		final CompilationTask aptCompilationTask = compiler.getTask(null, fileManager, diagnosticListener, null, null,
 				filesToCompile);
-		aptCompilationTask.setProcessors(Arrays.asList(new LambdamaticAnnotationsProcessor()));
+		aptCompilationTask.setProcessors(Arrays.asList(new DocumentAnnotationProcessor(), new EmbeddedDocumentAnnotationProcessor()));
 		// operation
 		aptCompilationTask.call();
 	}

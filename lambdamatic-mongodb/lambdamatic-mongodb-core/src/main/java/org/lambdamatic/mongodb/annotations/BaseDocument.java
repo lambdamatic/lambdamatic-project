@@ -9,13 +9,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Mandatory annotation for any embedded document of a user-domain class annotated with {@link Document}.
+ * Mandatory annotation for any superclass of a domain class annotated with {@link Document}.
  * 
- * @author Xavier Coulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface EmbeddedDocument {
-
+public @interface BaseDocument {
+	
 }
+

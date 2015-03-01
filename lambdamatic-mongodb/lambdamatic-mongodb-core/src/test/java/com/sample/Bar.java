@@ -10,21 +10,18 @@ package com.sample;
 
 import java.util.Date;
 
-import org.bson.types.ObjectId;
-import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentField;
-import org.lambdamatic.mongodb.annotations.DocumentId;
+import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-@Document(collection="foos")
-public class Foo {
+@EmbeddedDocument
+public class Bar {
 
-	public static class FooBuilder {
-		private ObjectId id;
+	public static class BarBuilder {
 		private String stringField;
 		private byte primitiveByteField;
 		private short primitiveShortField;
@@ -34,89 +31,75 @@ public class Foo {
 		private double primitiveDoubleField;
 		private boolean primitiveBooleanField;
 		private char primitiveCharField;
-		private EnumFoo enumFoo;
+		private EnumBar enumBar;
 		private Location location;
 		private Date date;
-		private Bar bar;
 
-		public FooBuilder withId(final ObjectId id) {
-			this.id = id;
-			return this;
-		}
-
-		public FooBuilder withPrimitiveByteField(final byte primitiveByteField) {
+		public BarBuilder withPrimitiveByteField(final byte primitiveByteField) {
 			this.primitiveByteField = primitiveByteField;
 			return this;
 		}
 		
-		public FooBuilder withPrimitiveShortField(final short primitiveShortField) {
+		public BarBuilder withPrimitiveShortField(final short primitiveShortField) {
 			this.primitiveShortField = primitiveShortField;
 			return this;
 		}
 		
-		public FooBuilder withPrimitiveIntField(final int primitiveIntField) {
+		public BarBuilder withPrimitiveIntField(final int primitiveIntField) {
 			this.primitiveIntField = primitiveIntField;
 			return this;
 		}
 		
-		public FooBuilder withPrimitiveLongField(final long primitiveLongField) {
+		public BarBuilder withPrimitiveLongField(final long primitiveLongField) {
 			this.primitiveLongField = primitiveLongField;
 			return this;
 		}
 		
-		public FooBuilder withPrimitiveFloatField(final float primitiveFloatField) {
+		public BarBuilder withPrimitiveFloatField(final float primitiveFloatField) {
 			this.primitiveFloatField = primitiveFloatField;
 			return this;
 		}
 		
-		public FooBuilder withPrimitiveDoubleField(final double primitiveDoubleField) {
+		public BarBuilder withPrimitiveDoubleField(final double primitiveDoubleField) {
 			this.primitiveDoubleField = primitiveDoubleField;
 			return this;
 		}
 		
-		public FooBuilder withPrimitiveBooleanField(final boolean primitiveBooleanField) {
+		public BarBuilder withPrimitiveBooleanField(final boolean primitiveBooleanField) {
 			this.primitiveBooleanField = primitiveBooleanField;
 			return this;
 		}
 		
-		public FooBuilder withPrimitiveCharField(final char primitiveCharField) {
+		public BarBuilder withPrimitiveCharField(final char primitiveCharField) {
 			this.primitiveCharField = primitiveCharField;
 			return this;
 		}
 		
-		public FooBuilder withStringField(final String stringField) {
+		public BarBuilder withStringField(final String stringField) {
 			this.stringField = stringField;
 			return this;
 		}
 		
-		public FooBuilder withEnumFoo(final EnumFoo enumFoo) {
-			this.enumFoo = enumFoo;
+		public BarBuilder withEnumBar(final EnumBar enumBar) {
+			this.enumBar = enumBar;
 			return this;
 		}
 
-		public FooBuilder withLocation(final double latitude, final double longitude) {
+		public BarBuilder withLocation(final double latitude, final double longitude) {
 			this.location = new Location(latitude, longitude);
 			return this;
 		}
 		
-		public FooBuilder withDate(Date date) {
+		public BarBuilder withDate(Date date) {
 			this.date = date;
 			return this;
 		}
 		
-		public FooBuilder withBar(Bar bar) {
-			this.bar = bar;
-			return this;
-		}
-		
-		public Foo build() {
-			return new Foo(this);
+		public Bar build() {
+			return new Bar(this);
 		}
 
 	}
-	
-	@DocumentId 
-	private ObjectId id;
 	
 	@DocumentField
 	private String stringField;
@@ -146,50 +129,32 @@ public class Foo {
 	private char primitiveCharField;
 	
 	@DocumentField
-	private EnumFoo enumFoo;
+	private EnumBar enumBar;
 	
 	@DocumentField
 	private Location location;
 	
-	private Bar bar;
-	
 	@DocumentField
 	private Date date;
 	
-	public Foo() {
+	public Bar() {
 		
 	}
 
-	public Foo(final FooBuilder fooBuilder) {
-		this.id = fooBuilder.id;
-		this.enumFoo = fooBuilder.enumFoo;
-		this.location = fooBuilder.location;
-		this.stringField = fooBuilder.stringField;
-		this.primitiveBooleanField = fooBuilder.primitiveBooleanField;
-		this.primitiveByteField = fooBuilder.primitiveByteField;
-		this.primitiveCharField = fooBuilder.primitiveCharField;
-		this.primitiveDoubleField = fooBuilder.primitiveDoubleField;
-		this.primitiveFloatField = fooBuilder.primitiveFloatField;
-		this.primitiveIntField = fooBuilder.primitiveIntField;
-		this.primitiveLongField = fooBuilder.primitiveLongField;
-		this.primitiveShortField = fooBuilder.primitiveShortField;
-		this.primitiveShortField = fooBuilder.primitiveShortField;
-		this.date = fooBuilder.date;
-		this.bar = fooBuilder.bar;
-	}
-
-	/**
-	 * @return the id
-	 */
-	public ObjectId getId() {
-		return id;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(ObjectId id) {
-		this.id = id;
+	public Bar(final BarBuilder barBuilder) {
+		this.enumBar = barBuilder.enumBar;
+		this.location = barBuilder.location;
+		this.stringField = barBuilder.stringField;
+		this.primitiveBooleanField = barBuilder.primitiveBooleanField;
+		this.primitiveByteField = barBuilder.primitiveByteField;
+		this.primitiveCharField = barBuilder.primitiveCharField;
+		this.primitiveDoubleField = barBuilder.primitiveDoubleField;
+		this.primitiveFloatField = barBuilder.primitiveFloatField;
+		this.primitiveIntField = barBuilder.primitiveIntField;
+		this.primitiveLongField = barBuilder.primitiveLongField;
+		this.primitiveShortField = barBuilder.primitiveShortField;
+		this.primitiveShortField = barBuilder.primitiveShortField;
+		this.date = barBuilder.date;
 	}
 
 	/**
@@ -319,17 +284,17 @@ public class Foo {
 	}
 
 	/**
-	 * @return the enumFoo
+	 * @return the enumBar
 	 */
-	public EnumFoo getEnumFoo() {
-		return enumFoo;
+	public EnumBar getEnumBar() {
+		return enumBar;
 	}
 
 	/**
-	 * @param enumFoo the enumFoo to set
+	 * @param enumBar the enumBar to set
 	 */
-	public void setEnumFoo(EnumFoo enumFoo) {
-		this.enumFoo = enumFoo;
+	public void setEnumBar(EnumBar enumBar) {
+		this.enumBar = enumBar;
 	}
 
 	/**
@@ -345,13 +310,87 @@ public class Foo {
 	public void setLocation(Location location) {
 		this.location = location;
 	}
-	
-	public Bar getBar() {
-		return bar;
-	}
-	
-	public void setBar(Bar bar) {
-		this.bar = bar;
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((enumBar == null) ? 0 : enumBar.hashCode());
+		result = prime * result + ((location == null) ? 0 : location.hashCode());
+		result = prime * result + (primitiveBooleanField ? 1231 : 1237);
+		result = prime * result + primitiveByteField;
+		result = prime * result + primitiveCharField;
+		long temp;
+		temp = Double.doubleToLongBits(primitiveDoubleField);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + Float.floatToIntBits(primitiveFloatField);
+		result = prime * result + primitiveIntField;
+		result = prime * result + (int) (primitiveLongField ^ (primitiveLongField >>> 32));
+		result = prime * result + primitiveShortField;
+		result = prime * result + ((stringField == null) ? 0 : stringField.hashCode());
+		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Bar other = (Bar) obj;
+		if (enumBar != other.enumBar)
+			return false;
+		if (location == null) {
+			if (other.location != null)
+				return false;
+		} else if (!location.equals(other.location))
+			return false;
+		if (primitiveBooleanField != other.primitiveBooleanField)
+			return false;
+		if (primitiveByteField != other.primitiveByteField)
+			return false;
+		if (primitiveCharField != other.primitiveCharField)
+			return false;
+		if (Double.doubleToLongBits(primitiveDoubleField) != Double.doubleToLongBits(other.primitiveDoubleField))
+			return false;
+		if (Float.floatToIntBits(primitiveFloatField) != Float.floatToIntBits(other.primitiveFloatField))
+			return false;
+		if (primitiveIntField != other.primitiveIntField)
+			return false;
+		if (primitiveLongField != other.primitiveLongField)
+			return false;
+		if (primitiveShortField != other.primitiveShortField)
+			return false;
+		if (stringField == null) {
+			if (other.stringField != null)
+				return false;
+		} else if (!stringField.equals(other.stringField))
+			return false;
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Foo [stringField=" + stringField + ", primitiveByteField=" + primitiveByteField
+				+ ", primitiveShortField=" + primitiveShortField + ", primitiveIntField=" + primitiveIntField
+				+ ", primitiveLongField=" + primitiveLongField + ", primitiveFloatField=" + primitiveFloatField
+				+ ", primitiveDoubleField=" + primitiveDoubleField + ", primitiveBooleanField=" + primitiveBooleanField
+				+ ", primitiveCharField=" + primitiveCharField + ", enumBar=" + enumBar + ", location=" + location
+				+ ", date=" + date + "]";
+	}
+	
+	
+	
+	
 }

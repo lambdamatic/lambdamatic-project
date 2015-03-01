@@ -19,10 +19,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.lambdamatic.mongodb.annotations.Document;
+
 import static org.lambdamatic.mongodb.metadata.Projection.*;
+
 import org.lambdamatic.mongodb.testutils.DropMongoCollectionsRule;
 
 import com.mongodb.MongoClient;
+import com.sample.Bar;
 import com.sample.EnumFoo;
 import com.sample.Foo;
 import com.sample.Foo.FooBuilder;
@@ -53,6 +56,7 @@ public class MongoQueryTest {
 		// insert test data
 		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO)
 				.withLocation(40, -70)
+				.withBar(new Bar.BarBuilder().withStringField("bar").build())
 				.build();
 		this.fooCollection.insert(foo);
 	}
@@ -64,9 +68,23 @@ public class MongoQueryTest {
 		// then
 		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override
-			public boolean matches(final Foo value) {
-				return value.getStringField().equals("jdoe") && value.getPrimitiveIntField() == 42
-						&& value.getEnumFoo() == EnumFoo.FOO;
+			public boolean matches(final Foo foo) {
+				return foo.getStringField().equals("jdoe") && foo.getPrimitiveIntField() == 42
+						&& foo.getEnumFoo() == EnumFoo.FOO
+						&& foo.getBar().getStringField().equals("bar");
+			}
+		});
+	}
+
+	@Test
+	public void shouldFindOneFooBar() throws IOException {
+		// when
+		final Foo foo = fooCollection.find(f -> f.bar.stringField.equals("bar")).first();
+		// then
+		assertThat(foo).isNotNull().has(new Condition<Foo>() {
+			@Override
+			public boolean matches(final Foo foo) {
+				return foo.getBar().getStringField().equals("bar");
 			}
 		});
 	}

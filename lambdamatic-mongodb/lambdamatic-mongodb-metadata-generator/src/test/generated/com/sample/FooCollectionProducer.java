@@ -13,7 +13,7 @@ import com.mongodb.MongoClient;
  * CDI Producer for FooCollection
  *
  */
-@Generated(value="org.lambdamatic.mongodb.apt.LambdamaticAnnotationsProcessor")
+@Generated(value="org.lambdamatic.mongodb.apt.DocumentAnnotationProcessor")
 @ApplicationScoped
 public class FooCollectionProducer  {
 

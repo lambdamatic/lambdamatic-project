@@ -82,6 +82,15 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
 		return this;
 	}
 
+	public ClassAssertion isExtending(final Class<?> expectedSuperClass) {
+		isNotNull();
+		final Type genericSuperclass = actual.getGenericSuperclass();
+		if (genericSuperclass == null || !expectedSuperClass.getName().equals(genericSuperclass.getTypeName())) {
+			failWithMessage("Expected class <%s> to extend <%s> but it only extends <%s>.", actual.getName(), expectedSuperClass, actual.getSuperclass());
+		}
+		return this;
+	}
+	
 	public ClassAssertion isExtending(final Class<?> expectedSuperClass, final Class<?>... parameterTypes) {
 		isNotNull();
 		final ParameterizedType genericSuperclass = (ParameterizedType) actual.getGenericSuperclass();

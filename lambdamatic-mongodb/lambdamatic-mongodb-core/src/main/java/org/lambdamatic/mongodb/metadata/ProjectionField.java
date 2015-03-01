@@ -19,7 +19,7 @@ public class ProjectionField {
 	 * Constructor
 	 * @param fieldName the name of the field in MongoDB.
 	 */
-	public ProjectionField(String fieldName) {
+	public ProjectionField(final String fieldName) {
 		super();
 		this.fieldName = fieldName;
 	}

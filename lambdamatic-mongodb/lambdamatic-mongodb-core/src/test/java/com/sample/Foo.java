@@ -37,6 +37,7 @@ public class Foo {
 		private EnumFoo enumFoo;
 		private Location location;
 		private Date date;
+		private Bar bar;
 
 		public FooBuilder withId(final ObjectId id) {
 			this.id = id;
@@ -103,6 +104,11 @@ public class Foo {
 			return this;
 		}
 		
+		public FooBuilder withBar(Bar bar) {
+			this.bar = bar;
+			return this;
+		}
+		
 		public Foo build() {
 			return new Foo(this);
 		}
@@ -145,6 +151,8 @@ public class Foo {
 	@DocumentField
 	private Location location;
 	
+	private Bar bar;
+	
 	@DocumentField
 	private Date date;
 	
@@ -167,6 +175,7 @@ public class Foo {
 		this.primitiveShortField = fooBuilder.primitiveShortField;
 		this.primitiveShortField = fooBuilder.primitiveShortField;
 		this.date = fooBuilder.date;
+		this.bar = fooBuilder.bar;
 	}
 
 	/**
@@ -335,6 +344,14 @@ public class Foo {
 	 */
 	public void setLocation(Location location) {
 		this.location = location;
+	}
+	
+	public Bar getBar() {
+		return bar;
+	}
+	
+	public void setBar(Bar bar) {
+		this.bar = bar;
 	}
 
 	/* (non-Javadoc)

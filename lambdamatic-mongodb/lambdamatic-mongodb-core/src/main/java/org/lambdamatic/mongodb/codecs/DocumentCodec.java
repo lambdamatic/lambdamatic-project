@@ -38,6 +38,8 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.json.JsonReader;
 import org.bson.json.JsonWriter;
 import org.bson.types.ObjectId;
+import org.lambdamatic.mongodb.annotations.Document;
+import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,9 +145,13 @@ public class DocumentCodec<T> implements Codec<T> {
 	 */
 	@Override
 	public T decode(final BsonReader reader, final DecoderContext decoderContext) {
-		// code duplicated and adapted from "org.bson.codecs.BsonDocumentCodec"
+		// code adapted from "org.bson.codecs.BsonDocumentCodec"
+		return decodeDocument(reader, decoderContext);
+	}
+
+	private T decodeDocument(final BsonReader reader, final DecoderContext decoderContext) {
 		final Map<String, BsonElement> keyValuePairs = new HashMap<>();
-        reader.readStartDocument();
+		reader.readStartDocument();
         while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
             String fieldName = reader.readName();
             keyValuePairs.put(fieldName, new BsonElement(fieldName, readValue(reader, decoderContext)));
@@ -319,16 +325,19 @@ public class DocumentCodec<T> implements Codec<T> {
 	private void encodeDomainObjectContent(final BsonWriter writer, final Object domainObject,
 			final EncoderContext encoderContext) throws IllegalAccessException {
 		final Map<String, Field> bindings = bindingService.getBindings(domainObject.getClass());
-		// write the "_id" attribute first
-		final Optional<Entry<String, Field>> idBinding = bindings.entrySet().stream().filter(e -> bindingService.isIdBinding(e)).findFirst();
-		if(idBinding.isPresent()) {
-			final Object idValue = bindingService.getFieldValue(domainObject, idBinding.get().getValue());
-			if(idValue == null) {
-				final ObjectId generatedIdValue = new ObjectId();
-				idBinding.get().getValue().set(domainObject, generatedIdValue);
-				writeValue(writer, MONGOBD_DOCUMENT_ID, generatedIdValue, encoderContext);	
-			} else {
-				writeValue(writer, MONGOBD_DOCUMENT_ID, idValue, encoderContext);	
+		// write the "_id" attribute first if the domainObject class is annotated with @Document (embedded documents don't have such an '_id' field)
+		if(domainObject.getClass().getAnnotation(Document.class) !=null) {
+			final Optional<Entry<String, Field>> idBinding = bindings.entrySet().stream()
+					.filter(e -> bindingService.isIdBinding(e)).findFirst();
+			if (idBinding.isPresent()) {
+				final Object idValue = bindingService.getFieldValue(domainObject, idBinding.get().getValue());
+				if (idValue == null) {
+					final ObjectId generatedIdValue = new ObjectId();
+					idBinding.get().getValue().set(domainObject, generatedIdValue);
+					writeValue(writer, MONGOBD_DOCUMENT_ID, generatedIdValue, encoderContext);
+				} else {
+					writeValue(writer, MONGOBD_DOCUMENT_ID, idValue, encoderContext);
+				}
 			}
 		}
 		// write the technical/inner "_targetClassName" attribute
@@ -361,55 +370,65 @@ public class DocumentCodec<T> implements Codec<T> {
 	 * @return the converted value
 	 */
 	Object convert(final Object value, final Class<?> targetType) {
+		// enum field
 		if(targetType.isEnum() && value instanceof String) {
 			for(Object e : targetType.getEnumConstants()) {
 				if(e.toString().equals((String)value)) {
 					return e;
 				}
 			}
-		} else if(targetType.isArray()) {
+		} 
+		
+		// embedded documents
+		else if(value instanceof BsonDocument && targetType.getAnnotation(EmbeddedDocument.class) != null) {
+			return decodeDocument(new BsonDocumentReader((BsonDocument)value), DecoderContext.builder().build());
+		}
+		// array of embedded values or documents
+		else if(targetType.isArray()) {
 			final Class<?> componentType = targetType.getComponentType();
 			final List<Object> values = new ArrayList<>();
 			for(Object v : (Collection<?>)value) {
 				values.add(getValue((BsonValue)v));
 			}
 			return values.toArray((Object[])java.lang.reflect.Array.newInstance(componentType, values.size()));
-		}
-		
-		//FIXME: missing switches. Can we write it differently ?
-		switch (targetType.getName()) {
-		case "boolean":
-		case "java.lang.Boolean":
-			return Boolean.parseBoolean(value.toString());
-		case "byte":
-		case "java.lang.Byte":
-			return Byte.parseByte(value.toString());
-		case "short":
-		case "java.lang.Short":
-			return Short.parseShort(value.toString());
-		case "char":
-		case "java.lang.Character":
-			return new Character((char)value);
-		case "int":
-		case "java.lang.Integer":
-			return Integer.parseInt(value.toString());
-		case "long":
-		case "java.lang.Long":
-			return Long.parseLong(value.toString());
-		case "float":
-		case "java.lang.Float":
-			return Float.parseFloat(value.toString());
-		case "double":
-		case "java.lang.Double":
-			return Double.parseDouble(value.toString());
-		case "java.lang.String":
-			return value.toString();
-		case "org.bson.types.ObjectId":
-			return new ObjectId(value.toString());
-		case "java.util.Date":
-			return new Date((long)value);
-		case "org.lambdamatic.mongodb.types.geospatial.Location":
-			return new LocationCodec(this.codecRegistry, bindingService).decode(new BsonDocumentReader((BsonDocument) value), DecoderContext.builder().build());
+		} 
+		// other types of fields.
+		else {
+			//FIXME: missing switches. Can we write it differently ?
+			switch (targetType.getName()) {
+			case "boolean":
+			case "java.lang.Boolean":
+				return Boolean.parseBoolean(value.toString());
+			case "byte":
+			case "java.lang.Byte":
+				return Byte.parseByte(value.toString());
+			case "short":
+			case "java.lang.Short":
+				return Short.parseShort(value.toString());
+			case "char":
+			case "java.lang.Character":
+				return new Character((char)value);
+			case "int":
+			case "java.lang.Integer":
+				return Integer.parseInt(value.toString());
+			case "long":
+			case "java.lang.Long":
+				return Long.parseLong(value.toString());
+			case "float":
+			case "java.lang.Float":
+				return Float.parseFloat(value.toString());
+			case "double":
+			case "java.lang.Double":
+				return Double.parseDouble(value.toString());
+			case "java.lang.String":
+				return value.toString();
+			case "org.bson.types.ObjectId":
+				return new ObjectId(value.toString());
+			case "java.util.Date":
+				return new Date((long)value);
+			case "org.lambdamatic.mongodb.types.geospatial.Location":
+				return new LocationCodec(this.codecRegistry, bindingService).decode(new BsonDocumentReader((BsonDocument) value), DecoderContext.builder().build());
+			}
 		}
 		throw new ConversionException("Unable to convert value '" + value + "' to type " + targetType.getName());
 	}

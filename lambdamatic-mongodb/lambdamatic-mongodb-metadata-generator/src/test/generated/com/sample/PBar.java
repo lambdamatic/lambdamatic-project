@@ -1,18 +1,24 @@
 package com.sample;
 
 import javax.annotation.Generated;
-import org.lambdamatic.mongodb.annotations.Document;
+import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.lambdamatic.mongodb.metadata.ProjectionField;
 
 /**
- * The {@link ProjectionMetadata} class associated with the {@link Foo} domain class annotated with {@link Document}.
+ * The {@link ProjectionMetadata} class associated with the {@link Bar} domain class annotated with {@link EmbeddedDocument}.
  *
  */
 @Generated(value="org.lambdamatic.mongodb.apt.DocumentAnnotationProcessor")
-public class PFoo implements ProjectionMetadata<Foo> {
+public class PBar extends ProjectionField implements ProjectionMetadata<Bar> {
 
- 	public ProjectionField id = new ProjectionField("_id");
+    /**
+	 * Constructor
+	 * @param fieldName the name of the field in MongoDB.
+	 */
+	public PBar(final String fieldName) {
+		super(fieldName);
+	}
 
  	public ProjectionField stringField = new ProjectionField("stringField");
 
@@ -32,11 +38,9 @@ public class PFoo implements ProjectionMetadata<Foo> {
 
  	public ProjectionField primitiveCharField = new ProjectionField("primitiveCharField");
 
- 	public ProjectionField enumFoo = new ProjectionField("enumFoo");
+ 	public ProjectionField enumBar = new ProjectionField("enumBar");
 
  	public ProjectionField location = new ProjectionField("location");
-
- 	public PBar bar = new PBar("bar");
 
  	public ProjectionField date = new ProjectionField("date");
 

@@ -9,11 +9,11 @@ import org.lambdamatic.mongodb.annotations.DocumentField;
  * The {@link QueryMetadata} class associated with the {@link Foo} domain class.
  *
  */
-@Generated(value="org.lambdamatic.mongodb.apt.LambdamaticAnnotationsProcessor")
+@Generated(value="org.lambdamatic.mongodb.apt.DocumentAnnotationProcessor")
 public class QFoo implements QueryMetadata<Foo> {
 
 	@DocumentField(name="_id")
- 	public org.lambdamatic.mongodb.metadata.StringField id;
+ 	public org.lambdamatic.mongodb.metadata.ObjectIdField id;
 
 	@DocumentField(name="stringField")
  	public org.lambdamatic.mongodb.metadata.StringField stringField;
@@ -47,6 +47,12 @@ public class QFoo implements QueryMetadata<Foo> {
 
 	@DocumentField(name="location")
  	public org.lambdamatic.mongodb.metadata.LocationField location;
+
+	@DocumentField(name="bar")
+ 	public QBar bar;
+
+	@DocumentField(name="date")
+ 	public org.lambdamatic.mongodb.metadata.DateField date;
 
 
 }

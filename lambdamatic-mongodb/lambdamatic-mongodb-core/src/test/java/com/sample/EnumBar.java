@@ -6,18 +6,13 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  ******************************************************************************/
 
-package org.lambdamatic.mongodb.annotations;
+package com.sample;
 
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public enum FetchType {
+public enum EnumBar {
 
-	LAZY, EAGER;
-
-	public static FetchType defaultType() {
-		return EAGER;
-	}
+	FOO, BAR, BAZ;
 }
-

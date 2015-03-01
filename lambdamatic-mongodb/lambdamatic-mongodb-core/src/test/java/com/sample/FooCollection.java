@@ -12,7 +12,7 @@ import com.mongodb.MongoClient;
  * domain class and with support for functional @{FilterExpression}. 
  *
  */
-@Generated(value="org.lambdamatic.mongodb.apt.LambdamaticAnnotationsProcessor")
+@Generated(value="org.lambdamatic.mongodb.apt.DocumentAnnotationProcessor")
 public class FooCollection extends LambdamaticMongoCollectionImpl<Foo, QFoo, PFoo> {
 
 	public FooCollection(final MongoClient mongoClient, final String databaseName, final String collectionName) {
