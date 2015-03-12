@@ -18,6 +18,7 @@ import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.mongodb.annotations.DocumentField;
+import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 import org.lambdamatic.mongodb.types.geospatial.Polygon;
@@ -106,19 +107,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	 * </pre>
 	 * 
 	 * @param operator
-	 *            the operator to write (
-	 * 
-	 *            <pre>
-	 * $or
-	 * </pre>
-	 * 
-	 *            or
-	 * 
-	 *            <pre>
-	 * $and
-	 * </pre>
-	 * 
-	 *            )
+	 *            the operator to write 
 	 * @param operands
 	 *            the operands to write
 	 */

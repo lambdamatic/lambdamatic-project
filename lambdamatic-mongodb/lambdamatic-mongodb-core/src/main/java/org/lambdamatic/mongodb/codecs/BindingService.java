@@ -7,13 +7,13 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.bson.BsonDocument;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
+import org.lambdamatic.mongodb.exceptions.ConversionException;
 
 import com.mongodb.DBObject;
 
@@ -93,20 +93,4 @@ public class BindingService {
 		return Collections.unmodifiableMap(bindings.get(targetClass));
 	}
 
-	/**
-	 * @param targetClass
-	 * @return the {@link Field} annotated with {@link DocumentField} with {@code name} attribute equals {@link DocumentCodec#MONGOBD_DOCUMENT_ID}.
-	 * @throws ConversionException if none was found.
-	 */
-	public Field getIdBinding(final Class<?> targetClass) {
-		final Map<String, Field> targetClassBindings = getBindings(targetClass);
-		final Optional<Field> idBinding = targetClassBindings.values().stream()
-				.filter(f -> f.getAnnotation(DocumentField.class).name().equals(DocumentCodec.MONGOBD_DOCUMENT_ID))
-				.findFirst();
-		if (idBinding.isPresent()) {
-			return idBinding.get();
-		}
-		throw new ConversionException("Could not find binding for field annotated with '"
-				+ DocumentCodec.MONGOBD_DOCUMENT_ID + "' for class " + targetClass.getName());
-	}
 }

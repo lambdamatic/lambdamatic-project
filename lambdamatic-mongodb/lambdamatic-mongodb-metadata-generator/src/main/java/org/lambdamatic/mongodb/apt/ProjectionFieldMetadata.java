@@ -10,10 +10,9 @@ import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 import org.lambdamatic.mongodb.metadata.ProjectionField;
-import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 
 /**
- * Information about a given field that should be generated in a {@link ProjectionMetadata} class.
+ * Information about a given field that should be generated in a ProjectionMetadata class.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *

@@ -14,6 +14,7 @@ import org.bson.codecs.EncoderContext;
 import org.bson.types.ObjectId;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.crud.impl.IdFilter;
+import org.lambdamatic.mongodb.exceptions.ConversionException;
 
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>

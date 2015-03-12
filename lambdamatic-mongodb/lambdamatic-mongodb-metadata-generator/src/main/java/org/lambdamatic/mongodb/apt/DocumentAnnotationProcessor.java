@@ -11,10 +11,8 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 
-import org.lambdamatic.mongodb.LambdamaticMongoCollection;
 import org.lambdamatic.mongodb.annotations.BaseDocument;
 import org.lambdamatic.mongodb.annotations.Document;
-import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.stringtemplate.v4.ST;
 
 /**
@@ -41,22 +39,22 @@ public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProce
 	/** Name of the template file for {@link ProjectionMetadata} classes. */
 	private static final String PROJECTION_METADATA_TEMPLATE = "projection_metadata_template.st";
 
-	/** Name of the template file for the {@link LambdamaticMongoCollection} implementation classes. */
+	/** Name of the template file for the LambdamaticMongoCollection implementation classes. */
 	private static final String MONGO_COLLECTION_TEMPLATE = "mongo_collection_template.st";
 
-	/** Suffix to use for the generated {@link LambdamaticMongoCollection} implementation classes. */
+	/** Suffix to use for the generated LambdamaticMongoCollection implementation classes. */
 	private static String MONGO_COLLECTION_CLASSNAME_SUFFIX = "Collection";
 
-	/** Name of the template file for the {@link LambdamaticMongoCollection} implementation producer classes. */
+	/** Name of the template file for the LambdamaticMongoCollection implementation producer classes. */
 	private static final String MONGO_COLLECTION_PRODUCER_TEMPLATE = "mongo_collection_producer_template.st";
 
-	/** Suffix to use for the generated {@link LambdamaticMongoCollection} implementation producer classes. */
+	/** Suffix to use for the generated LambdamaticMongoCollection implementation producer classes. */
 	private static String MONGO_COLLECTION_PRODUCER_CLASSNAME_SUFFIX = "CollectionProducer";
 
-	/** StringTemplate for the {@link LambdamaticMongoCollection} implementation classes. */
+	/** StringTemplate for the LambdamaticMongoCollection implementation classes. */
 	private ST mongoCollectionTemplate;
 
-	/** StringTemplate for {@link LambdamaticMongoCollection} implementation producer classes. */
+	/** StringTemplate for LambdamaticMongoCollection implementation producer classes. */
 	private ST mongoCollectionProducerTemplate;
 
 	/** StringTemplate for the {@link ProjectionMetadata} classes. */
@@ -140,7 +138,7 @@ public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProce
 	}
 
 	/**
-	 * Builds the simple name of the {@link LambdamaticMongoCollection} class associated with the given
+	 * Builds the simple name of the LambdamaticMongoCollection class associated with the given
 	 * {@code typeElement}
 	 * 
 	 * @param typeElement
@@ -153,7 +151,7 @@ public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProce
 	}
 
 	/**
-	 * Builds the simple name of the {@link LambdamaticMongoCollection} provider class associated with the given
+	 * Builds the simple name of the LambdamaticMongoCollection provider class associated with the given
 	 * {@code typeElement}
 	 * 
 	 * @param typeElement

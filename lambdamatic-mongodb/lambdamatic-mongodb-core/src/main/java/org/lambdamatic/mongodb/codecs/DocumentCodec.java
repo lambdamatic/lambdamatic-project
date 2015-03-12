@@ -40,6 +40,7 @@ import org.bson.json.JsonWriter;
 import org.bson.types.ObjectId;
 import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
+import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

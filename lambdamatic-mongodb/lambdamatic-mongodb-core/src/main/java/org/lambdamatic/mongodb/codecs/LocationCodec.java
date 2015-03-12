@@ -18,6 +18,7 @@ import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.lambdamatic.mongodb.annotations.DocumentField;
+import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,36 +132,6 @@ public class LocationCodec extends DocumentCodec<Location> {
 
 		@DocumentField
 		private Double[] coordinates;
-
-		/**
-		 * @return the type
-		 */
-		public String getType() {
-			return type;
-		}
-
-		/**
-		 * @param type
-		 *            the type to set
-		 */
-		public void setType(String type) {
-			this.type = type;
-		}
-
-		/**
-		 * @return the coordinates
-		 */
-		public Double[] getCoordinates() {
-			return coordinates;
-		}
-
-		/**
-		 * @param coordinates
-		 *            the coordinates to set
-		 */
-		public void setCoordinates(Double[] coordinates) {
-			this.coordinates = coordinates;
-		}
 
 		public Location toLocation() {
 			return new Location(coordinates[0], coordinates[1]);

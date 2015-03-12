@@ -9,7 +9,7 @@
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>lambdamatic-mongodb</artifactId>
-	<name>Lambdamatic for MongoDB (parent project)</name>
+	<name>Lambdamatic for MongoDB - Parent</name>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -20,8 +20,11 @@
 	</properties>
 
 	<modules>
+		<module>lambdamatic-mongodb-api</module>
 		<module>lambdamatic-mongodb-metadata-generator</module>
 		<module>lambdamatic-mongodb-core</module>
+		<module>lambdamatic-mongodb-core-tests</module>
+		<module>lambdamatic-mongodb-metadata-generator-tests</module>
 	</modules>
 
 	<dependencyManagement>

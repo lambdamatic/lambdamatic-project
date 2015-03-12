@@ -4,10 +4,11 @@ import javax.lang.model.element.VariableElement;
 
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
-import org.lambdamatic.mongodb.codecs.DocumentCodec;
 
 public abstract class BaseFieldMetadata {
 
+	public static final String MONGOBD_DOCUMENT_ID = "_id";
+	
 	/** The java field name. */
 	protected final String javaFieldName;
 	/** The document field name. */
@@ -27,7 +28,7 @@ public abstract class BaseFieldMetadata {
 	public BaseFieldMetadata(final VariableElement variableElement, final DocumentId documentIdAnnotation) throws MetadataGenerationException {
 		this.javaFieldName = getVariableName(variableElement);
 		this.javaFieldType = getVariableType(variableElement);
-		this.documentFieldName = DocumentCodec.MONGOBD_DOCUMENT_ID;
+		this.documentFieldName = MONGOBD_DOCUMENT_ID;
 	}
 
 	/**

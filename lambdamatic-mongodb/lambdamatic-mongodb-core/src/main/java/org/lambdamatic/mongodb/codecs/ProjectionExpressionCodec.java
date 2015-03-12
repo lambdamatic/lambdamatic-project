@@ -28,6 +28,7 @@ import org.lambdamatic.LambdaExpression;
 import org.lambdamatic.SerializableFunction;
 import org.lambdamatic.analyzer.LambdaExpressionAnalyzer;
 import org.lambdamatic.mongodb.FindContext;
+import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.lambdamatic.mongodb.metadata.Projection;
 import org.lambdamatic.mongodb.metadata.Projection.ProjectionType;
 import org.lambdamatic.mongodb.metadata.ProjectionField;

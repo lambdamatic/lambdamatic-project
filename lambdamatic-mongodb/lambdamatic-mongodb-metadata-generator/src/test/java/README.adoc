@@ -1,0 +1,3 @@
+= Where are the tests ?
+
+To avoid dependencies circle, the tests were moved into a separate module: lambdamatic-mongodb-metadata-generator-tests

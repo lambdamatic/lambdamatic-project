@@ -23,6 +23,7 @@ import org.bson.json.JsonWriter;
 import org.lambdamatic.LambdaExpression;
 import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.analyzer.LambdaExpressionAnalyzer;
+import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
