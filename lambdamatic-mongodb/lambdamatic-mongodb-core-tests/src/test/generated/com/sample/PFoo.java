@@ -1,15 +1,15 @@
 package com.sample;
 
 import javax.annotation.Generated;
-import org.lambdamatic.mongodb.annotations.Document;
-import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
-import org.lambdamatic.mongodb.metadata.ProjectionField;
+import org.lambdamatic.mongodb.internal.annotations.Document;
+import org.lambdamatic.mongodb.internal.metadata.ProjectionMetadata;
+import org.lambdamatic.mongodb.internal.metadata.ProjectionField;
 
 /**
  * The {@link ProjectionMetadata} class associated with the {@link Foo} domain class annotated with {@link Document}.
  *
  */
-@Generated(value="org.lambdamatic.mongodb.apt.DocumentAnnotationProcessor")
+@Generated(value="org.lambdamatic.mongodb.internal.apt.DocumentAnnotationProcessor")
 public class PFoo implements ProjectionMetadata<Foo> {
 
  	public ProjectionField id = new ProjectionField("_id");

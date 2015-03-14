@@ -10,11 +10,9 @@ import javax.lang.model.type.TypeMirror;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
-import org.lambdamatic.mongodb.metadata.DateField;
 import org.lambdamatic.mongodb.metadata.LocationField;
-import org.lambdamatic.mongodb.metadata.ObjectIdField;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
-import org.lambdamatic.mongodb.metadata.StringField;
+import org.lambdamatic.mongodb.metadata.QueryField;
 
 /**
  * Information about a given field that should be generated in a {@link ProjectionMetadata} class.
@@ -75,17 +73,10 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 				return EmbeddedDocumentAnnotationProcessor.generateQueryMetadataSimpleClassName(variableTypeElement);
 			}
 			switch (variableType.toString()) {
-			case "java.lang.String":
-				return StringField.class.getName();
-			case "java.util.Date":
-				return DateField.class.getName();
-			case "org.bson.types.ObjectId":
-				return ObjectIdField.class.getName();
 			case "org.lambdamatic.mongodb.types.geospatial.Location":
 				return LocationField.class.getName();
 			default:
-				throw new MetadataGenerationException("Unsupported field '" + variableElement.getSimpleName() + "'  of type "
-						+ variableType.toString());
+				return QueryField.class.getName() + '<' + variableType.toString() + '>' ;
 			}
 		}
 		throw new MetadataGenerationException(

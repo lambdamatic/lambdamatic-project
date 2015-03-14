@@ -10,8 +10,8 @@ package org.lambdamatic.mongodb.metadata;
 
 import java.util.List;
 
-import org.lambdamatic.mongodb.metadata.context.GeoNearContext;
-import org.lambdamatic.mongodb.metadata.context.NearContext;
+import org.lambdamatic.mongodb.query.context.GeoNearContext;
+import org.lambdamatic.mongodb.query.context.NearContext;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 import org.lambdamatic.mongodb.types.geospatial.Polygon;
 
@@ -20,7 +20,7 @@ import org.lambdamatic.mongodb.types.geospatial.Polygon;
  *
  * @see http://docs.mongodb.org/manual/core/2dsphere
  */
-public interface LocationField extends QueryField {
+public interface LocationField extends QueryField<Location> {
 
 	/**
 	 * <p>
@@ -75,6 +75,7 @@ public interface LocationField extends QueryField {
 	 * @return
 	 */
 	// FIXME: add support for http://docs.mongodb.org/manual/core/2dsphere/#multipoint et al.
+	@MongoOperation(MongoOperator.GEO_WITHIN)
 	public boolean geoWithin(final Polygon polygon);
 
 	/**
@@ -92,6 +93,7 @@ public interface LocationField extends QueryField {
 	 * @see {@link Polygon.Ring}
 	 */
 	// FIXME: add support for http://docs.mongodb.org/manual/core/2dsphere/#multipoint et al.
+	@MongoOperation(MongoOperator.GEO_WITHIN)
 	public boolean geoWithin(final Location[] points);
 
 	/**
@@ -109,6 +111,7 @@ public interface LocationField extends QueryField {
 	 * @see {@link Polygon.Ring}
 	 */
 	// FIXME: add support for http://docs.mongodb.org/manual/core/2dsphere/#multipoint et al.
+	@MongoOperation(MongoOperator.GEO_WITHIN)
 	public boolean geoWithin(final List<Location> points);
 	
 }

@@ -1,22 +1,22 @@
 package com.sample;
 
 import javax.annotation.Generated;
-import org.lambdamatic.mongodb.metadata.QueryMetadata;
+import org.lambdamatic.mongodb.internal.metadata.QueryMetadata;
 
-import org.lambdamatic.mongodb.annotations.DocumentField;
+import org.lambdamatic.mongodb.internal.annotations.DocumentField;
 
 /**
  * The {@link QueryMetadata} class associated with the {@link Foo} domain class.
  *
  */
-@Generated(value="org.lambdamatic.mongodb.apt.DocumentAnnotationProcessor")
+@Generated(value="org.lambdamatic.mongodb.internal.apt.DocumentAnnotationProcessor")
 public class QFoo implements QueryMetadata<Foo> {
 
 	@DocumentField(name="_id")
- 	public org.lambdamatic.mongodb.metadata.ObjectIdField id;
+ 	public org.lambdamatic.mongodb.internal.metadata.ObjectIdField id;
 
 	@DocumentField(name="stringField")
- 	public org.lambdamatic.mongodb.metadata.StringField stringField;
+ 	public org.lambdamatic.mongodb.internal.metadata.StringField stringField;
 
 	@DocumentField(name="primitiveByteField")
  	public byte primitiveByteField;
@@ -46,13 +46,13 @@ public class QFoo implements QueryMetadata<Foo> {
  	public com.sample.EnumFoo enumFoo;
 
 	@DocumentField(name="location")
- 	public org.lambdamatic.mongodb.metadata.LocationField location;
+ 	public org.lambdamatic.mongodb.internal.metadata.LocationField location;
 
 	@DocumentField(name="bar")
  	public QBar bar;
 
 	@DocumentField(name="date")
- 	public org.lambdamatic.mongodb.metadata.DateField date;
+ 	public org.lambdamatic.mongodb.internal.metadata.DateField date;
 
 
 }

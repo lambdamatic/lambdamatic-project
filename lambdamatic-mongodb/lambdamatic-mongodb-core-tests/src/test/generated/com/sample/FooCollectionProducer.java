@@ -4,7 +4,7 @@ import javax.annotation.Generated;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
-import org.lambdamatic.mongodb.configuration.MongoClientConfiguration;
+import org.lambdamatic.mongodb.internal.configuration.MongoClientConfiguration;
 
 import com.mongodb.MongoClient;
 
@@ -13,7 +13,7 @@ import com.mongodb.MongoClient;
  * CDI Producer for FooCollection
  *
  */
-@Generated(value="org.lambdamatic.mongodb.apt.DocumentAnnotationProcessor")
+@Generated(value="org.lambdamatic.mongodb.internal.apt.DocumentAnnotationProcessor")
 @ApplicationScoped
 public class FooCollectionProducer  {
 

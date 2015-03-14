@@ -12,6 +12,8 @@ import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
+import org.lambdamatic.mongodb.query.context.FindContext;
+import org.lambdamatic.mongodb.query.context.FindTerminalContext;
 
 /**
  * Database Collection for a given type of element (along with its associated metadata)

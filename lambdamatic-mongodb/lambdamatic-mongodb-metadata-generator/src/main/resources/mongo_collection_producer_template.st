@@ -4,7 +4,7 @@ import javax.annotation.Generated;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
-import org.lambdamatic.mongodb.configuration.MongoClientConfiguration;
+import org.lambdamatic.mongodb.internal.configuration.MongoClientConfiguration;
 
 import com.mongodb.MongoClient;
 

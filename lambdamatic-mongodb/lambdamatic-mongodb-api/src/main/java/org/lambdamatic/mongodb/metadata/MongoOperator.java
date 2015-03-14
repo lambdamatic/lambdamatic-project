@@ -1,0 +1,25 @@
+/**
+ * 
+ */
+package org.lambdamatic.mongodb.metadata;
+
+/**
+ * @author Xavier Coulon <xcoulon@redhat.com>
+ *
+ */
+public enum MongoOperator {
+	
+	OR("$or"), AND("$and"), NOT("$not"), EQUALS("$eq"), NOT_EQUALS("$ne"), GREATER("$gt"), GEO_WITHIN("$geoWithin");
+	
+	private final String literal;
+	
+	private MongoOperator(final String literal) {
+		this.literal = literal;
+	}
+	
+	public String getLiteral() {
+		return literal;
+	}
+
+	
+}

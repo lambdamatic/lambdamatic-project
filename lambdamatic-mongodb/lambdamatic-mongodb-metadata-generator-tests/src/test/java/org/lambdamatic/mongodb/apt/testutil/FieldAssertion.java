@@ -11,6 +11,10 @@ package org.lambdamatic.mongodb.apt.testutil;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.assertj.core.api.AbstractAssert;
 import org.lambdamatic.mongodb.annotations.DocumentField;
@@ -37,16 +41,32 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
 		return new FieldAssertion(field);
 	}
 
-	public FieldAssertion isType(final String expectedType) {
+	public FieldAssertion isParameterizedType(final Class<?> expectedRawType, final Class<?>... expectedTypeArguments) {
 		isNotNull();
-		final String actualTypeName = actual.getType().getName();
-		if (!actualTypeName.equals(expectedType)) {
-			failWithMessage("Expected field <%s> to be of type <%s> but it was <%s>", actual.getName(), expectedType,
-					actualTypeName);
+		final ParameterizedType actualType = (ParameterizedType) actual.getGenericType();
+		final List<String> expectedTypeArgumentNames = Arrays.asList(expectedTypeArguments).stream().map(a -> a.getName()).collect(Collectors.toList());
+		final List<String> actualTypeArgumentNames = Arrays.asList(actualType.getActualTypeArguments()).stream().map(a -> a.getTypeName()).collect(Collectors.toList());
+		if (!actualType.getRawType().equals(expectedRawType) || !actualTypeArgumentNames.equals(expectedTypeArgumentNames)) {
+			failWithMessage("Expected field <%s><%s> to be of type <%s><%s> but it was <%s>", actualType.getRawType().getTypeName(), actualType.getActualTypeArguments(), expectedRawType,
+					expectedTypeArguments);
 		}
 		return this;
 	}
 
+	public FieldAssertion isType(final Class<?> expectedType) {
+		return isType(expectedType.getName());
+	}
+	
+	public FieldAssertion isType(final String expectedTypeName) {
+		isNotNull();
+		final String actualTypeName = actual.getType().getName();
+		if (!actualTypeName.equals(expectedTypeName)) {
+			failWithMessage("Expected field <%s> to be of type <%s> but it was <%s>", actual.getName(), expectedTypeName,
+					actualTypeName);
+		}
+		return this;
+	}
+	
 	public FieldAssertion isStatic() {
 		isNotNull();
 		if ((actual.getModifiers() & Modifier.STATIC) == 0) {

@@ -3,7 +3,7 @@ package $packageName$;
 import javax.annotation.Generated;
 
 import org.lambdamatic.mongodb.LambdamaticMongoCollection;
-import org.lambdamatic.mongodb.crud.impl.LambdamaticMongoCollectionImpl;
+import org.lambdamatic.mongodb.internal.LambdamaticMongoCollectionImpl;
 
 import com.mongodb.MongoClient;
 

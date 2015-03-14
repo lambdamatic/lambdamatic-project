@@ -186,6 +186,38 @@ public class MethodInvocation extends ComplexExpression {
 		return arguments;
 	}
 
+	/**
+	 * @return the fist Java {@link Method} in the parent {@link Class} that matches the name are parameter types (or supertypes)
+	 * @throws AnalyzeException if not method was found.
+	 */
+	public Method getJavaMethod() {
+		final Class<?> sourceClass = this.sourceExpression.getJavaType();
+		final Class<?>[] givenParameterTypes = this.arguments.stream().map(a -> a.getJavaType())
+				.collect(Collectors.toList()).toArray(new Class<?>[0]);
+		methods_loop:
+		for(Method method : sourceClass.getMethods()) {
+			if(!method.getName().equals(this.methodName) || method.getParameterTypes().length != givenParameterTypes.length) {
+				continue methods_loop;
+			}
+			// perfect match or check if superclass/superinterfaces of the given parameter types could match
+			for(int i = 0; i < givenParameterTypes.length; i++) {
+				final Class<?> givenParameterType = givenParameterTypes[i];
+				final Class<?> methodParameterType = method.getParameterTypes()[i];
+				final boolean isSameType = methodParameterType.equals(givenParameterType);
+				final boolean isSubType = methodParameterType.isAssignableFrom(givenParameterType);
+				final boolean isMatchingVarArg = (i == givenParameterTypes.length - 1) && methodParameterType.isArray() && (methodParameterType.getComponentType().equals(givenParameterType) || methodParameterType.getComponentType().isAssignableFrom(givenParameterType));
+				if(isSameType && !isSubType && !isMatchingVarArg) {
+					continue methods_loop;
+				}
+			}
+			// the method matches
+			return method;
+		}
+		throw new AnalyzeException("Failed to find the underlying Java method named '" + this.methodName
+				+ "' in class " + sourceClass.getName() + " with parameters " + givenParameterTypes);
+
+	}
+	
 	@Override
 	public int getNumberOfBytecodeInstructions() {
 		int length = 1 + this.getSourceExpression().getNumberOfBytecodeInstructions();

@@ -10,6 +10,8 @@ package org.lambdamatic.analyzer.ast.node;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Method;
+
 import org.junit.Test;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 
@@ -241,6 +243,17 @@ public class ExpressionTest {
 		final Expression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooMethod, expressionB);
 		// then
 		assertThat(expression.canFurtherSimplify()).isEqualTo(true);
+	}
+	
+	@Test
+	public void shouldFindJavaMethod() {
+		// given
+		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
+		final MethodInvocation equalsFooMethod = new MethodInvocation(testPojo, "equals", Boolean.class,  new StringLiteral("foo"));
+		// when
+		final Method javaMethod = equalsFooMethod.getJavaMethod();
+		// then
+		assertThat(javaMethod).isNotNull();
 	}
 }
 
