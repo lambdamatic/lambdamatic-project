@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-
 /**
  * Array created and used during the call to the Lambda Expression serialized method.
  * 
@@ -33,14 +32,17 @@ public class ArrayVariable extends ComplexExpression {
 		System.arraycopy(elements, 0, this.elements, 0, elements.length);
 		Arrays.asList(this.elements).stream().forEach(e -> e.setParent(this));
 	}
-	
+
 	/**
 	 * Full constructor.
 	 * <p>
 	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
 	 * </p>
-	 * @param instanceType the type of the instance to build
-	 * @param length the length of the underlying array
+	 * 
+	 * @param instanceType
+	 *            the type of the instance to build
+	 * @param length
+	 *            the length of the underlying array
 	 */
 	public ArrayVariable(final Class<?> instanceType, final int length) {
 		this(generateId(), instanceType, length, false);
@@ -51,31 +53,41 @@ public class ArrayVariable extends ComplexExpression {
 	 * <p>
 	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
 	 * </p>
-	 * @param id the id of this expression
-	 * @param instanceType the type of the instance to build
-	 * @param length the length of the underlying array
-	 * @param inverted the inversion flag
+	 * 
+	 * @param id
+	 *            the id of this expression
+	 * @param instanceType
+	 *            the type of the instance to build
+	 * @param length
+	 *            the length of the underlying array
+	 * @param inverted
+	 *            the inversion flag
 	 */
 	public ArrayVariable(final Class<?> instanceType, final int length, boolean inverted) {
 		this(generateId(), instanceType, length, inverted);
 	}
-	
+
 	/**
 	 * Full constructor.
 	 * <p>
 	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
 	 * </p>
-	 * @param id the id of this expression
-	 * @param instanceType the type of the instance to build
-	 * @param length the length of the underlying array
-	 * @param inverted the inversion flag
+	 * 
+	 * @param id
+	 *            the id of this expression
+	 * @param instanceType
+	 *            the type of the instance to build
+	 * @param length
+	 *            the length of the underlying array
+	 * @param inverted
+	 *            the inversion flag
 	 */
 	public ArrayVariable(final int id, final Class<?> instanceType, final int length, boolean inverted) {
 		super(id, inverted);
 		this.instanceType = instanceType;
 		this.elements = new Expression[length];
 	}
-	
+
 	/**
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
 	 */
@@ -97,36 +109,40 @@ public class ArrayVariable extends ComplexExpression {
 	 */
 	@Override
 	public Object getValue() {
-		final Object[] values = (Object[]) Array.newInstance(instanceType, elements.length);
-		for(int i = 0; i < elements.length; i++) {
+		final Class<?> arrayType = instanceType.isArray() ? instanceType.getComponentType() : instanceType;
+		final Object[] values = (Object[]) Array.newInstance(arrayType, new int[] { elements.length });
+		for (int i = 0; i < elements.length; i++) {
 			values[i] = elements[i].getValue();
 		}
 		return values;
 	}
-	
+
 	/**
 	 * @return the elements contained in this array.
 	 */
 	public Expression[] getElements() {
 		return elements;
 	}
-	
+
 	@Override
 	public boolean anyElementMatches(ExpressionType type) {
 		final List<Expression> elements = Arrays.asList(this.elements);
 		return elements.stream().anyMatch(e -> e.anyElementMatches(type));
 	}
-	
+
 	/**
 	 * Sets the given {@code element} at the given {@code index} in the underlying array of {@link Expression}.
-	 * @param index the index in the array
-	 * @param element the element to add
+	 * 
+	 * @param index
+	 *            the index in the array
+	 * @param element
+	 *            the element to add
 	 */
 	public void setElement(final int index, final Expression element) {
 		this.elements[index] = element;
 		element.setParent(this);
 	}
-	
+
 	/**
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#inverse()
 	 */
@@ -135,7 +151,9 @@ public class ArrayVariable extends ComplexExpression {
 		throw new UnsupportedOperationException(this.getClass().getName() + " does not support inversion.");
 	}
 
-	/*$
+	/*
+	 * $
+	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#canBeInverted()
 	 */
 	@Override
@@ -149,7 +167,7 @@ public class ArrayVariable extends ComplexExpression {
 	@Override
 	public Expression duplicate(int id) {
 		final ArrayVariable arrayVariable = new ArrayVariable(id, instanceType, this.elements.length, isInverted());
-		for(int i = 0; i < this.elements.length; i++) {
+		for (int i = 0; i < this.elements.length; i++) {
 			arrayVariable.setElement(i, this.elements[i].duplicate());
 		}
 		return arrayVariable;
@@ -174,7 +192,7 @@ public class ArrayVariable extends ComplexExpression {
 			}
 		}
 	}
-	
+
 	@Override
 	public void replaceElement(final Expression oldElementExpression, final Expression newElementExpression) {
 		final int oldExpressionIndex = ArrayUtils.indexOf(this.elements, oldElementExpression);
@@ -190,7 +208,9 @@ public class ArrayVariable extends ComplexExpression {
 				+ Arrays.asList(elements).stream().map(Expression::toString).collect(Collectors.toList());
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -202,7 +222,9 @@ public class ArrayVariable extends ComplexExpression {
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -224,5 +246,4 @@ public class ArrayVariable extends ComplexExpression {
 		return true;
 	}
 
-	
 }

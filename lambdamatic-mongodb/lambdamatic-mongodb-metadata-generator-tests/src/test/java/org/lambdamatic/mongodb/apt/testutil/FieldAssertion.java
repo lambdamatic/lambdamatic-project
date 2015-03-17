@@ -20,7 +20,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 
 /**
- * Specific assertJ {@link AbstractAssert} for {@link DocumentField} objects.
+ * Specific assertJ {@link AbstractAssert} for {@link DocumentField} annotated {@link Field}s.
  * 
  * @author Xavier Coulon
  *
@@ -43,6 +43,9 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
 
 	public FieldAssertion isParameterizedType(final Class<?> expectedRawType, final Class<?>... expectedTypeArguments) {
 		isNotNull();
+		if(!(actual.getGenericType() instanceof ParameterizedType)) {
+			failWithMessage("Expected field <%s> to be a parameterized type but it was not", actual);
+		}
 		final ParameterizedType actualType = (ParameterizedType) actual.getGenericType();
 		final List<String> expectedTypeArgumentNames = Arrays.asList(expectedTypeArguments).stream().map(a -> a.getName()).collect(Collectors.toList());
 		final List<String> actualTypeArgumentNames = Arrays.asList(actualType.getActualTypeArguments()).stream().map(a -> a.getTypeName()).collect(Collectors.toList());

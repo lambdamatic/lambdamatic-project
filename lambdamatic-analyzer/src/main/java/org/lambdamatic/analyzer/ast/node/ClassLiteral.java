@@ -6,7 +6,7 @@ package org.lambdamatic.analyzer.ast.node;
 /**
  * A Class Literal Expression.
  * 
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public class ClassLiteral extends Expression {
@@ -75,7 +75,7 @@ public class ClassLiteral extends Expression {
 	 */
 	@Override
 	public Class<?> getJavaType() {
-		return Class.class;
+		return value;
 	}
 
 	/**

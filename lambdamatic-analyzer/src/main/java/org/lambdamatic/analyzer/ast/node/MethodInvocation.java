@@ -17,7 +17,7 @@ import org.lambdamatic.analyzer.exception.AnalyzeException;
 /**
  * A method call: {@code expression.methodName(arguments)}
  * 
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public class MethodInvocation extends ComplexExpression {
@@ -194,30 +194,9 @@ public class MethodInvocation extends ComplexExpression {
 		final Class<?> sourceClass = this.sourceExpression.getJavaType();
 		final Class<?>[] givenParameterTypes = this.arguments.stream().map(a -> a.getJavaType())
 				.collect(Collectors.toList()).toArray(new Class<?>[0]);
-		methods_loop:
-		for(Method method : sourceClass.getMethods()) {
-			if(!method.getName().equals(this.methodName) || method.getParameterTypes().length != givenParameterTypes.length) {
-				continue methods_loop;
-			}
-			// perfect match or check if superclass/superinterfaces of the given parameter types could match
-			for(int i = 0; i < givenParameterTypes.length; i++) {
-				final Class<?> givenParameterType = givenParameterTypes[i];
-				final Class<?> methodParameterType = method.getParameterTypes()[i];
-				final boolean isSameType = methodParameterType.equals(givenParameterType);
-				final boolean isSubType = methodParameterType.isAssignableFrom(givenParameterType);
-				final boolean isMatchingVarArg = (i == givenParameterTypes.length - 1) && methodParameterType.isArray() && (methodParameterType.getComponentType().equals(givenParameterType) || methodParameterType.getComponentType().isAssignableFrom(givenParameterType));
-				if(isSameType && !isSubType && !isMatchingVarArg) {
-					continue methods_loop;
-				}
-			}
-			// the method matches
-			return method;
-		}
-		throw new AnalyzeException("Failed to find the underlying Java method named '" + this.methodName
-				+ "' in class " + sourceClass.getName() + " with parameters " + givenParameterTypes);
-
+		return ReflectionUtils.findJavaMethod(sourceClass, methodName, givenParameterTypes);
 	}
-	
+
 	@Override
 	public int getNumberOfBytecodeInstructions() {
 		int length = 1 + this.getSourceExpression().getNumberOfBytecodeInstructions();
@@ -255,7 +234,7 @@ public class MethodInvocation extends ComplexExpression {
 				args.add(methodArgValue);
 				argTypes[i] = arguments.get(i).getJavaType();
 			}
-			final Method m = ReflectionUtils.getMethodToInvoke(source, this.methodName, argTypes);
+			final Method m = ReflectionUtils.findJavaMethod(source, this.methodName, argTypes);
 			m.setAccessible(true);
 			return m.invoke(source, args.toArray());
 		} catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {

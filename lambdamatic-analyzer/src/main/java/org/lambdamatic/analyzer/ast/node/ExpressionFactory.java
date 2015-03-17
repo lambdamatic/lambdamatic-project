@@ -5,11 +5,9 @@ package org.lambdamatic.analyzer.ast.node;
 
 import java.lang.reflect.Field;
 
-
-
-
 /**
  * {@link Expression} factory
+ * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
@@ -65,16 +63,16 @@ public class ExpressionFactory {
 
 
 	/**
-	 * Converts the given {@code value} to a literal {@link Expression}, in the context of the given {@code expression}
-	 * @param value the value to wrap in a Literal {@link Expression}.
-	 * @param expression the expression that helps in selecting the specific type of literal to help
-	 * @return the literal {@link Expression} wrapping the given value.
+	 * Converts the given {@code numberLiteral} to a literal {@link Expression} matching the given targetTypeName
+	 * @param numberLiteral the {@link Expression} to convert.
+	 * @param targetTypeName the name of the target type 
+	 * @return the literal {@link Expression} converted in the given type.
 	 */
-	public static Expression getLiteral(final NumberLiteral numberLiteral, final Class<?> targetType) {
+	public static Expression getLiteral(final NumberLiteral numberLiteral, final String targetTypeName) {
 		final Number value = numberLiteral.getValue();
-		if(char.class.isAssignableFrom(targetType) || Character.class.isAssignableFrom(targetType)) {
+		if(char.class.getName().equals(targetTypeName) || Character.class.getName().equals(targetTypeName)) {
 			return new CharacterLiteral((char)value.intValue());
-		} else if (boolean.class.isAssignableFrom(targetType) || Boolean.class.isAssignableFrom(targetType)) {
+		} else if (boolean.class.getName().equals(targetTypeName) || Boolean.class.getName().equals(targetTypeName)) {
 			switch(value.intValue()) {
 			case 0: 
 				return new BooleanLiteral(false);

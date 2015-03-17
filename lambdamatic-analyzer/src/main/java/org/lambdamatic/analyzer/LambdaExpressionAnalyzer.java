@@ -24,6 +24,7 @@ import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.CapturedArgumentRef;
 import org.lambdamatic.analyzer.ast.node.ComplexExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
+import org.lambdamatic.analyzer.ast.node.ExpressionVisitorUtil;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.IfStatement;
@@ -43,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * <p><strong>Note:</strong>Subsequent calls to analyze a given Lambda Expression return a cached version of the AST, only
  * {@link CapturedArgument} may be different.</p>
  * 
- * @author Xavier Coulon <xcoulon@redhat.com>
+ * @author Xavier Coulon <xcoulon@redhat.com> 
  * 
  * @see http://cr.openjdk.java.net/~briangoetz/lambda/lambda-translation.html
  * 
@@ -259,15 +260,7 @@ public class LambdaExpressionAnalyzer {
 	 *         actual values.
 	 */
 	private Expression processMethodCalls(final Expression expression) {
-		final ExpressionVisitor visitor = new LambdaExpressionRewriter();
-		// wrap the expression to make sure it has a parent
-		// because in some cases (eg: a boolean expression, the MethodInvocation#delete() would fail)
-		final ExpressionWrapper wrapper = new ExpressionWrapper(expression);
-		expression.accept(visitor);
-		// now, detach and return the resulting wrapped expression
-		final Expression resultExpression = wrapper.getExpression();
-		resultExpression.setParent(null);
-		return resultExpression;
+		return ExpressionVisitorUtil.visit(expression, new LambdaExpressionRewriter());
 	}
 
 	/**
@@ -293,14 +286,7 @@ public class LambdaExpressionAnalyzer {
 			capturedArgs.add(serializedLambda.getCapturedArg(i));
 		}
 		final ExpressionVisitor visitor = new CapturedArgumentsEvaluator(capturedArgs);
-		// wrap the expression to make sure it has a parent
-		// because in some cases (eg: a boolean expression, the MethodInvocation#delete() would fail)
-		final ExpressionWrapper wrapper = new ExpressionWrapper(sourceExpression);
-		sourceExpression.accept(visitor);
-		// now, detach and return the resulting wrapped expression
-		final Expression resultExpression = wrapper.getExpression();
-		resultExpression.setParent(null);
-		return resultExpression;
+		return ExpressionVisitorUtil.visit(sourceExpression, visitor);
 	}
 
 	/**

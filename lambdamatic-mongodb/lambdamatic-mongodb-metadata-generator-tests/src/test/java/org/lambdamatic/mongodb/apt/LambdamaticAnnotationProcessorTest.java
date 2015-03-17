@@ -32,47 +32,57 @@ import com.sample.EnumFoo;
 import com.sample.Foo;
 
 /**
- * Testing the {@link DocumentAnnotationProcessor}.
+ * Testing the {@link DocumentAnnotationProcessor}
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public class LambdamaticAnnotationProcessorTest {
 
-	@Rule 
+	@Rule
 	public CompilationAndAnnotationProcessingRule generateMetdataClassesRule = new CompilationAndAnnotationProcessingRule();
-	
+
 	@Test
+	@WithDomainClass(Foo.class)
+	@WithDomainClass(Bar.class)
 	public void shouldProcessFooClassAndGenerateQueryMetadataClass() throws URISyntaxException, ClassNotFoundException,
 			NoSuchFieldException, SecurityException, InstantiationException, IllegalAccessException {
 		// verification
 		final Class<?> fooMetaClass = Class.forName("com.sample.QFoo");
-		ClassAssertion.assertThat(fooMetaClass).isNotAbstract()
-				.isImplementing(QueryMetadata.class, Foo.class);
-		FieldAssertion.assertThat(fooMetaClass, "id").isParameterizedType(QueryField.class, ObjectId.class).isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", DocumentCodec.MONGOBD_DOCUMENT_ID);
-		FieldAssertion.assertThat(fooMetaClass, "stringField").isParameterizedType(QueryField.class, String.class).isNotFinal()
-				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "stringField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveByteField").isType("byte").isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveByteField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveShortField").isType("short").isNotFinal().isNotStatic()
+		ClassAssertion.assertThat(fooMetaClass).isNotAbstract().isImplementing(QueryMetadata.class, Foo.class);
+		FieldAssertion.assertThat(fooMetaClass, "id").isParameterizedType(QueryField.class, ObjectId.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
+				.hasAttributeValue("name", DocumentCodec.MONGOBD_DOCUMENT_ID);
+		FieldAssertion.assertThat(fooMetaClass, "stringField").isParameterizedType(QueryField.class, String.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "stringField");
+		FieldAssertion.assertThat(fooMetaClass, "primitiveByteField").isParameterizedType(QueryField.class, Byte.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
+				.hasAttributeValue("name", "primitiveByteField");
+		FieldAssertion.assertThat(fooMetaClass, "primitiveShortField")
+				.isParameterizedType(QueryField.class, Short.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveShortField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveIntField").isType("int").isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooMetaClass, "primitiveIntField")
+				.isParameterizedType(QueryField.class, Integer.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveIntField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveLongField").isType("long").isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveLongField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveFloatField").isType("float").isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooMetaClass, "primitiveLongField").isParameterizedType(QueryField.class, Long.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
+				.hasAttributeValue("name", "primitiveLongField");
+		FieldAssertion.assertThat(fooMetaClass, "primitiveFloatField")
+				.isParameterizedType(QueryField.class, Float.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveFloatField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveDoubleField").isType("double").isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooMetaClass, "primitiveDoubleField")
+				.isParameterizedType(QueryField.class, Double.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveDoubleField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveBooleanField").isType("boolean").isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooMetaClass, "primitiveBooleanField")
+				.isParameterizedType(QueryField.class, Boolean.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveBooleanField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveCharField").isType("char").isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooMetaClass, "primitiveCharField")
+				.isParameterizedType(QueryField.class, Character.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveCharField");
-		FieldAssertion.assertThat(fooMetaClass, "location").isType(LocationField.class).isNotFinal()
-				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "location");
-		FieldAssertion.assertThat(fooMetaClass, "enumFoo").isType(EnumFoo.class).isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "enumFoo");
+		FieldAssertion.assertThat(fooMetaClass, "location").isType(LocationField.class).isNotFinal().isNotStatic()
+				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "location");
+		FieldAssertion.assertThat(fooMetaClass, "enumFoo").isParameterizedType(QueryField.class, EnumFoo.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "enumFoo");
 		FieldAssertion.assertThat(fooMetaClass, "bar").isType("com.sample.QBar").isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "bar");
 	}
@@ -85,47 +95,37 @@ public class LambdamaticAnnotationProcessorTest {
 			IllegalAccessException, InstantiationException {
 		// verification
 		final Class<?> fooMetaClass = Class.forName("com.sample.PFoo");
-		ClassAssertion.assertThat(fooMetaClass).isNotAbstract()
-				.isImplementing(ProjectionMetadata.class, Foo.class)
+		ClassAssertion.assertThat(fooMetaClass).isNotAbstract().isImplementing(ProjectionMetadata.class, Foo.class)
 				.isExtending("java.lang.Object");
-		FieldAssertion.assertThat(fooMetaClass, "id").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("_id"));
-		FieldAssertion.assertThat(fooMetaClass, "stringField").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("stringField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveByteField").isType(ProjectionField.class)
-				.isNotFinal().isNotStatic().hasNoAnnotation()
-				.hasDefaultValueEquals(new ProjectionField("primitiveByteField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveShortField").isType(ProjectionField.class)
-				.isNotFinal().isNotStatic().hasNoAnnotation()
-				.hasDefaultValueEquals(new ProjectionField("primitiveShortField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveIntField").isType(ProjectionField.class)
-				.isNotFinal().isNotStatic().hasNoAnnotation()
-				.hasDefaultValueEquals(new ProjectionField("primitiveIntField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveLongField").isType(ProjectionField.class)
-				.isNotFinal().isNotStatic().hasNoAnnotation()
-				.hasDefaultValueEquals(new ProjectionField("primitiveLongField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveFloatField").isType(ProjectionField.class)
-				.isNotFinal().isNotStatic().hasNoAnnotation()
-				.hasDefaultValueEquals(new ProjectionField("primitiveFloatField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveDoubleField").isType(ProjectionField.class)
-				.isNotFinal().isNotStatic().hasNoAnnotation()
-				.hasDefaultValueEquals(new ProjectionField("primitiveDoubleField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveBooleanField").isType(ProjectionField.class)
-				.isNotFinal().isNotStatic().hasNoAnnotation()
-				.hasDefaultValueEquals(new ProjectionField("primitiveBooleanField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveCharField").isType(ProjectionField.class)
-				.isNotFinal().isNotStatic().hasNoAnnotation()
-				.hasDefaultValueEquals(new ProjectionField("primitiveCharField"));
-		FieldAssertion.assertThat(fooMetaClass, "location").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("location"));
-		FieldAssertion.assertThat(fooMetaClass, "enumFoo").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("enumFoo"));
+		FieldAssertion.assertThat(fooMetaClass, "id").isType(ProjectionField.class).isNotFinal().isNotStatic()
+				.hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("_id"));
+		FieldAssertion.assertThat(fooMetaClass, "stringField").isType(ProjectionField.class).isNotFinal().isNotStatic()
+				.hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("stringField"));
+		FieldAssertion.assertThat(fooMetaClass, "primitiveByteField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveByteField"));
+		FieldAssertion.assertThat(fooMetaClass, "primitiveShortField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveShortField"));
+		FieldAssertion.assertThat(fooMetaClass, "primitiveIntField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveIntField"));
+		FieldAssertion.assertThat(fooMetaClass, "primitiveLongField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveLongField"));
+		FieldAssertion.assertThat(fooMetaClass, "primitiveFloatField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveFloatField"));
+		FieldAssertion.assertThat(fooMetaClass, "primitiveDoubleField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveDoubleField"));
+		FieldAssertion.assertThat(fooMetaClass, "primitiveBooleanField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveBooleanField"));
+		FieldAssertion.assertThat(fooMetaClass, "primitiveCharField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveCharField"));
+		FieldAssertion.assertThat(fooMetaClass, "location").isType(ProjectionField.class).isNotFinal().isNotStatic()
+				.hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("location"));
+		FieldAssertion.assertThat(fooMetaClass, "enumFoo").isType(ProjectionField.class).isNotFinal().isNotStatic()
+				.hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("enumFoo"));
 		FieldAssertion.assertThat(fooMetaClass, "bar").isType("com.sample.PBar").isNotFinal().isNotStatic()
 				.hasNoAnnotation();
 		// embedded PBar Projection class
 		final Class<?> barMetaClass = Class.forName("com.sample.PBar");
-		ClassAssertion.assertThat(barMetaClass).isNotAbstract()
-				.isImplementing(ProjectionMetadata.class, Bar.class)
+		ClassAssertion.assertThat(barMetaClass).isNotAbstract().isImplementing(ProjectionMetadata.class, Bar.class)
 				.isExtending(ProjectionField.class);
 
 	}

@@ -25,17 +25,17 @@ import com.sample.EnumFoo;
 import com.sample.QFoo;
 
 /**
- * Testing that a Lambda expression is analyzed once but filter query is
- * generated with proper captured argument for each call.
+ * Testing that a Lambda expression is analyzed *once* but filter query is generated with proper captured argument *for
+ * each call*.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  */
 public class FilterExpressionCacheTest {
-	
+
 	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FilterExpressionCodecTest.class);
-	
+
 	@Test
-	public void shouldAnalyzeOnce() throws UnsupportedEncodingException, IOException, JSONException {
+	public void shouldAnalyzeOnceAndInjectValueTwice() throws UnsupportedEncodingException, IOException, JSONException {
 		// given
 		final LambdaExpressionAnalyzer analyzer = LambdaExpressionAnalyzer.getInstance();
 		analyzer.resetHitCounters();
@@ -47,17 +47,20 @@ public class FilterExpressionCacheTest {
 		Assertions.assertThat(analyzer.getCacheHits()).isEqualTo(1);
 	}
 
-	private void performAndAssertConvertion(final String stringField, final int primitiveIntField, final EnumFoo enumFoo) throws UnsupportedEncodingException, IOException, JSONException {
+	private void performAndAssertConvertion(final String stringField, final int primitiveIntField, final EnumFoo enumFoo)
+			throws UnsupportedEncodingException, IOException, JSONException {
 		// given
-		final SerializablePredicate<QFoo> expr = ((QFoo foo) -> foo.stringField.equals(stringField) || foo.primitiveIntField == primitiveIntField || foo.enumFoo == enumFoo);
+		final SerializablePredicate<QFoo> expr = ((QFoo foo) -> foo.stringField.equals(stringField)
+				|| foo.primitiveIntField.equals(primitiveIntField) || foo.enumFoo.equals(enumFoo));
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8")); 
+		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8"));
 		final EncoderContext context = EncoderContext.builder().isEncodingCollectibleDocument(true).build();
 		// when
 		new FilterExpressionCodec().encode(bsonWriter, expr, context);
 		// then
 		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
-		final String expected = "{$or: [{primitiveIntField: " + primitiveIntField + "}, {enumFoo: '" + enumFoo + "'}, {stringField: '"+ stringField + "'}]}";
+		final String expected = "{$or: [{primitiveIntField: " + primitiveIntField + "}, {enumFoo: '" + enumFoo
+				+ "'}, {stringField: '" + stringField + "'}]}";
 		LOGGER.debug("Comparing \n{} vs \n{}", expected, actual);
 		JSONAssert.assertEquals(expected, actual, false);
 	}

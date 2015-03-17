@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Xavier Coulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public class CompilationAndAnnotationProcessingRule implements MethodRule {
@@ -131,7 +131,8 @@ public class CompilationAndAnnotationProcessingRule implements MethodRule {
 				filesToCompile);
 		aptCompilationTask.setProcessors(Arrays.asList(new DocumentAnnotationProcessor(), new EmbeddedDocumentAnnotationProcessor()));
 		// operation
-		aptCompilationTask.call();
+		final Boolean compiledWithoutErrors = aptCompilationTask.call();
+		assertThat(compiledWithoutErrors).as("Files compiled without errors").isTrue();
 	}
 	
 	/**

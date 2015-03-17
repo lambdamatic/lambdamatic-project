@@ -1,6 +1,8 @@
 package org.lambdamatic.mongodb.internal.codecs;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,6 +15,7 @@ import org.bson.codecs.EncoderContext;
 import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
+import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
@@ -110,7 +113,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	 * </pre>
 	 * 
 	 * @param operator
-	 *            the operator to write 
+	 *            the operator to write
 	 * @param operands
 	 *            the operands to write
 	 */
@@ -128,18 +131,23 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		writer.writeEndArray();
 	}
 
+	/**
+	 * Visits the given {@link MethodInvocation} expression. If underlying Java {@link Method} is annotated with
+	 * {@link MongoOperation}, then the expression is converted into a BSON document. Otherwise, this method assumes
+	 * that the given {@link MethodInvocation} is an argument of another {@link Expression}, evaluates it and replaces
+	 * it
+	 * 
+	 * @param methodInvocation
+	 *            the {@link MethodInvocation} to process
+	 */
 	@Override
 	public boolean visitMethodInvocationExpression(final MethodInvocation methodInvocation) {
-		if (methodInvocation.getArguments().size() > 1) {
-			throw new ConversionException(
-					"Generating a BSON document from a method invocation with multiple arguments is not supported yet");
-		}
-		writer.writeStartDocument();
-		// FIXME: support other operands
-		// FIXME: use $not: http://docs.mongodb.org/manual/reference/operator/query/not/#op._S_not
 		final Method method = methodInvocation.getJavaMethod();
 		final MongoOperation annotation = method.getAnnotation(MongoOperation.class);
 		if (annotation != null) {
+			// FIXME: support other operands
+			// FIXME: use $not: http://docs.mongodb.org/manual/reference/operator/query/not/#op._S_not
+			writer.writeStartDocument();
 			switch (annotation.value()) {
 			case GEO_WITHIN:
 				writeGeoWithin(methodInvocation.getSourceExpression(), methodInvocation.getArguments(),
@@ -149,8 +157,11 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 				writeOperation(annotation.value(), methodInvocation.getSourceExpression(), methodInvocation
 						.getArguments().get(0), methodInvocation.isInverted());
 			}
+			writer.writeEndDocument();
+		} else {
+			methodInvocation.getParent().replaceElement(methodInvocation,
+					ExpressionFactory.getExpression(methodInvocation.evaluate()));
 		}
-		writer.writeEndDocument();
 		return false;
 	}
 
@@ -175,21 +186,29 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		final String key = extractKey(keyExpr);
 		// simplified formula for EQUALS operator (when not inverted)
 		if (operator == MongoOperator.EQUALS && !inverted) {
-			writeNamedValue(key, valueExpr);
+			writeNamedExpression(key, valueExpr);
 		} else {
 			writer.writeStartDocument(key);
 			if (inverted) {
 				writer.writeStartDocument(MongoOperator.NOT.getLiteral());
-				writeNamedValue(operator.getLiteral(), valueExpr);
+				writeNamedExpression(operator.getLiteral(), valueExpr);
 				writer.writeEndDocument();
 			} else {
-				writeNamedValue(operator.getLiteral(), valueExpr);
+				writeNamedExpression(operator.getLiteral(), valueExpr);
 			}
 			writer.writeEndDocument();
 		}
 	}
 
-	private void writeNamedValue(final String name, final Expression valueExpr) {
+	/**
+	 * Writes the given named {@link Expression}
+	 * 
+	 * @param name
+	 *            the Expression name
+	 * @param valueExpr
+	 *            the Expression itself
+	 */
+	private void writeNamedExpression(final String name, final Expression valueExpr) {
 		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
 		if (value == null) {
 			writer.writeNull(name);
@@ -197,12 +216,59 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			writer.writeInt32(name, (Integer) value);
 		} else if (value instanceof Long) {
 			writer.writeInt64(name, (Long) value);
+		} else if (value instanceof Character) {
+			writer.writeString(name, ((Character) value).toString());
 		} else if (value instanceof String) {
 			writer.writeString(name, (String) value);
 		} else if (value instanceof Enum) {
 			writer.writeString(name, ((Enum<?>) value).name());
+		} else if (value.getClass().isArray()) {
+			writer.writeStartArray(name);
+			final Object[] array = (Object[]) value;
+			for (int i = 0; i < array.length; i++) {
+				writeValue(array[i]);
+			}
+			writer.writeEndArray();
+		} else if (Collection.class.isAssignableFrom(value.getClass())) {
+			writer.writeStartArray(name);
+			final Collection<?> collection = (Collection<?>) value;
+			for (Iterator<?> iterator = collection.iterator(); iterator.hasNext();) {
+				writeValue(iterator.next());
+			}
+			writer.writeEndArray();
 		} else {
-			throw new UnsupportedOperationException("Writing value of a '" + valueExpr.getExpressionType()
+			throw new ConversionException("Writing value of a type '" + value.getClass() + "' is not supported yet");
+		}
+	}
+
+	/**
+	 * Writes the given unnamed value.
+	 * 
+	 * @param value
+	 *            the value to write
+	 */
+	private void writeValue(final Object value) {
+		if (value == null) {
+			writer.writeNull();
+		} else if (value instanceof Integer) {
+			writer.writeInt32((Integer) value);
+		} else if (value instanceof Long) {
+			writer.writeInt64((Long) value);
+		} else if (value instanceof Character) {
+			writer.writeString(((Character) value).toString());
+		} else if (value instanceof String) {
+			writer.writeString((String) value);
+		} else if (value instanceof Enum) {
+			writer.writeString(((Enum<?>) value).name());
+		} else if (value.getClass().isArray()) {
+			writer.writeStartArray();
+			final Object[] array = (Object[]) value;
+			for (int i = 0; i < array.length; i++) {
+				writeValue(value);
+			}
+			writer.writeEndArray();
+		} else {
+			throw new UnsupportedOperationException("Writing value of a '" + value.getClass()
 					+ "' is not supported yet");
 		}
 	}

@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An internal utility class that uses ASM to read the bytecode of a (desugared lambda expression) method and converts it into an
  * {@link ASTNode}.
- * 
+ *
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
@@ -182,10 +182,11 @@ public class LambdaExpressionReader {
 				break;
 			case AbstractInsnNode.METHOD_INSN:
 				final MethodInsnNode methodInsnNode = (MethodInsnNode) currentInstruction;
-				final int argsNumber = Type.getArgumentTypes(methodInsnNode.desc).length;
+				final Type[] argumentTypes = Type.getArgumentTypes(methodInsnNode.desc);
 				final List<Expression> args = new ArrayList<>();
-				for (int i = 0; i < argsNumber; i++) {
-					args.add(expressionStack.pop());
+				for (int i = 0; i < argumentTypes.length; i++) {
+					final Expression arg = expressionStack.pop();
+					args.add(castOperand(arg, argumentTypes[i].getClassName()));
 				}
 				// arguments appear in reverse order in the bytecode
 				Collections.reverse(args);
@@ -210,7 +211,7 @@ public class LambdaExpressionReader {
 								.getClassName())), methodInsnNode.name, args, returnType);
 						expressionStack.add(invokedStaticMethod);
 					} catch (ClassNotFoundException e) {
-						LOGGER.error("Failed to retrieve class for " + methodInsnNode.owner, e);
+						throw new AnalyzeException("Failed to retrieve class for " + methodInsnNode.owner, e);
 					}
 					break;
 				default:
@@ -647,7 +648,7 @@ public class LambdaExpressionReader {
 		}
 		// ensure the operand types match by forcing the right side to be the same type as the left side
 		final Class<?> leftSideOperandType = getOperandType(leftSideOperand);
-		final Expression castedRightOperand = castOperand(rightSideOperand, leftSideOperandType);
+		final Expression castedRightOperand = castOperand(rightSideOperand, leftSideOperandType.getName());
 		final InfixExpression comparisonExpression = new InfixExpression(comparisonOperator, Arrays.asList(
 				leftSideOperand, castedRightOperand));
 		return comparisonExpression;
@@ -659,10 +660,10 @@ public class LambdaExpressionReader {
 	 * @param targetType the target type
 	 * @return the casted operand or the given operand if no cast could be performed
 	 */
-	private Expression castOperand(final Expression operand, final Class<?> targetType) {
+	private Expression castOperand(final Expression operand, final String targetTypeName) {
 		switch(operand.getExpressionType()) {
 		case NUMBER_LITERAL:
-			return ExpressionFactory.getLiteral((NumberLiteral)operand, targetType);
+			return ExpressionFactory.getLiteral((NumberLiteral)operand, targetTypeName);
 		default:
 			return operand;
 		}

@@ -7,6 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.bson.BsonWriter;
@@ -20,7 +22,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.lambdamatic.SerializablePredicate;
-import org.lambdamatic.mongodb.internal.codecs.FilterExpressionCodec;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 import org.lambdamatic.mongodb.types.geospatial.Polygon;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -31,11 +32,13 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 
 import com.sample.EnumFoo;
+import com.sample.Foo;
+import com.sample.Foo.FooBuilder;
 import com.sample.QFoo;
 
 /**
  * Testing the {@link FilterExpressionCodec}
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 @RunWith(Parameterized.class)
@@ -45,43 +48,132 @@ public class FilterExpressionCodecTest {
 	
 	@Parameters(name = "[{index}] {1}")
 	public static Object[][] data() {
+		final Foo f = new FooBuilder().withStringField("foo").build();
 		final Polygon singleRing = new Polygon(new Location(0, 0), new Location(0, 1), new Location(1, 1), new Location(1, 0), new Location(0, 0));
+		final Object[] namesArray = new Object[] { "John", "Jack" };
+		final List<Object> namesList = Arrays.asList("John", "Jack");
 		return new Object[][]{
+				// $eq
 				new Object[]{
-						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.equals("john")),
-						"{stringField: 'john'}"
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveByteField.equals(1)),
+						"{primitiveByteField: 1}"
 				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveShortField.equals(1)),
+						"{primitiveShortField: 1}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField.equals(1)),
+						"{primitiveIntField: 1}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveFloatField.equals(1)),
+						"{primitiveFloatField: 1}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveLongField.equals(1)),
+						"{primitiveLongField: 1}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveDoubleField.equals(1)),
+						"{primitiveDoubleField: 1}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveCharField.equals('A')),
+						"{primitiveCharField: 'A'}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.equals("John")),
+						"{stringField: 'John'}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.equals(f.getStringField())),
+						"{stringField: 'foo'}"
+				},
+				// $ne
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.notEquals(f.getStringField())),
+						"{stringField: { $ne: 'foo'}}"
+				},
+				// $gt
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.greaterThan("John")),
+						"{stringField: { $gt: 'John'}}"
+				},
+				// $gte
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.greaterOrEquals("John")),
+						"{stringField: { $gte: 'John'}}"
+				},
+				// $lt
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.lessThan("John")),
+						"{stringField: { $lt: 'John'}}"
+				},
+				// $lte
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.lessOrEquals("John")),
+						"{stringField: { $lte: 'John'}}"
+				},
+				// $in
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.in("John", "Jack")),
+						"{stringField: { $in: ['John', 'Jack']}}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.in(namesArray)),
+						"{stringField: { $in: ['John', 'Jack']}}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.in(namesList)),
+						"{stringField: { $in: ['John', 'Jack']}}"
+				},
+				// $nin
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.notIn("John", "Jack")),
+						"{stringField: { $nin: ['John', 'Jack']}}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.notIn(namesArray)),
+						"{stringField: { $nin: ['John', 'Jack']}}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.notIn(namesList)),
+						"{stringField: { $nin: ['John', 'Jack']}}"
+				},
+				
+				// testing other operators
 				new Object[]{
 						(SerializablePredicate<QFoo>)((QFoo foo) -> !foo.stringField.equals("john")),
 						"{stringField:{$not:{$eq:'john'}}}"
 				},
 				new Object[]{
-						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.equals("john") || foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringField.equals("john") || foo.primitiveIntField.equals(42) || foo.enumFoo.equals(EnumFoo.FOO)),
 						"{$or: [{primitiveIntField: 42}, {enumFoo: 'FOO'}, {stringField: 'john'}]}"
 				},
 				new Object[]{
-						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField.equals(42) || foo.enumFoo.equals(EnumFoo.FOO)),
 						"{$or: [{primitiveIntField: 42}, {enumFoo: 'FOO'}]}"
 				},
 				new Object[]{
-						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField.equals(42) && foo.enumFoo.equals(EnumFoo.FOO)),
 						"{$and:[{primitiveIntField: 42}, {enumFoo: 'FOO'}]}"
 				},
 				new Object[]{
-						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO && foo.stringField.equals("john")),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField.equals(42) && foo.enumFoo.equals(EnumFoo.FOO) && foo.stringField.equals("john")),
 						"{$and:[{primitiveIntField: 42}, {enumFoo: 'FOO'}, {stringField: 'john'}]}"
 				},
 				new Object[]{
-						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField == 42 || foo.enumFoo == EnumFoo.FOO || foo.stringField.equals("john")),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.primitiveIntField.equals(42) || foo.enumFoo.equals(EnumFoo.FOO) || foo.stringField.equals("john")),
 						"{$or: [{primitiveIntField: 42}, {enumFoo: 'FOO'}, {stringField: 'john'}]}"
 				},
 				new Object[]{
-						(SerializablePredicate<QFoo>)((QFoo foo) -> (foo.primitiveIntField == 42 && foo.enumFoo == EnumFoo.FOO) || foo.stringField.equals("john")),
+						(SerializablePredicate<QFoo>)((QFoo foo) -> (foo.primitiveIntField.equals(42) && foo.enumFoo.equals(EnumFoo.FOO)) || foo.stringField.equals("john")),
 						"{$or: [{$and:[{primitiveIntField: 42}, {enumFoo: 'FOO'}]}, {stringField: 'john'}]}"
 				},
 				new Object[]{
-						(SerializablePredicate<QFoo>)((QFoo foo) -> (foo.primitiveIntField != 42 && foo.enumFoo != EnumFoo.FOO) || !foo.stringField.equals("john")),
-						"{$or: [{$and:[{primitiveIntField: {$ne: 42}}, {enumFoo: {$ne:'FOO'}}]},  {stringField:{$not:{$eq:'john'}}}]}"
+						(SerializablePredicate<QFoo>)((QFoo foo) -> (!foo.primitiveIntField.equals(42) && !foo.enumFoo.equals(EnumFoo.FOO)) || !foo.stringField.equals("john")),
+						"{$or: [{$and:[{primitiveIntField: {$not: {$eq: 42}}}, {enumFoo: {$not: {$eq:'FOO'}}}]},  {stringField:{$not:{$eq:'john'}}}]}"
 				},
 				// polygon with single (closed) ring defined by an array of Locations
 				new Object[]{

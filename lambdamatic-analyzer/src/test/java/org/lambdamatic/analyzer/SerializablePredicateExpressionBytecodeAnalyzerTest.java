@@ -18,6 +18,7 @@ import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.analyzer.ast.node.ArrayVariable;
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.CharacterLiteral;
+import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.EnumLiteral;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
@@ -103,12 +104,12 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 		final MethodInvocation t_dot_getDoubleValue = new MethodInvocation(var_t, "getDoubleValue", Double.class);
 		final FieldAccess t_dot_stringValue = new FieldAccess(var_t, "stringValue");
 		final MethodInvocation t_dot_getStringValue = new MethodInvocation(var_t, "getStringValue", String.class);
-		final MethodInvocation t_dot_stringValue_dot_equals_foo = new MethodInvocation(t_dot_stringValue,
-				"equals", Boolean.class, new StringLiteral("foo"));
+		final MethodInvocation t_dot_stringValue_dot_equals_foo = new MethodInvocation(t_dot_stringValue, "equals",
+				Boolean.class, new StringLiteral("foo"));
 		final MethodInvocation t_dot_getStringValue_dot_equals_foo = new MethodInvocation(t_dot_getStringValue,
 				"equals", Boolean.class, new StringLiteral("foo"));
-		final MethodInvocation t_dot_getStringValue_dot_equals_captured_argument_foo = new MethodInvocation(t_dot_getStringValue,
-				"equals", Boolean.class, new StringLiteral("foo"));
+		final MethodInvocation t_dot_getStringValue_dot_equals_captured_argument_foo = new MethodInvocation(
+				t_dot_getStringValue, "equals", Boolean.class, new StringLiteral("foo"));
 		final MethodInvocation t_dot_getStringValue_dot_equals_bar = new MethodInvocation(t_dot_getStringValue,
 				"equals", Boolean.class, new StringLiteral("bar"));
 		final MethodInvocation t_dot_getStringValue_dot_equals_baz = new MethodInvocation(t_dot_getStringValue,
@@ -132,27 +133,33 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 		final MethodInvocation t_dot_enumPojo_dot_equals_foo = new MethodInvocation(t_dot_enumPojo, "equals",
 				Boolean.class, new EnumLiteral(EnumPojo.FOO));
 		final FieldAccess t_dot_primitiveIntValue = new FieldAccess(var_t, "primitiveIntValue");
-		final InfixExpression t_dot_primitiveIntValue_equals_42 = new InfixExpression(InfixOperator.EQUALS, t_dot_primitiveIntValue,
-				new NumberLiteral(42));
-		
+		final InfixExpression t_dot_primitiveIntValue_equals_42 = new InfixExpression(InfixOperator.EQUALS,
+				t_dot_primitiveIntValue, new NumberLiteral(42));
+
 		final FieldAccess t_elementList = new FieldAccess(var_t, "elementList");
 		final MethodInvocation t_elements_dot_size = new MethodInvocation(t_elementList, "size", Integer.class);
-		final InfixExpression t_elements_dot_size_equals_0 = new InfixExpression(InfixOperator.EQUALS, t_elements_dot_size, new NumberLiteral(0));
+		final InfixExpression t_elements_dot_size_equals_0 = new InfixExpression(InfixOperator.EQUALS,
+				t_elements_dot_size, new NumberLiteral(0));
 		final List<Object> otherElements = new ArrayList<>();
-		final MethodInvocation t_elementList_dot_equals_otherElements = new MethodInvocation(t_elementList, "equals", Boolean.class, new CapturedArgument(otherElements));
-		final MethodInvocation t_dot_equals_newTestPojo = new MethodInvocation(var_t, "equals", Boolean.class, new ObjectVariable(TestPojo.class));
+		final MethodInvocation t_elementList_dot_equals_otherElements = new MethodInvocation(t_elementList, "equals",
+				Boolean.class, new CapturedArgument(otherElements));
+		final MethodInvocation t_dot_equals_newTestPojo = new MethodInvocation(var_t, "equals", Boolean.class,
+				new ObjectVariable(TestPojo.class));
 		final ObjectVariable testPojoVariable = new ObjectVariable(TestPojo.class);
 		testPojoVariable.setInitArguments(Arrays.asList(new StringLiteral("foo"), new NumberLiteral(42)));
-		final MethodInvocation t_dot_equals_newTestPojo_foo42 = new MethodInvocation(var_t, "equals", Boolean.class, testPojoVariable);
+		final MethodInvocation t_dot_equals_newTestPojo_foo42 = new MethodInvocation(var_t, "equals", Boolean.class,
+				testPojoVariable);
 		final TestPojo otherTestPojo = new TestPojo();
-		final MethodInvocation t_dot_equals_otherTestPojo = new MethodInvocation(var_t, "equals", Boolean.class, new CapturedArgument(otherTestPojo));
-		
-		final String[] arrayOfStrings = new String[]{new String("foo"), new String("bar")};
-		final StringLiteral[] arrayOfStringLiterals = new StringLiteral[]{new StringLiteral("foo"), new StringLiteral("bar")};
-		final TestPojo[] arrayOfTestPojos = new TestPojo[]{new TestPojo(), new TestPojo()};
-		final CapturedArgument[] arrayOfTestPojoVariables = new CapturedArgument[]{new CapturedArgument(new TestPojo()), new CapturedArgument(new TestPojo())};
-		
-		
+		final MethodInvocation t_dot_equals_otherTestPojo = new MethodInvocation(var_t, "equals", Boolean.class,
+				new CapturedArgument(otherTestPojo));
+
+		final String[] arrayOfStrings = new String[] { new String("foo"), new String("bar") };
+		final StringLiteral[] arrayOfStringLiterals = new StringLiteral[] { new StringLiteral("foo"),
+				new StringLiteral("bar") };
+		final TestPojo[] arrayOfTestPojos = new TestPojo[] { new TestPojo(), new TestPojo() };
+		final CapturedArgument[] arrayOfTestPojoVariables = new CapturedArgument[] {
+				new CapturedArgument(new TestPojo()), new CapturedArgument(new TestPojo()) };
+
 		return new Object[][] {
 				// primitive boolean (comparisons are pretty straightforward in
 				// the bytecode)
@@ -162,7 +169,8 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 						t_dot_getPrimitiveBooleanValue },
 				new Object[] { (SerializablePredicate<TestPojo>) ((TestPojo t) -> !t.getPrimitiveBooleanValue()),
 						t_dot_getPrimitiveBooleanValue.inverse() },
-				new Object[] { (SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveBooleanValue() == true),
+				new Object[] {
+						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveBooleanValue() == true),
 						t_dot_getPrimitiveBooleanValue },
 				new Object[] {
 						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveBooleanValue() != booleanValue_true),
@@ -177,7 +185,8 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 						t_dot_getBooleanValue.inverse() },
 				new Object[] { (SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getBooleanValue() == Boolean.TRUE),
 						t_dot_getBooleanValue },
-				new Object[] { (SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getBooleanValue() != booleanValue_true),
+				new Object[] {
+						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getBooleanValue() != booleanValue_true),
 						t_dot_getBooleanValue.inverse() },
 
 				// primitive byte
@@ -197,7 +206,8 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveByteValue() <= byteValue_1),
 						new InfixExpression(InfixOperator.LESS_EQUALS, t_dot_getPrimitiveByteValue, new NumberLiteral(
 								intValue_1)) },
-				new Object[] { (SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveByteValue() == (byte) 42),
+				new Object[] {
+						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveByteValue() == (byte) 42),
 						new InfixExpression(InfixOperator.EQUALS, t_dot_getPrimitiveByteValue, new NumberLiteral(42)) },
 				new Object[] {
 						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveByteValue() != byteValue_42),
@@ -239,7 +249,8 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveShortValue() <= shortValue_1),
 						new InfixExpression(InfixOperator.LESS_EQUALS, t_dot_getPrimitiveShortValue, new NumberLiteral(
 								intValue_1)) },
-				new Object[] { (SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveShortValue() == (short) 42),
+				new Object[] {
+						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveShortValue() == (short) 42),
 						new InfixExpression(InfixOperator.EQUALS, t_dot_getPrimitiveShortValue, new NumberLiteral(42)) },
 				new Object[] {
 						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveShortValue() != shortValue_42),
@@ -307,9 +318,10 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 						new InfixExpression(InfixOperator.LESS_EQUALS, t_dot_getCharacterValue, new CharacterLiteral(
 								charValue_a)) },
 				new Object[] {
-						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getCharacterValue() == charValue_z),
-						new InfixExpression(InfixOperator.EQUALS, t_dot_getCharacterValue, new CharacterLiteral(
-								charValue_z)) },
+						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getCharacterValue().equals(charValue_z)),
+						new MethodInvocation(new MethodInvocation(var_t, "getCharacterValue", Character.class),
+								"equals", Boolean.class, new MethodInvocation(new ClassLiteral(Character.class),
+										"valueOf", Character.class, new CharacterLiteral(charValue_z))) },
 				new Object[] {
 						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getCharacterValue() != charValue_z),
 						new InfixExpression(InfixOperator.NOT_EQUALS, t_dot_getCharacterValue, new CharacterLiteral(
@@ -318,7 +330,8 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 				// primitive int
 				new Object[] { (SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveIntValue() > 0),
 						new InfixExpression(InfixOperator.GREATER, t_dot_getPrimitiveIntValue, new NumberLiteral(0)) },
-				new Object[] { (SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveIntValue() < intValue_0),
+				new Object[] {
+						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveIntValue() < intValue_0),
 						new InfixExpression(InfixOperator.LESS, t_dot_getPrimitiveIntValue, new NumberLiteral(0)) },
 				new Object[] {
 						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveIntValue() >= 1),
@@ -354,7 +367,8 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 				// primitive long
 				new Object[] { (SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveLongValue() > 0L),
 						new InfixExpression(InfixOperator.GREATER, t_dot_getPrimitiveLongValue, new NumberLiteral(0L)) },
-				new Object[] { (SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveLongValue() < longValue_0),
+				new Object[] {
+						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveLongValue() < longValue_0),
 						new InfixExpression(InfixOperator.LESS, t_dot_getPrimitiveLongValue, new NumberLiteral(0L)) },
 				new Object[] {
 						(SerializablePredicate<TestPojo>) ((TestPojo t) -> t.getPrimitiveLongValue() >= 1L),
@@ -467,7 +481,8 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 
 				// java.lang.String
 				new Object[] { (SerializablePredicate<TestPojo>) (t -> t.field == "foo"), t_dot_field_equals_foo },
-				new Object[] { (SerializablePredicate<TestPojo>) (t -> t.field != "foo"), t_dot_field_equals_foo.inverse() },
+				new Object[] { (SerializablePredicate<TestPojo>) (t -> t.field != "foo"),
+						t_dot_field_equals_foo.inverse() },
 				new Object[] { (SerializablePredicate<TestPojo>) (t -> t.stringValue.equals("foo")),
 						t_dot_stringValue_dot_equals_foo },
 				new Object[] { (SerializablePredicate<TestPojo>) (t -> !t.stringValue.equals("foo")),
@@ -506,7 +521,7 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 				// List (and interface, btw)
 				new Object[] { (SerializablePredicate<TestPojo>) (t -> t.elementList.size() == 0),
 						t_elements_dot_size_equals_0 },
-				
+
 				// Captured argument
 				new Object[] { (SerializablePredicate<TestPojo>) (t -> t.elementList.equals(otherElements)),
 						t_elementList_dot_equals_otherElements },
@@ -516,18 +531,23 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 						t_dot_equals_newTestPojo },
 				new Object[] { (SerializablePredicate<TestPojo>) (t -> t.equals(new TestPojo("foo", 42))),
 						t_dot_equals_newTestPojo_foo42 },
-				new Object[] { (SerializablePredicate<TestPojo>) (t -> t.matches(arrayOfStrings)),
-						new MethodInvocation(var_t, "matches", Boolean.class, new ArrayVariable(String.class, arrayOfStringLiterals))},
-				new Object[] { (SerializablePredicate<TestPojo>) (t -> t.matches(arrayOfTestPojos)),
-						new MethodInvocation(var_t, "matches", Boolean.class, new ArrayVariable(TestPojo.class, arrayOfTestPojoVariables))},
-						
+				new Object[] {
+						(SerializablePredicate<TestPojo>) (t -> t.matches(arrayOfStrings)),
+						new MethodInvocation(var_t, "matches", Boolean.class, new ArrayVariable(String.class,
+								arrayOfStringLiterals)) },
+				new Object[] {
+						(SerializablePredicate<TestPojo>) (t -> t.matches(arrayOfTestPojos)),
+						new MethodInvocation(var_t, "matches", Boolean.class, new ArrayVariable(TestPojo.class,
+								arrayOfTestPojoVariables)) },
+
 				// mixes with multiple operands
 				new Object[] {
 						(SerializablePredicate<TestPojo>) (t -> t.getStringValue().equals("foo")
 								|| t.getStringValue().equals("bar") || t.getStringValue().equals("baz")),
 						new InfixExpression(InfixOperator.CONDITIONAL_OR, t_dot_getStringValue_dot_equals_foo,
 								t_dot_getStringValue_dot_equals_bar, t_dot_getStringValue_dot_equals_baz) },
-				new Object[] { (SerializablePredicate<TestPojo>) (t -> t.field.equals("foo")), t_dot_field_dot_equals_foo },
+				new Object[] { (SerializablePredicate<TestPojo>) (t -> t.field.equals("foo")),
+						t_dot_field_dot_equals_foo },
 				new Object[] {
 						(SerializablePredicate<TestPojo>) (t -> (t.field.equals("foo") && t.field.equals("bar"))
 								|| t.field.equals("baz")),
@@ -559,8 +579,7 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 								|| t.getPrimitiveIntValue() == 42),
 						new InfixExpression(InfixOperator.CONDITIONAL_OR, t_dot_getStringValue_dot_equals_foo,
 								new InfixExpression(InfixOperator.EQUALS, t_dot_getPrimitiveIntValue,
-										new NumberLiteral(intValue_42))) }
-		};
+										new NumberLiteral(intValue_42))) } };
 	}
 
 	@Parameter(value = 0)

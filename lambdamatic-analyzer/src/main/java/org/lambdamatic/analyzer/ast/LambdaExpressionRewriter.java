@@ -7,13 +7,12 @@ import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.ComplexExpression;
 import org.lambdamatic.analyzer.ast.node.Expression;
-
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
+import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
-import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * {@link InfixExpression} with a boolean conditions (eg:
  * {@link MethodInvocation} == {@link BooleanLiteral}) are simplified as well:
  * the {@link InfixExpression} is replaced with the meaningful operand.
- * 
+ *
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
