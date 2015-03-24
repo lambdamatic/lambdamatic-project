@@ -3,6 +3,7 @@ package org.lambdamatic.mongodb.apt;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -14,6 +15,7 @@ import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.lambdamatic.mongodb.metadata.LocationField;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
+import org.lambdamatic.mongodb.metadata.QueryArrayField;
 import org.lambdamatic.mongodb.metadata.QueryField;
 
 /**
@@ -82,6 +84,16 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 				return LocationField.class.getName();
 			default:
 				return QueryField.class.getName() + '<' + variableType.toString() + '>';
+			}
+		} else if(variableType.getKind() == TypeKind.ARRAY) {
+			final TypeMirror componentType = ((ArrayType) variableType).getComponentType();
+			final Element variableTypeElement = ((DeclaredType) componentType).asElement();
+			if (variableTypeElement.getKind() == ElementKind.ENUM) {
+				return QueryArrayField.class.getName() + '<' + variableType.toString() + '>';
+			} else if (componentType.getAnnotation(EmbeddedDocument.class) != null) {
+				return EmbeddedDocumentAnnotationProcessor.generateQueryMetadataSimpleClassName(variableTypeElement);
+			} else {
+				return QueryArrayField.class.getName() + '<' + variableType.toString() + '>';
 			}
 		}
 		throw new MetadataGenerationException("Unexpected variable type for '" + variableElement.getSimpleName()

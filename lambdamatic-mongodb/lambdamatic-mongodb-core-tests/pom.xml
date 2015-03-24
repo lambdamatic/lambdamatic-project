@@ -8,7 +8,7 @@
 	</parent>
 	<artifactId>lambdamatic-mongodb-core-tests</artifactId>
 	<name>Lambdamatic for MongoDB - Core (Tests)</name>
-	
+
 	<dependencies>
 		<!-- Test dependencies -->
 		<dependency>
@@ -49,6 +49,10 @@
 			<groupId>org.skyscreamer</groupId>
 			<artifactId>jsonassert</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.lordofthejars</groupId>
+			<artifactId>nosqlunit-mongodb</artifactId>
+		</dependency>
 		<!-- because the CDI DataStoreProvider is generated and needs to compile -->
 		<dependency>
 			<groupId>javax</groupId>
@@ -68,25 +72,15 @@
 					<!-- see http://jira.codehaus.org/browse/MCOMPILER-236 -->
 					<useIncrementalCompilation>false</useIncrementalCompilation>
 				</configuration>
-				<!-- see http://jira.codehaus.org/browse/MCOMPILER-97 -->
-				<executions>
-					<execution>
-						<id>default-compile</id>
-						<configuration>
-							<compilerArgument>-proc:none</compilerArgument>
-						</configuration>
-					</execution>
-					<execution>
-						<id>default-testCompile</id>
-						<configuration>
-						</configuration>
-					</execution>
-				</executions>
+				<!-- see http://jira.codehaus.org/browse/MCOMPILER-97 <executions> <execution> 
+					<id>default-compile</id> <configuration> <compilerArgument>-proc:none</compilerArgument> 
+					</configuration> </execution> <execution> <id>default-testCompile</id> <configuration> 
+					</configuration> </execution> </executions> -->
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.9</version>
+				<version>1.9.1</version>
 				<executions>
 					<execution>
 						<id>add-test-source</id>

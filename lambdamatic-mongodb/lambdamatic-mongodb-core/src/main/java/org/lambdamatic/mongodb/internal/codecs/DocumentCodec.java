@@ -13,14 +13,17 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.bson.BsonDocument;
@@ -218,83 +221,196 @@ public class DocumentCodec<T> implements Codec<T> {
 	
 
 	/**
-	 * @param writer
+	 * Writes the given named value 
+	 * @param writer the {@link BsonWriter} to use
+	 * @param name the name of the value
+	 * @param value the actual value
+	 * @param encoderContext the {@link EncoderContext}
+	 * 
 	 */
-	protected void writeValue(final BsonWriter writer, final String attributeName, final Object attributeValue, final EncoderContext encoderContext) {
-		if(attributeValue == null) {
+	void writeNamedValue(final BsonWriter writer, final String name, final Object value, final EncoderContext encoderContext) {
+		if(value == null) {
+			// skip null named values
 			return;
-		}
-		if (attributeValue.getClass().isEnum()) {
-			writer.writeString(attributeName, ((Enum<?>) attributeValue).name());
-		} else {
+		} 
+		// Enum
+		else if (value.getClass().isEnum()) {
+			writer.writeString(name, ((Enum<?>) value).name());
+		} 
+		// List and Sets
+		else if(value instanceof Collection) {
+			writer.writeStartArray(name);
+			final Collection<?> values = (Collection<?>) value;
+			values.stream().forEach(v -> writeValue(writer, v, encoderContext));
+			writer.writeEndArray();
+		} 
+		// List and Sets
+		else if(value.getClass().isArray()) {
+			writer.writeStartArray(name);
+			final Object[] values = (Object[]) value;
+			Arrays.asList(values).stream().forEach(v -> writeValue(writer, v, encoderContext));
+			writer.writeEndArray();
+		} 
+		// other cases
+		else {
 			// FIXME: complete the switches to cover all writer.writeXXX methods
-			final String attributeValueClassName = attributeValue.getClass().getName();
+			final String attributeValueClassName = value.getClass().getName();
 			switch(attributeValueClassName) {
 			case "org.bson.types.ObjectId":
-				writer.writeObjectId(MONGOBD_DOCUMENT_ID, (ObjectId) attributeValue);
+				writer.writeObjectId(MONGOBD_DOCUMENT_ID, (ObjectId) value);
 				break;
 			case "java.lang.Boolean": // also covers "boolean"
-				final boolean booleanValue = (boolean) attributeValue;
+				final boolean booleanValue = (boolean) value;
 				if(booleanValue != false) {
-					writer.writeBoolean(attributeName, booleanValue);
+					writer.writeBoolean(name, booleanValue);
 				}
 				break;
 			case "java.lang.Byte": // covers also "int" with is autoboxed
-				final byte byteValue = (byte) attributeValue;
+				final byte byteValue = (byte) value;
 				if(byteValue != 0) {
-					writer.writeInt32(attributeName, byteValue);
+					writer.writeInt32(name, byteValue);
 				}
 				break;
 			case "java.lang.Short": // covers also "int" with is autoboxed
-				final short shortValue = (short) attributeValue;
+				final short shortValue = (short) value;
 				if(shortValue != 0) {
-					writer.writeInt32(attributeName, shortValue);
+					writer.writeInt32(name, shortValue);
 				}
 				break;
 			case "java.lang.Character": // covers also "int" with is autoboxed
-				final char charValue = (char) attributeValue;
+				final char charValue = (char) value;
 				if(charValue != 0) {
-					writer.writeInt32(attributeName, charValue);
+					writer.writeInt32(name, charValue);
 				}
 				break;
 			case "java.lang.Integer": // covers also "int" with is autoboxed
-				final int intValue = (int) attributeValue;
+				final int intValue = (int) value;
 				if(intValue != 0) {
-					writer.writeInt32(attributeName, intValue);
+					writer.writeInt32(name, intValue);
 				}
 				break;
 			case "java.lang.Long": // covers also "long" with is autoboxed
-				final long longValue = (long) attributeValue;
+				final long longValue = (long) value;
 				if(longValue != 0) {
-					writer.writeInt64(attributeName, longValue);
+					writer.writeInt64(name, longValue);
 				}
 				break;
 			case "java.lang.Float": // covers also "float" with is autoboxed
-				final float floatValue = (float) attributeValue;
+				final float floatValue = (float) value;
 				if(floatValue != 0) {
-					writer.writeDouble(attributeName, floatValue);
+					writer.writeDouble(name, floatValue);
 				}
 				break;
 			case "java.lang.Double": // covers also "double" with is autoboxed
-				final double doubleValue = (double) attributeValue;
+				final double doubleValue = (double) value;
 				if(doubleValue != 0) {
-					writer.writeDouble(attributeName, doubleValue);
+					writer.writeDouble(name, doubleValue);
 				}
 				break;
 			case "java.lang.String":
-				writer.writeString(attributeName, (String) attributeValue);
+				writer.writeString(name, (String) value);
 				break;
 			case "java.util.Date":
-				writer.writeDateTime(attributeName, ((Date) attributeValue).getTime());
+				writer.writeDateTime(name, ((Date) value).getTime());
 				break;
 			case "org.lambdamatic.mongodb.types.geospatial.Location":
-				writer.writeStartDocument(attributeName);
-				new LocationCodec(codecRegistry, bindingService).encode(writer, (Location)attributeValue, encoderContext);
+				writer.writeStartDocument(name);
+				new LocationCodec(codecRegistry, bindingService).encode(writer, (Location)value, encoderContext);
 				writer.writeEndDocument();
 				break;
 			// assume this is an embedded document
 			default: 
-				encodeDomainObject(writer, attributeName, attributeValue, encoderContext);
+				encodeDomainObject(writer, name, value, encoderContext);
+			}
+		}
+	}
+
+	/**
+	 * Writes the given named value 
+	 * @param writer the {@link BsonWriter} to use
+	 * @param value the actual value
+	 * @param encoderContext the {@link EncoderContext}
+	 * 
+	 */
+	 void writeValue(final BsonWriter writer, final Object value, final EncoderContext encoderContext) {
+		if(value == null) {
+			writer.writeNull();
+		} else if (value.getClass().isEnum()) {
+			writer.writeString(((Enum<?>) value).name());
+		} else if(value instanceof Collection) {
+			writer.writeStartArray();
+			final Collection<?> values = (Collection<?>) value;
+			values.stream().forEach(v -> writeValue(writer, v, encoderContext));
+			writer.writeEndArray();
+		} else {
+			// FIXME: complete the switches to cover all writer.writeXXX methods
+			final String attributeValueClassName = value.getClass().getName();
+			switch(attributeValueClassName) {
+			case "org.bson.types.ObjectId":
+				writer.writeObjectId(MONGOBD_DOCUMENT_ID, (ObjectId) value);
+				break;
+			case "java.lang.Boolean": // also covers "boolean"
+				final boolean booleanValue = (boolean) value;
+				if(booleanValue != false) {
+					writer.writeBoolean(booleanValue);
+				}
+				break;
+			case "java.lang.Byte": // covers also "int" with is autoboxed
+				final byte byteValue = (byte) value;
+				if(byteValue != 0) {
+					writer.writeInt32(byteValue);
+				}
+				break;
+			case "java.lang.Short": // covers also "int" with is autoboxed
+				final short shortValue = (short) value;
+				if(shortValue != 0) {
+					writer.writeInt32(shortValue);
+				}
+				break;
+			case "java.lang.Character": // covers also "int" with is autoboxed
+				final char charValue = (char) value;
+				if(charValue != 0) {
+					writer.writeInt32(charValue);
+				}
+				break;
+			case "java.lang.Integer": // covers also "int" with is autoboxed
+				final int intValue = (int) value;
+				if(intValue != 0) {
+					writer.writeInt32(intValue);
+				}
+				break;
+			case "java.lang.Long": // covers also "long" with is autoboxed
+				final long longValue = (long) value;
+				if(longValue != 0) {
+					writer.writeInt64(longValue);
+				}
+				break;
+			case "java.lang.Float": // covers also "float" with is autoboxed
+				final float floatValue = (float) value;
+				if(floatValue != 0) {
+					writer.writeDouble(floatValue);
+				}
+				break;
+			case "java.lang.Double": // covers also "double" with is autoboxed
+				final double doubleValue = (double) value;
+				if(doubleValue != 0) {
+					writer.writeDouble(doubleValue);
+				}
+				break;
+			case "java.lang.String":
+				writer.writeString((String) value);
+				break;
+			case "java.util.Date":
+				writer.writeDateTime(((Date) value).getTime());
+				break;
+			case "org.lambdamatic.mongodb.types.geospatial.Location":
+				writer.writeStartDocument();
+				new LocationCodec(codecRegistry, bindingService).encode(writer, (Location)value, encoderContext);
+				writer.writeEndDocument();
+				break;
+			// assume this is an embedded document
+			default: 
+				encodeDomainObject(writer, value, encoderContext);
 			}
 		}
 	}
@@ -311,7 +427,7 @@ public class DocumentCodec<T> implements Codec<T> {
 		}
 	}
 
-	void encodeDomainObject(final BsonWriter writer, final String documentName, final Object domainObject, final EncoderContext encoderContext) {
+	private void encodeDomainObject(final BsonWriter writer, final String documentName, final Object domainObject, final EncoderContext encoderContext) {
 		try {
 			writer.writeStartDocument(documentName);
 			encodeDomainObjectContent(writer, domainObject, encoderContext);
@@ -335,9 +451,9 @@ public class DocumentCodec<T> implements Codec<T> {
 				if (idValue == null) {
 					final ObjectId generatedIdValue = new ObjectId();
 					idBinding.get().getValue().set(domainObject, generatedIdValue);
-					writeValue(writer, MONGOBD_DOCUMENT_ID, generatedIdValue, encoderContext);
+					writeNamedValue(writer, MONGOBD_DOCUMENT_ID, generatedIdValue, encoderContext);
 				} else {
-					writeValue(writer, MONGOBD_DOCUMENT_ID, idValue, encoderContext);
+					writeNamedValue(writer, MONGOBD_DOCUMENT_ID, idValue, encoderContext);
 				}
 			}
 		}
@@ -346,7 +462,7 @@ public class DocumentCodec<T> implements Codec<T> {
 		// write other attributes
 		bindings.entrySet().stream().filter(e -> !bindingService.isIdBinding(e)).forEach(
 				binding -> {
-					writeValue(writer, binding.getKey(), bindingService.getFieldValue(domainObject, binding.getValue()), encoderContext);
+					writeNamedValue(writer, binding.getKey(), bindingService.getFieldValue(domainObject, binding.getValue()), encoderContext);
 				});
 	}
 	
@@ -370,7 +486,7 @@ public class DocumentCodec<T> implements Codec<T> {
 	 * @param value the value to convert
 	 * @return the converted value
 	 */
-	Object convert(final Object value, final Class<?> targetType) {
+	private Object convert(final Object value, final Class<?> targetType) {
 		// enum field
 		if(targetType.isEnum() && value instanceof String) {
 			for(Object e : targetType.getEnumConstants()) {
@@ -384,7 +500,7 @@ public class DocumentCodec<T> implements Codec<T> {
 		else if(value instanceof BsonDocument && targetType.getAnnotation(EmbeddedDocument.class) != null) {
 			return decodeDocument(new BsonDocumentReader((BsonDocument)value), DecoderContext.builder().build());
 		}
-		// array of embedded values or documents
+		// array of embedded values/documents
 		else if(targetType.isArray()) {
 			final Class<?> componentType = targetType.getComponentType();
 			final List<Object> values = new ArrayList<>();
@@ -392,6 +508,22 @@ public class DocumentCodec<T> implements Codec<T> {
 				values.add(getValue((BsonValue)v));
 			}
 			return values.toArray((Object[])java.lang.reflect.Array.newInstance(componentType, values.size()));
+		} 
+		// List of embedded values/documents
+		else if(List.class.isAssignableFrom(targetType)) {
+			final List<Object> values = new ArrayList<>();
+			for(Object v : (Collection<?>)value) {
+				values.add(getValue((BsonValue)v));
+			}
+			return values;
+		} 
+		// Set of embedded values/documents
+		else if(Set.class.isAssignableFrom(targetType)) {
+			final Set<Object> values = new HashSet<>();
+			for(Object v : (Collection<?>)value) {
+				values.add(getValue((BsonValue)v));
+			}
+			return values;
 		} 
 		// other types of fields.
 		else {

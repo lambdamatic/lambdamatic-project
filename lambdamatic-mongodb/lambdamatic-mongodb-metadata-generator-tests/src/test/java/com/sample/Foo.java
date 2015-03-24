@@ -8,10 +8,15 @@
 
 package com.sample;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.bson.types.ObjectId;
 import org.lambdamatic.mongodb.annotations.Document;
+import org.lambdamatic.mongodb.annotations.DocumentCollection;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.types.geospatial.Location;
@@ -38,6 +43,9 @@ public class Foo {
 		private Location location;
 		private Date date;
 		private Bar bar;
+		private List<String> stringList;
+		private String[] stringArray;
+		private Set<String> stringSet;
 
 		public FooBuilder withId(final ObjectId id) {
 			this.id = id;
@@ -109,6 +117,21 @@ public class Foo {
 			return this;
 		}
 		
+		public FooBuilder withStringList(final String... values) {
+			this.stringList = Arrays.asList(values);
+			return this;
+		}
+		
+		public FooBuilder withStringArray(final String... values) {
+			this.stringArray = values;
+			return this;
+		}
+		
+		public FooBuilder withStringSet(final String... values) {
+			this.stringSet = new TreeSet<>(Arrays.asList(values));
+			return this;
+		}
+		
 		public Foo build() {
 			return new Foo(this);
 		}
@@ -151,11 +174,18 @@ public class Foo {
 	@DocumentField
 	private Location location;
 	
+	@DocumentCollection
+	private List<String> stringFields;
+
 	private Bar bar;
 	
 	@DocumentField
 	private Date date;
 	
+	private String[] stringArray;
+
+	private Set<String> stringSet;
+
 	public Foo() {
 		
 	}
@@ -176,6 +206,9 @@ public class Foo {
 		this.primitiveShortField = fooBuilder.primitiveShortField;
 		this.date = fooBuilder.date;
 		this.bar = fooBuilder.bar;
+		this.stringFields = fooBuilder.stringList;
+		this.setStringArray(fooBuilder.stringArray);
+		this.setStringSet(fooBuilder.stringSet);
 	}
 
 	/**
@@ -354,9 +387,22 @@ public class Foo {
 		this.bar = bar;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
+	public String[] getStringArray() {
+		return stringArray;
+	}
+
+	public void setStringArray(String[] stringArray) {
+		this.stringArray = stringArray;
+	}
+
+	public Set<String> getStringSet() {
+		return stringSet;
+	}
+
+	public void setStringSet(Set<String> stringSet) {
+		this.stringSet = stringSet;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

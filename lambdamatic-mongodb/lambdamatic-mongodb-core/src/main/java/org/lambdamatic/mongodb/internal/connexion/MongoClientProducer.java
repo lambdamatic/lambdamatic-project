@@ -18,7 +18,6 @@ import javax.inject.Singleton;
 import org.lambdamatic.mongodb.internal.configuration.MongoClientConfiguration;
 
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
 
 /**
  * CDI Producer for a single {@link MongoClient} instance.

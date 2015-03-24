@@ -9,7 +9,7 @@ package org.lambdamatic.mongodb.metadata;
  */
 public enum MongoOperator {
 	
-	OR("$or"), AND("$and"), NOT("$not"), EQUALS("$eq"), NOT_EQUALS("$ne"), GREATER("$gt"), GREATER_EQUALS("$gte"), LESS("$lt"), LESS_EQUALS("$lte"), IN("$in"), NOT_IN("$nin"), GEO_WITHIN("$geoWithin");
+	OR("$or"), AND("$and"), NOT("$not"), EQUALS("$eq"), NOT_EQUALS("$ne"), GREATER("$gt"), GREATER_EQUALS("$gte"), LESS("$lt"), LESS_EQUALS("$lte"), IN("$in"), NOT_IN("$nin"), GEO_WITHIN("$geoWithin"), ALL("$all"), ELEMEMT_MATCH("$elemMatch"), SIZE("$size");
 	
 	private final String literal;
 	

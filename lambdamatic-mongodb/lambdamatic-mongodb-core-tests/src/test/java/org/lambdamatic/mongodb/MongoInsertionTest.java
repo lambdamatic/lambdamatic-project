@@ -8,6 +8,7 @@
 
 package org.lambdamatic.mongodb;
 
+import static com.lordofthejars.nosqlunit.mongodb.MongoDbConfigurationBuilder.mongoDb;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -18,6 +19,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.lambdamatic.mongodb.testutils.DropMongoCollectionsRule;
 
+import com.lordofthejars.nosqlunit.annotation.ShouldMatchDataSet;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import com.lordofthejars.nosqlunit.core.LoadStrategyEnum;
+import com.lordofthejars.nosqlunit.mongodb.MongoDbRule;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoClient;
 import com.sample.Bar;
@@ -46,20 +51,26 @@ public class MongoInsertionTest {
 	public DropMongoCollectionsRule collectionCleaning = new DropMongoCollectionsRule(mongoClient, DATABASE_NAME,
 			COLLECTION_NAME);
 
+	@Rule
+	public MongoDbRule remoteMongoDbRule = new MongoDbRule(mongoDb().databaseName(DATABASE_NAME).build());
+	
 	@Test
-	public void shouldInsertOneFoo() throws IOException {
+	@UsingDataSet(loadStrategy=LoadStrategyEnum.DELETE_ALL)
+	@ShouldMatchDataSet(location="/expected-insertions.json")
+	public void shouldInsertOneBasicDocument() throws IOException {
 		// given
 		final FooCollection fooCollection = new FooCollection(mongoClient, DATABASE_NAME, COLLECTION_NAME);
-		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO)
-				.build();
+		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).
+				withStringList("foo", "bar", "baz").build();
 		// when
 		fooCollection.insert(foo);
 		// then
+		assertThat(mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME).count()).isEqualTo(1);
 		assertThat(foo.getId()).isNotNull();
 	}
 
 	@Test
-	public void shouldInsertOneFooBar() throws IOException {
+	public void shouldInsertOneDocument() throws IOException {
 		// given
 		final FooCollection fooCollection = new FooCollection(mongoClient, DATABASE_NAME, COLLECTION_NAME);
 		final Bar bar = new BarBuilder().withStringField("jbar").withPrimitiveIntField(21).withEnumBar(EnumBar.BAR)
@@ -70,12 +81,36 @@ public class MongoInsertionTest {
 		fooCollection.insert(foo);
 		// then
 		assertThat(foo.getId()).isNotNull();
-		final Document createdDoc = mongoClient.getDatabase("lambdamatic-tests").getCollection("foos").find().first();
+		assertThat(mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME).count()).isEqualTo(1);
+		final Document createdDoc = mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME).find().first();
 		final Document barSubdoc = (Document) createdDoc.get("bar");
 		assertThat(barSubdoc).isNotNull();
 		assertThat(barSubdoc.get("_id")).as("Check embedded doc has no '_id' field").isNull();
 	}
 
+	@Test
+	public void shouldInsertTwoDocuments() throws IOException {
+		// given
+		final FooCollection fooCollection = new FooCollection(mongoClient, DATABASE_NAME, COLLECTION_NAME);
+		final Bar bar1 = new BarBuilder().withStringField("jbar1").withPrimitiveIntField(21).withEnumBar(EnumBar.BAR)
+				.build();
+		final Foo foo1 = new FooBuilder().withStringField("jdoe1").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO)
+				.withBar(bar1).build();
+		final Bar bar2 = new BarBuilder().withStringField("jbar2").withPrimitiveIntField(21).withEnumBar(EnumBar.BAR)
+				.build();
+		final Foo foo2 = new FooBuilder().withStringField("jdoe2").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO)
+				.withBar(bar2).build();
+		// when
+		fooCollection.insert(foo1, foo2);
+		// then
+		assertThat(foo1.getId()).isNotNull();
+		assertThat(mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME).count()).isEqualTo(2);
+		final Document createdDoc = mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME).find().first();
+		final Document barSubdoc = (Document) createdDoc.get("bar");
+		assertThat(barSubdoc).isNotNull();
+		assertThat(barSubdoc.get("_id")).as("Check embedded doc has no '_id' field").isNull();
+	}
+	
 	@Test(expected = MongoBulkWriteException.class)
 	public void shouldNotInsertOneFooWithIdTwice() throws IOException {
 		// given
@@ -99,6 +134,7 @@ public class MongoInsertionTest {
 				.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).build();
 		fooCollection.upsert(foo);
 		// then
+		assertThat(mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME).count()).isEqualTo(1);
 		assertThat(foo.getStringField()).isNotNull().isEqualTo("j.doe");
 	}
 

@@ -4,6 +4,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.lambdamatic.mongodb.annotations.DocumentField;
@@ -65,6 +66,8 @@ public class ProjectionFieldMetadata extends BaseFieldMetadata {
 			if (variableTypeElement.getAnnotation(EmbeddedDocument.class) != null) {
 				return EmbeddedDocumentAnnotationProcessor.generateProjectionMetadataSimpleClassName(variableTypeElement);
 			}
+			return ProjectionField.class.getSimpleName();
+		} else if(variableType.getKind() == TypeKind.ARRAY) {
 			return ProjectionField.class.getSimpleName();
 		}
 		throw new MetadataGenerationException("Unexpected variable type for '" + variableElement.getSimpleName() + "' : " + variableType);

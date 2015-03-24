@@ -58,7 +58,10 @@ public class CompilationAndAnnotationProcessingRule implements MethodRule {
 	private static File toFolder(final String relativePath) {
 		final String[] pathFragments = relativePath.split("/");
 		final File folder = Paths.get(System.getProperty("user.dir"), pathFragments).toFile();
-		assertThat(folder).isDirectory();
+		//assertThat(folder).exists().isDirectory();
+		if(!folder.exists()) {
+			folder.mkdirs();
+		}
 		return folder;
 	}
 

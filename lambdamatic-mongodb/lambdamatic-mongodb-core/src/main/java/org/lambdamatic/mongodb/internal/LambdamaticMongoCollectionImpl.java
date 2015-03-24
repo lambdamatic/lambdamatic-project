@@ -22,7 +22,6 @@ import org.lambdamatic.mongodb.internal.codecs.BindingService;
 import org.lambdamatic.mongodb.internal.codecs.DocumentCodecProvider;
 import org.lambdamatic.mongodb.internal.codecs.FilterExpressionCodecProvider;
 import org.lambdamatic.mongodb.internal.codecs.IdFilterCodecProvider;
-import org.lambdamatic.mongodb.internal.codecs.ProjectionExpressionCodec;
 import org.lambdamatic.mongodb.internal.codecs.ProjectionExpressionCodecProvider;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
@@ -33,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
 
 /**
  * Database Collection for a given type of element (along with its associated
@@ -111,10 +111,9 @@ public class LambdamaticMongoCollectionImpl<T, QM extends QueryMetadata<T>, PM e
 
 	@Override
 	public void upsert(final T domainObject) {
-		final BsonDocument idFilterDocument = BsonDocumentWrapper.asBsonDocument(domainObject, this.codecRegistry);
-		mongoCollection.replaceOne(idFilterDocument, domainObject);
+		final BsonDocument idFilterDocument = BsonDocumentWrapper.asBsonDocument(new IdFilter<T>(domainObject), this.codecRegistry);
+		mongoCollection.replaceOne(idFilterDocument, domainObject, new UpdateOptions().upsert(true));
 	}
-	
 	
 	/**
 	 * {@inheritDoc}
