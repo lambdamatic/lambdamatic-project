@@ -11,14 +11,18 @@ package org.lambdamatic.mongodb.internal;
 import java.util.Arrays;
 
 import org.bson.BsonDocument;
+import org.bson.BsonDocumentWrapper;
 import org.bson.codecs.BsonValueCodecProvider;
-import org.bson.codecs.configuration.RootCodecRegistry;
+import org.bson.codecs.Codec;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
 import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.mongodb.LambdamaticMongoCollection;
 import org.lambdamatic.mongodb.internal.codecs.BindingService;
 import org.lambdamatic.mongodb.internal.codecs.DocumentCodecProvider;
 import org.lambdamatic.mongodb.internal.codecs.FilterExpressionCodecProvider;
 import org.lambdamatic.mongodb.internal.codecs.IdFilterCodecProvider;
+import org.lambdamatic.mongodb.internal.codecs.ProjectionExpressionCodec;
 import org.lambdamatic.mongodb.internal.codecs.ProjectionExpressionCodecProvider;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
@@ -52,6 +56,9 @@ public class LambdamaticMongoCollectionImpl<T, QM extends QueryMetadata<T>, PM e
 	 * {@link BsonDocument}.
 	 */
 	private final BindingService bindingService;
+
+	/** The registry of the custom {@link Codec}.*/
+	private final CodecRegistry codecRegistry;
 	
 	/**
 	 * Constructor.
@@ -78,9 +85,8 @@ public class LambdamaticMongoCollectionImpl<T, QM extends QueryMetadata<T>, PM e
 	public LambdamaticMongoCollectionImpl(final MongoClient mongoClient, final String databaseName,
 			final String collectionName, final Class<T> targetClass) {
 		this.bindingService = new BindingService();
-		final RootCodecRegistry codecRegistry = new RootCodecRegistry(Arrays.asList(new DocumentCodecProvider(
-				bindingService), new FilterExpressionCodecProvider(), new ProjectionExpressionCodecProvider(),
-				new IdFilterCodecProvider(bindingService), new BsonValueCodecProvider()));
+		this.codecRegistry = CodecRegistries.fromProviders(new DocumentCodecProvider(
+				bindingService), new ProjectionExpressionCodecProvider(), new FilterExpressionCodecProvider(), new IdFilterCodecProvider(bindingService), new BsonValueCodecProvider());
 		this.mongoCollection = mongoClient.getDatabase(databaseName).withCodecRegistry(codecRegistry)
 				.getCollection(collectionName, targetClass);
 		this.targetClass = targetClass;
@@ -92,19 +98,21 @@ public class LambdamaticMongoCollectionImpl<T, QM extends QueryMetadata<T>, PM e
 	 */
 	@Override
 	public FindContext<T, PM> find(final SerializablePredicate<QM> filterExpression) {
-		return new FindContextImpl<T, PM>(mongoCollection.find(filterExpression));
+		final BsonDocument filterDocument = BsonDocumentWrapper.asBsonDocument(filterExpression, this.codecRegistry);
+		return new FindContextImpl<T, PM>(mongoCollection.find(filterDocument), this.codecRegistry);
 	}
 
 	@Override
-	public void insert(@SuppressWarnings("unchecked") T... domainObjects) {
+	public void insert(@SuppressWarnings("unchecked") final T... domainObjects) {
 		if(domainObjects.length > 0) {
 			mongoCollection.insertMany(Arrays.asList(domainObjects));
 		}
 	}
 
 	@Override
-	public void upsert(T domainObject) {
-		mongoCollection.replaceOne(new IdFilter<T>(domainObject), domainObject);
+	public void upsert(final T domainObject) {
+		final BsonDocument idFilterDocument = BsonDocumentWrapper.asBsonDocument(domainObject, this.codecRegistry);
+		mongoCollection.replaceOne(idFilterDocument, domainObject);
 	}
 	
 	

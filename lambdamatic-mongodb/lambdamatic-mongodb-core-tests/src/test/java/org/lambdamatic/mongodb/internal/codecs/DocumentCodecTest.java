@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -22,7 +21,8 @@ import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.ValueCodecProvider;
-import org.bson.codecs.configuration.RootCodecRegistry;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.json.JsonReader;
 import org.bson.json.JsonWriter;
 import org.bson.types.ObjectId;
@@ -34,9 +34,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.lambdamatic.mongodb.internal.codecs.BindingService;
-import org.lambdamatic.mongodb.internal.codecs.DocumentCodec;
-import org.lambdamatic.mongodb.internal.codecs.FilterExpressionCodec;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,9 +56,10 @@ import com.sample.Foo.FooBuilder;
 @RunWith(Parameterized.class)
 public class DocumentCodecTest {
 
-	private static final RootCodecRegistry DEFAULT_CODEC_REGISTRY = new RootCodecRegistry(Arrays.asList(
+	private static final CodecRegistry DEFAULT_CODEC_REGISTRY = CodecRegistries.fromProviders(
 			new ValueCodecProvider(), new DBRefCodecProvider(), new DBObjectCodecProvider(),
-			new BsonValueCodecProvider()));
+			new BsonValueCodecProvider());
+	
 	/** The usual Logger. */
 	private static final Logger LOGGER = LoggerFactory.getLogger(DocumentCodecTest.class);
 

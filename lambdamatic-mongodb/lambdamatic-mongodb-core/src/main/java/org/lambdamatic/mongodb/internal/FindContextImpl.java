@@ -6,6 +6,10 @@ package org.lambdamatic.mongodb.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bson.BsonDocument;
+import org.bson.BsonDocumentWrapper;
+import org.bson.codecs.Codec;
+import org.bson.codecs.configuration.CodecRegistry;
 import org.lambdamatic.SerializableFunction;
 import org.lambdamatic.mongodb.metadata.Projection;
 import org.lambdamatic.mongodb.query.context.FindContext;
@@ -24,17 +28,23 @@ public class FindContextImpl<T, PM> implements FindContext<T, PM> {
 	/** the underlying Mongo {@link FindFluent}.*/ 
 	private final FindIterable<T> find;
 	
+	/** The registry of the custom {@link Codec}.*/
+	private final CodecRegistry codecRegistry;
+	
 	/**
 	 * Constructor
-	 * @param find the {@link FindFluent} element built with a Filter argument.
+	 * @param find The {@link FindFluent} element built with a Filter argument.
+	 * @param codecRegistry The registry of the custom {@link Codec}.
 	 */
-	public FindContextImpl(final FindIterable<T> find) {
+	public FindContextImpl(final FindIterable<T> find, final CodecRegistry codecRegistry) {
 		this.find = find;
+		this.codecRegistry = codecRegistry;
 	}
 
 	@Override
 	public FindTerminalContext<T> projection(final SerializableFunction<PM, Projection> projectionExpression) {
-		find.projection(projectionExpression);
+		final BsonDocument projectionDocument = BsonDocumentWrapper.asBsonDocument(projectionExpression, codecRegistry);
+		find.projection(projectionDocument);
 		return this;
 	}
 	

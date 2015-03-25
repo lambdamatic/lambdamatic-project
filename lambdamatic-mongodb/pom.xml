@@ -13,7 +13,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<mongodb.driver.version>3.0.0-beta2</mongodb.driver.version>
+		<mongodb.driver.version>3.0.0-rc1</mongodb.driver.version>
 		<jackson.version>2.4.0</jackson.version>
 		<bson4jackson.version>2.4.0</bson4jackson.version>
 		<stringtemplate.version>4.0.2</stringtemplate.version>

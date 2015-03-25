@@ -32,7 +32,7 @@ public class DropMongoCollectionsRule implements MethodRule {
 			@Override
 			public void evaluate() throws Throwable {
 				// clean the collection
-				collection.dropCollection();
+				collection.drop();
 				base.evaluate();
 			}
 		};
