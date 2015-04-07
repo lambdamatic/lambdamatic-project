@@ -5,8 +5,8 @@ package org.lambdamatic.analyzer.ast.node;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -30,7 +30,7 @@ public class ArrayVariable extends ComplexExpression {
 	public <T> ArrayVariable(final Class<T> instanceType, final Expression... elements) {
 		this(instanceType, elements.length);
 		System.arraycopy(elements, 0, this.elements, 0, elements.length);
-		Arrays.asList(this.elements).stream().forEach(e -> e.setParent(this));
+		Stream.of(this.elements).forEach(e -> e.setParent(this));
 	}
 
 	/**
@@ -126,8 +126,7 @@ public class ArrayVariable extends ComplexExpression {
 
 	@Override
 	public boolean anyElementMatches(ExpressionType type) {
-		final List<Expression> elements = Arrays.asList(this.elements);
-		return elements.stream().anyMatch(e -> e.anyElementMatches(type));
+		return Stream.of(this.elements).anyMatch(e -> e.anyElementMatches(type));
 	}
 
 	/**
@@ -205,7 +204,7 @@ public class ArrayVariable extends ComplexExpression {
 	@Override
 	public String toString() {
 		return this.instanceType.getName()
-				+ Arrays.asList(elements).stream().map(Expression::toString).collect(Collectors.toList());
+				+ Stream.of(elements).map(Expression::toString).collect(Collectors.toList());
 	}
 
 	/*

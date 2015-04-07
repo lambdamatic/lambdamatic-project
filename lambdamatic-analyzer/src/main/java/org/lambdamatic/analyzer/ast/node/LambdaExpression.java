@@ -1,9 +1,7 @@
 /**
  * 
  */
-package org.lambdamatic;
-
-import org.lambdamatic.analyzer.ast.node.Expression;
+package org.lambdamatic.analyzer.ast.node;
 
 /**
  * The AST form of the user-defined Lambda Expression and its relevant data in a form that can be further manipulated.
@@ -11,7 +9,7 @@ import org.lambdamatic.analyzer.ast.node.Expression;
  * @author xcoulon
  *
  */
-public class LambdaExpression {
+public class LambdaExpression extends Expression{
 
 	/** The AST form of the user-defined Lambda Expression AST with captured arguments. */
 	private final Expression expression;
@@ -25,8 +23,39 @@ public class LambdaExpression {
 	 * @param argumentType The type of the element being evaluated in the AST form of the user-defined Lambda Expression.
 	 */
 	public LambdaExpression(final Expression expression, final Class<?> argumentType) {
+		super(generateId(), false);
 		this.expression = expression;
 		this.argumentType = argumentType;
+	}
+	
+	@Override
+	public ExpressionType getExpressionType() {
+		return ExpressionType.LAMBDA_EXPRESSION;
+	}
+
+	@Override
+	public Class<?> getJavaType() {
+		return argumentType;
+	}
+
+	@Override
+	public Expression inverse() {
+		return new LambdaExpression(expression.inverse(), argumentType);
+	}
+
+	@Override
+	public boolean canBeInverted() {
+		return expression.canBeInverted();
+	}
+
+	@Override
+	public Expression duplicate(int id) {
+		return new LambdaExpression(expression.duplicate(id), argumentType);
+	}
+
+	@Override
+	public Expression duplicate() {
+		return this.duplicate(generateId());
 	}
 
 	/**
@@ -78,7 +107,5 @@ public class LambdaExpression {
 			return false;
 		return true;
 	}
-	
-	
 
 }

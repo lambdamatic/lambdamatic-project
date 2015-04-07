@@ -22,9 +22,9 @@
 	<modules>
 		<module>lambdamatic-mongodb-api</module>
 		<module>lambdamatic-mongodb-metadata-generator</module>
+		<module>lambdamatic-mongodb-metadata-generator-tests</module>
 		<module>lambdamatic-mongodb-core</module>
 		<module>lambdamatic-mongodb-core-tests</module>
-		<module>lambdamatic-mongodb-metadata-generator-tests</module>
 	</modules>
 
 	<dependencyManagement>

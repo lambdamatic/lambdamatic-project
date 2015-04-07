@@ -9,6 +9,10 @@
 package org.lambdamatic.analyzer.ast;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.lambdamatic.testutils.JavaMethods.Object_equals;
+import static org.lambdamatic.testutils.JavaMethods.TestPojo_getEnumPojo;
+import static org.lambdamatic.testutils.JavaMethods.TestPojo_getPrimitiveIntValue;
+import static org.lambdamatic.testutils.JavaMethods.TestPojo_getStringValue;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,32 +50,32 @@ public class ExpressionRewriterTest {
 	public static Object[][] data() {
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		// no substitution
-		final MethodInvocation expression0 = new MethodInvocation(var, "equals", Boolean.class,
+		final MethodInvocation expression0 = new MethodInvocation(var, Object_equals,
 				new StringLiteral("foo"));
 		// substitute 2 enum literals
 		final InfixExpression getPrimitiveIntMethodEquals42_1 = new InfixExpression(InfixOperator.EQUALS,
-				new MethodInvocation(var, "getPrimitiveIntValue", int.class), new NumberLiteral(42));
+				new MethodInvocation(var, TestPojo_getPrimitiveIntValue), new NumberLiteral(42));
 		final InfixExpression getPrimitiveIntMethodEquals42_2 = new InfixExpression(InfixOperator.NOT_EQUALS,
-				new MethodInvocation(var, "getPrimitiveIntValue", int.class), new NumberLiteral(42));
+				new MethodInvocation(var, TestPojo_getPrimitiveIntValue), new NumberLiteral(42));
 		final InfixExpression getPrimitiveIntMethodEquals42_3 = new InfixExpression(InfixOperator.NOT_EQUALS,
-				new MethodInvocation(var, "getPrimitiveIntValue", int.class), new NumberLiteral(42));
+				new MethodInvocation(var, TestPojo_getPrimitiveIntValue), new NumberLiteral(42));
 		final InfixExpression getEnumPojoMethodEqualsFieldBar_1 = new InfixExpression(InfixOperator.EQUALS,
-				new MethodInvocation(var, "getEnumPojo", EnumPojo.class), new FieldAccess(new ClassLiteral(
+				new MethodInvocation(var, TestPojo_getEnumPojo), new FieldAccess(new ClassLiteral(
 						EnumPojo.class), "BAR"));
 		final InfixExpression getEnumPojoMethodEqualsFieldBar_2 = new InfixExpression(InfixOperator.NOT_EQUALS,
-				new MethodInvocation(var, "getEnumPojo", EnumPojo.class), new FieldAccess(new ClassLiteral(
+				new MethodInvocation(var, TestPojo_getEnumPojo), new FieldAccess(new ClassLiteral(
 						EnumPojo.class), "BAR"));
 		final InfixExpression getStringValueMethodEqualsFoo1 = new InfixExpression(InfixOperator.EQUALS,
-				new MethodInvocation(var, "getStringValue", String.class), new StringLiteral("foo"));
+				new MethodInvocation(var, TestPojo_getStringValue), new StringLiteral("foo"));
 		final InfixExpression expression1 = new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				getPrimitiveIntMethodEquals42_1, new InfixExpression(InfixOperator.CONDITIONAL_AND,
 						getPrimitiveIntMethodEquals42_2, getEnumPojoMethodEqualsFieldBar_1), new InfixExpression(
 						InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42_3,
 						getEnumPojoMethodEqualsFieldBar_2.inverse(), getStringValueMethodEqualsFoo1));
 		final InfixExpression getEnumPojoMethodEqualsEnumBar_1 = new InfixExpression(InfixOperator.EQUALS,
-				new MethodInvocation(var, "getEnumPojo", EnumPojo.class), new EnumLiteral(EnumPojo.BAR));
+				new MethodInvocation(var, TestPojo_getEnumPojo), new EnumLiteral(EnumPojo.BAR));
 		final InfixExpression getEnumPojoMethodEqualsEnumBar_2 = new InfixExpression(InfixOperator.EQUALS,
-				new MethodInvocation(var, "getEnumPojo", EnumPojo.class), new EnumLiteral(EnumPojo.BAR));
+				new MethodInvocation(var, TestPojo_getEnumPojo), new EnumLiteral(EnumPojo.BAR));
 		final InfixExpression expectedExpression1 = new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				getPrimitiveIntMethodEquals42_1, new InfixExpression(InfixOperator.CONDITIONAL_AND,
 						getPrimitiveIntMethodEquals42_2, getEnumPojoMethodEqualsEnumBar_1), new InfixExpression(
@@ -79,19 +83,19 @@ public class ExpressionRewriterTest {
 						getEnumPojoMethodEqualsEnumBar_2, getStringValueMethodEqualsFoo1));
 		// Substitute 2 Enum literals from duplicate expressions
 		final InfixExpression getPrimitiveIntMethodEquals42 = new InfixExpression(InfixOperator.EQUALS,
-				new MethodInvocation(var, "getPrimitiveIntValue", int.class), new NumberLiteral(42));
+				new MethodInvocation(var, TestPojo_getPrimitiveIntValue), new NumberLiteral(42));
 		final InfixExpression getEnumPojoMethodEqualsFieldBar = new InfixExpression(InfixOperator.EQUALS,
-				new MethodInvocation(var, "getEnumPojo", EnumPojo.class), new FieldAccess(new ClassLiteral(
+				new MethodInvocation(var, TestPojo_getEnumPojo), new FieldAccess(new ClassLiteral(
 						EnumPojo.class), "BAR"));
 		final InfixExpression getStringValueMethodEqualsFoo = new InfixExpression(InfixOperator.EQUALS,
-				new MethodInvocation(var, "getStringValue", String.class), new StringLiteral("foo"));
+				new MethodInvocation(var, TestPojo_getStringValue), new StringLiteral("foo"));
 		final InfixExpression expression2 = new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				getPrimitiveIntMethodEquals42, new InfixExpression(InfixOperator.CONDITIONAL_AND,
 						getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsFieldBar), new InfixExpression(
 						InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(),
 						getEnumPojoMethodEqualsFieldBar.inverse(), getStringValueMethodEqualsFoo));
 		final InfixExpression getEnumPojoMethodEqualsEnumBar = new InfixExpression(InfixOperator.EQUALS,
-				new MethodInvocation(var, "getEnumPojo", EnumPojo.class), new EnumLiteral(EnumPojo.BAR));
+				new MethodInvocation(var, TestPojo_getEnumPojo), new EnumLiteral(EnumPojo.BAR));
 		final InfixExpression expectedExpression2 = new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				getPrimitiveIntMethodEquals42, new InfixExpression(InfixOperator.CONDITIONAL_AND,
 						getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsEnumBar), new InfixExpression(

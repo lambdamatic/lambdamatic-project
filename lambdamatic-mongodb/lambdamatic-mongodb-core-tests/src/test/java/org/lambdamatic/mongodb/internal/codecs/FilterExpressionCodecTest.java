@@ -175,9 +175,14 @@ public class FilterExpressionCodecTest {
 						(SerializablePredicate<QFoo>)((QFoo foo) -> (!foo.primitiveIntField.equals(42) && !foo.enumFoo.equals(EnumFoo.FOO)) || !foo.stringField.equals("john")),
 						"{$or: [{$and:[{primitiveIntField: {$not: {$eq: 42}}}, {enumFoo: {$not: {$eq:'FOO'}}}]},  {stringField:{$not:{$eq:'john'}}}]}"
 				},
-				// polygon with single (closed) ring defined by an array of Locations
+				// polygon with single (closed) ring defined by an array of points
 				new Object[]{
 						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.location.geoWithin(singleRing)),
+						"{location: { $geoWithin: { $geometry: {type: 'Polygon', coordinates: [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]] } } } }"
+				},
+				// element match on array
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringArray.elementMatch(e -> e.equals("foo"))),
 						"{location: { $geoWithin: { $geometry: {type: 'Polygon', coordinates: [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]] } } } }"
 				},
 		};

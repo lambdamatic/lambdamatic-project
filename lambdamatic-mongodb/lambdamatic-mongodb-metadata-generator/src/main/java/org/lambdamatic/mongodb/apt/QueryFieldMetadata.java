@@ -1,5 +1,7 @@
 package org.lambdamatic.mongodb.apt;
 
+import java.util.Collection;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
@@ -9,6 +11,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
@@ -17,6 +20,7 @@ import org.lambdamatic.mongodb.metadata.LocationField;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.lambdamatic.mongodb.metadata.QueryArrayField;
 import org.lambdamatic.mongodb.metadata.QueryField;
+import org.lambdamatic.mongodb.metadata.QueryMetadata;
 
 /**
  * Information about a given field that should be generated in a {@link ProjectionMetadata} class.
@@ -25,6 +29,9 @@ import org.lambdamatic.mongodb.metadata.QueryField;
  *
  */
 public class QueryFieldMetadata extends BaseFieldMetadata {
+
+	/** Suffix to use for the generated {@link QueryMetadata} classes. */
+	public static String QUERY_METADATA_CLASSNAME_PREFIX = "Q";
 
 	/**
 	 * Creates a {@link QueryFieldMetadata} from a field annotated with {@link DocumentId}.
@@ -66,38 +73,69 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 	// FIXME: should either use fully qualified names or add import declarations, especially in case of
 	// domain classes in other packages
 	@Override
-	protected String getVariableType(final VariableElement variableElement) throws MetadataGenerationException {
-		// try {
-		final TypeMirror variableType = variableElement.asType();
+	protected FieldType getMetadataFieldType(final TypeMirror variableType) throws MetadataGenerationException {
 		if (variableType instanceof PrimitiveType) {
-			return QueryField.class.getName() + '<' + getSimilarDeclaredType((PrimitiveType) variableType).getName()
-					+ '>';
+			return new FieldType(QueryField.class, getSimilarDeclaredType((PrimitiveType) variableType).getName());
 		} else if (variableType instanceof DeclaredType) {
-			final Element variableTypeElement = ((DeclaredType) variableType).asElement();
-			if (variableTypeElement.getKind() == ElementKind.ENUM) {
-				return QueryField.class.getName() + '<' + variableType.toString() + '>';
-			} else if (variableTypeElement.getAnnotation(EmbeddedDocument.class) != null) {
-				return EmbeddedDocumentAnnotationProcessor.generateQueryMetadataSimpleClassName(variableTypeElement);
+			final DeclaredType declaredType = (DeclaredType) variableType;
+			final Element declaredElement = declaredType.asElement();
+			try {
+				final Class<?> declaredClass = safeGetClass(declaredElement);
+				// enum
+				if (declaredElement.getKind() == ElementKind.ENUM) {
+					return new FieldType(QueryField.class, declaredElement.toString());
+				} 
+				// embedded documents
+				else if (declaredElement.getAnnotation(EmbeddedDocument.class) != null) {
+					return new FieldType(getQueryMetadataType(declaredElement));
+				} 
+				// collections (list/set)
+				else if (declaredClass != null && Collection.class.isAssignableFrom(declaredClass)) {
+					final TypeMirror typeArgument = declaredType.getTypeArguments().get(0);
+					return new FieldType(QueryArrayField.class, getMetadataFieldType(typeArgument));
+				} else {
+					switch (variableType.toString()) {
+					case "org.lambdamatic.mongodb.types.geospatial.Location":
+						return new FieldType(LocationField.class);
+					default:
+						return new FieldType(QueryField.class, variableType.toString());
+					}
+				}
+			} catch (ClassNotFoundException e) {
+				throw new MetadataGenerationException(e);
 			}
-			switch (variableType.toString()) {
-			case "org.lambdamatic.mongodb.types.geospatial.Location":
-				return LocationField.class.getName();
-			default:
-				return QueryField.class.getName() + '<' + variableType.toString() + '>';
-			}
-		} else if(variableType.getKind() == TypeKind.ARRAY) {
+		} else if (variableType.getKind() == TypeKind.ARRAY) {
 			final TypeMirror componentType = ((ArrayType) variableType).getComponentType();
 			final Element variableTypeElement = ((DeclaredType) componentType).asElement();
 			if (variableTypeElement.getKind() == ElementKind.ENUM) {
-				return QueryArrayField.class.getName() + '<' + variableType.toString() + '>';
+				return new FieldType(QueryArrayField.class, componentType.toString());
 			} else if (componentType.getAnnotation(EmbeddedDocument.class) != null) {
-				return EmbeddedDocumentAnnotationProcessor.generateQueryMetadataSimpleClassName(variableTypeElement);
+				throw new MetadataGenerationException("Unsupported EmbeddedDocument type: " + variableType);
+				// return null; //generateQueryMetadataType(variableTypeElement);
 			} else {
-				return QueryArrayField.class.getName() + '<' + variableType.toString() + '>';
+				return new FieldType(QueryArrayField.class, componentType.toString());
 			}
 		}
-		throw new MetadataGenerationException("Unexpected variable type for '" + variableElement.getSimpleName()
-				+ "' : " + variableType);
+		throw new MetadataGenerationException("Unexpected variable type: " + variableType);
+	}
+
+	private Class<?> safeGetClass(final Element declaredElement) throws ClassNotFoundException {
+		try {
+			return ClassUtils.getClass(declaredElement.toString());
+		} catch(ClassNotFoundException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * @return the fully qualified name of the {@link QueryMetadata} class corresponding to the given {@link Element}
+	 * @param variableTypeElement the Element to use
+	 */
+	static String getQueryMetadataType(final Element variableTypeElement) {
+		final String packageName = ClassUtils.getPackageCanonicalName(variableTypeElement.toString());
+		final String shortClassName = QUERY_METADATA_CLASSNAME_PREFIX
+				+ ClassUtils.getShortClassName(variableTypeElement.toString());
+		return packageName + '.' + shortClassName;
 	}
 
 	private static Class<?> getSimilarDeclaredType(final PrimitiveType variableType) {
@@ -120,8 +158,8 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 		case CHAR:
 			return Character.class;
 		default:
-			throw new ConversionException("Failed to provide a declared type equivalent to '"
-					+ variableTypeKind.name().toLowerCase() + "'");
+			throw new ConversionException(
+					"Failed to provide a declared type equivalent to '" + variableTypeKind.name().toLowerCase() + "'");
 		}
 	}
 

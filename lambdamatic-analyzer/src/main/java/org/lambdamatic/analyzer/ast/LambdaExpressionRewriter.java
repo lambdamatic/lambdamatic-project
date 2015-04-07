@@ -1,7 +1,10 @@
 package org.lambdamatic.analyzer.ast;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
@@ -60,41 +63,19 @@ public class LambdaExpressionRewriter extends ExpressionVisitor {
 	
 	@Override
 	public boolean visitMethodInvocationExpression(final MethodInvocation methodInvocation) {
-		final Class<?> sourceType = methodInvocation.getSourceExpression().getJavaType();
-		final String methodName = methodInvocation.getMethodName();
-		if(methodInvocation.getArguments().isEmpty()) {
-			if(sourceType.equals(Boolean.class) && methodName.equals("booleanValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Byte#byteValue() method
-			else if(sourceType.equals(Byte.class) && methodName.equals("byteValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Short#shortValue() method
-			else if(sourceType.equals(Short.class) && methodName.equals("shortValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Integer#intValue() method
-			else if(sourceType.equals(Integer.class) && methodName.equals("intValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Long#longValue() method
-			else if(sourceType.equals(Long.class) && methodName.equals("longValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Float#floatValue() method
-			else if(sourceType.equals(Float.class) && methodName.equals("floatValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Double#doubleValue() method
-			else if(sourceType.equals(Double.class) && methodName.equals("doubleValue")) {
-				methodInvocation.delete();
-			}
-			// drop invocation of Character#charValue() method
-			else if(sourceType.equals(Character.class) && methodName.equals("charValue")) {
-				methodInvocation.delete();
-			}
-		} 
+		if(Stream.of(new MethodMatcher(Boolean.class, "booleanValue"), 
+				new MethodMatcher(Byte.class, "byteValue"),
+				new MethodMatcher(Short.class, "shortValue"),
+				new MethodMatcher(Integer.class, "intValue"),
+				new MethodMatcher(Long.class, "longValue"),
+				new MethodMatcher(Float.class, "floatValue"),
+				new MethodMatcher(Double.class, "doubleValue"),
+				new MethodMatcher(Character.class, "charValue")
+				).anyMatch(m -> m.matches(methodInvocation))) {
+			methodInvocation.delete();
+		} else if(new MethodMatcher(Boolean.class, "valueOf", boolean.class).matches(methodInvocation)) {
+			methodInvocation.getParent().replaceElement(methodInvocation, methodInvocation.getArguments().get(0));
+		}
 		return true;
 	}
 
@@ -122,6 +103,67 @@ public class LambdaExpressionRewriter extends ExpressionVisitor {
 			
 		}
 		return super.visitFieldAccessExpression(fieldAccess);
+	}
+	
+	/**
+	 * A {@link MethodInvocation} matcher
+	 * @author Xavier Coulon <xcoulon@redhat.com>
+	 *
+	 */
+	static class MethodMatcher {
+		/** the type of the element on which the method is called.*/
+		private final Class<?> sourceType;
+		/** the name of the method. */
+		private final String methodName;
+		/** the type of the arguments of this method.*/
+		private final Class<?>[] argumentTypes;
+		
+		/**
+		 * Constructor
+		 * @param sourceType the type of the element on which the method is called.
+		 * @param methodName the name of the method.
+		 * @param argumentTypes the type of the arguments of this method
+		 */
+		MethodMatcher(final Class<?> sourceType, final String methodName) {
+			super();
+			this.sourceType = sourceType;
+			this.methodName = methodName;
+			this.argumentTypes = new Class<?>[0];
+		}
+
+		/**
+		 * Constructor
+		 * @param sourceType the type of the element on which the method is called.
+		 * @param methodName the name of the method.
+		 * @param argumentTypes the type of the arguments of this method
+		 */
+		MethodMatcher(final Class<?> sourceType, final String methodName, final Class<?>... argumentTypes) {
+			super();
+			this.sourceType = sourceType;
+			this.methodName = methodName;
+			this.argumentTypes = argumentTypes;
+		}
+		
+		/** 
+		 * 
+		 * @param methodInvocation the {@link MethodInvocation} to inspect
+		 * @return <code>true</code> if the given {@link MethodInvocation} matches on the source, method name and argument types, <code>false</code> otherwise.
+		 */
+		boolean matches(final MethodInvocation methodInvocation) {
+			if(methodInvocation == null) {
+				return false;
+			}
+			// fail fast if source type or method name or number of arguments don't match
+			final Method javaMethod = methodInvocation.getJavaMethod();
+			if(this.sourceType.equals(javaMethod.getDeclaringClass())
+					&& this.methodName.equals(methodInvocation.getMethodName())
+					&& Arrays.deepEquals(javaMethod.getParameterTypes(), argumentTypes)) { 
+				return true;
+			}
+			return false;
+		}
+		
+		
 	}
 
 }

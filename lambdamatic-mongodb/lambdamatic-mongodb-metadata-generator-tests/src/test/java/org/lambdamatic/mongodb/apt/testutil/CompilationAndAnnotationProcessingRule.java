@@ -128,13 +128,13 @@ public class CompilationAndAnnotationProcessingRule implements MethodRule {
 				.getJavaFileObjectsFromFiles(domainSourceFiles);
 		final CompilationTask basicCompilationTask = compiler.getTask(null, fileManager, diagnosticListener, null,
 				null, filesToCompile);
-		basicCompilationTask.call();
-		// final List<String> options = Arrays.asList("-proc:only");
-		final CompilationTask aptCompilationTask = compiler.getTask(null, fileManager, diagnosticListener, null, null,
+		final Boolean compiledWithoutErrors = basicCompilationTask.call();
+		final List<String> options = Arrays.asList("-proc:none");
+		final CompilationTask aptCompilationTask = compiler.getTask(null, fileManager, diagnosticListener, options, null,
 				filesToCompile);
 		aptCompilationTask.setProcessors(Arrays.asList(new DocumentAnnotationProcessor(), new EmbeddedDocumentAnnotationProcessor()));
 		// operation
-		final Boolean compiledWithoutErrors = aptCompilationTask.call();
+		//final Boolean compiledWithoutErrors = aptCompilationTask.call();
 		assertThat(compiledWithoutErrors).as("Files compiled without errors").isTrue();
 	}
 	

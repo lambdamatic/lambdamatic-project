@@ -11,7 +11,7 @@ import org.lambdamatic.SerializablePredicate;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class TestPojo {
+public class EmbeddedTestPojo {
 	
 	public int primitiveIntValue = 42;
 	
@@ -23,13 +23,13 @@ public class TestPojo {
 	
 	public EnumPojo enumPojo = EnumPojo.FOO;
 	
-	public List<EmbeddedTestPojo> elementList = new ArrayList<>();
+	public List<Object> elementList = new ArrayList<>();
 	
-	public TestPojo() {
+	public EmbeddedTestPojo() {
 	}
 	
 	// constructor for testing purpose only
-	public TestPojo(String stringValue, int primitiveIntValue) {
+	public EmbeddedTestPojo(String stringValue, int primitiveIntValue) {
 		super();
 		this.stringValue = stringValue;
 		this.primitiveIntValue = primitiveIntValue;
@@ -121,7 +121,7 @@ public class TestPojo {
 		return true;
 	}
 
-	public boolean matches(final TestPojo[] otherPojos) {
+	public boolean matches(final EmbeddedTestPojo[] otherPojos) {
 		return true;
 	}
 	
@@ -129,7 +129,7 @@ public class TestPojo {
 		return true;
 	}
 
-	public boolean elementMatch(final SerializablePredicate<TestPojo> expression) {
+	public boolean elementMatch(final SerializablePredicate<EmbeddedTestPojo> expression) {
 		return true;
 	}
 	
@@ -160,7 +160,7 @@ public class TestPojo {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		TestPojo other = (TestPojo) obj;
+		EmbeddedTestPojo other = (EmbeddedTestPojo) obj;
 		if (dateValue == null) {
 			if (other.dateValue != null)
 				return false;

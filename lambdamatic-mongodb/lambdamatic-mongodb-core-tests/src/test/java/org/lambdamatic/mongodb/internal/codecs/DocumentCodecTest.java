@@ -100,7 +100,7 @@ public class DocumentCodecTest {
 				new Object[] { "Document with set of String",
 						new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
 								.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2)
-								.withDate(date).withStringSet("bar", "baz", "foo").build(),
+								.withDate(date).withStringList("bar", "baz", "foo").build(),
 						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
 								+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
 								+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"

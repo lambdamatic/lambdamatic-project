@@ -3,9 +3,9 @@
  */
 package org.lambdamatic.mongodb.types.geospatial;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -119,7 +119,7 @@ public class Polygon {
 		if(rings == null || rings.length == 0) {
 			return "<empty polygon>";
 		} 
-		final String content = Arrays.asList(rings).stream().map(r -> r.toString()).collect(Collectors.joining(","));
+		final String content = Stream.of(rings).map(r -> r.toString()).collect(Collectors.joining(","));
 		if(rings.length == 1) {
 			return content;
 		}
@@ -168,7 +168,7 @@ public class Polygon {
 			if(rings == null || rings.length == 0) {
 				return "<empty ring>";
 			}
-			return "[" + Arrays.asList(points).stream().map(r -> r.toString()).collect(Collectors.joining(",")) + "]";
+			return "[" + Stream.of(points).map(r -> r.toString()).collect(Collectors.joining(",")) + "]";
 		}
 
 	}

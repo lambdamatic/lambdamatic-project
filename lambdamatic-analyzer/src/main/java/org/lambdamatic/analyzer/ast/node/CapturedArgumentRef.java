@@ -105,7 +105,7 @@ public class CapturedArgumentRef extends Expression {
 	 */
 	@Override
 	public Class<?> getJavaType() {
-		return int.class;
+		return value.getClass();
 	}
 
 	/**

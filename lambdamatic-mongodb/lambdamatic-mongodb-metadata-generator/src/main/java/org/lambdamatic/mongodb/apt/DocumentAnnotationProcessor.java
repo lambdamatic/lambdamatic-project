@@ -13,6 +13,7 @@ import javax.lang.model.element.TypeElement;
 
 import org.lambdamatic.mongodb.annotations.BaseDocument;
 import org.lambdamatic.mongodb.annotations.Document;
+import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.stringtemplate.v4.ST;
 
 /**
@@ -25,6 +26,8 @@ import org.stringtemplate.v4.ST;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedAnnotationTypes({ "org.lambdamatic.mongodb.annotations.BaseDocument",
 		"org.lambdamatic.mongodb.annotations.Document" })
+//FIXME avoid extending EmbeddedDocumentAnnotationProcessor and move all/more common code into BaseAnnotationProcessor instead ?
+// the EmbeddedDocumentAnnotationProcessor should actually prevent having @DocumentId, instead of accepting it 
 public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProcessor {
 
 	/** constant to identify the fully qualified name of the collection producer class in the template properties. */
@@ -73,6 +76,13 @@ public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProce
 		this.mongoCollectionProducerTemplate = getStringTemplate(MONGO_COLLECTION_PRODUCER_TEMPLATE);
 	}
 
+	/**
+	 * @return the {@link ST} template to generate the {@link ProjectionMetadata} class
+	 */
+	protected ST getProjectionMetadataTemplate() {
+		return projectionMetadataTemplate;
+	}
+	
 	@Override
 	protected void doProcess(final Map<String, Object> templateContextProperties) throws IOException {
 		super.doProcess(templateContextProperties);
@@ -91,22 +101,6 @@ public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProce
 		return properties;
 	}
 
-	/**
-	 * Generates the {@code ProjectionMetadata} implementation source code for the annotated class currently being
-	 * processed.
-	 * 
-	 * @param allContextProperties
-	 *            all properties to use when running the engine to generate the source code.
-	 * 
-	 * @throws IOException
-	 */
-	@Override
-	protected void generateProjectionMetadataSourceCode(final Map<String, Object> templateContextProperties) throws IOException {
-		final String targetClassName = templateContextProperties.get(PACKAGE_NAME) + "."
-				+ templateContextProperties.get(PROJECTION_METADATA_CLASS_NAME);
-		generateSourceCode(targetClassName, projectionMetadataTemplate, templateContextProperties);
-	}
-	
 	/**
 	 * Generates the {@code LambdamaticMongoCollection} implementation source code for the underlying MongoDB
 	 * collection.

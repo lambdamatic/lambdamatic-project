@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -17,6 +18,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.TransientField;
@@ -58,14 +60,11 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 	/** constant to identify the package name in the template properties. */
 	protected static final String PACKAGE_NAME = "packageName";
 
-	/** Suffix to use for the generated {@link QueryMetadata} classes. */
-	private static String QUERY_METADATA_CLASSNAME_PREFIX = "Q";
+	/** constant to identify the extra import statements in the template properties. */
+	protected static final String IMPORT_STATEMENTS = "imports";
 
 	/** Name of the template file for {@link ProjectionMetadata} classes. */
 	private static final String EMBEDDED_PROJECTION_METADATA_TEMPLATE = "embedded_projection_metadata_template.st";
-
-	/** Suffix to use for the generated {@link ProjectionMetadata} classes. */
-	private static String PROJECTION_METADATA_CLASSNAME_PREFIX = "P";
 
 	/** Name of the template file for {@link QueryMetadata} classes. */
 	private static final String QUERY_METADATA_TEMPLATE = "query_metadata_template.st";
@@ -89,27 +88,17 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 	}
 
 	/**
-	 * Builds the simple name of the {@link QueryMetadata} class associated with the given {@code element}
-	 * 
-	 * @param element
-	 *            the type element from which the name will be generated
-	 * @return the simple name of the given type element, prefixed by
-	 *         {@link DocumentAnnotationProcessor#QUERY_METADATA_CLASSNAME_PREFIX}.
+	 * @return the {@link ST} template to generate the {@link QueryMetadata} class
 	 */
-	public static String generateQueryMetadataSimpleClassName(final Element element) {
-		return QUERY_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString();
+	protected ST getQueryMetadataTemplate() {
+		return queryMetadataTemplate;
 	}
 
 	/**
-	 * Builds the simple name of the {@link QueryMetadata} class associated with the given {@code element}
-	 * 
-	 * @param element
-	 *            the type element from which the name will be generated
-	 * @return the simple name of the given type element, prefixed by
-	 *         {@link DocumentAnnotationProcessor#QUERY_METADATA_CLASSNAME_PREFIX}.
+	 * @return the {@link ST} template to generate the {@link ProjectionMetadata} class
 	 */
-	public static String generateProjectionMetadataSimpleClassName(final Element element) {
-		return PROJECTION_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString();
+	protected ST getProjectionMetadataTemplate() {
+		return embeddedProjectionMetadataTemplate;
 	}
 
 	@Override
@@ -118,8 +107,7 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 		templateContextProperties.put(QUERY_FIELDS, getQueryFields(domainElement));
 		templateContextProperties.put(PROJECTION_FIELDS, getProjectionFields(domainElement));
 		templateContextProperties.put(QUERY_METADATA_CLASS_NAME, generateQueryMetadataSimpleClassName(domainElement));
-		templateContextProperties.put(PROJECTION_METADATA_CLASS_NAME,
-				generateProjectionMetadataSimpleClassName(domainElement));
+		templateContextProperties.put(PROJECTION_METADATA_CLASS_NAME, generateProjectionSimpleClassName(domainElement));
 		return templateContextProperties;
 	}
 
@@ -146,11 +134,16 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 	 * 
 	 * @throws IOException
 	 */
-	protected void generateQueryMetadataSourceCode(final Map<String, Object> templateContextProperties)
+	private void generateQueryMetadataSourceCode(final Map<String, Object> templateContextProperties)
 			throws IOException {
-		final String targetClassName = templateContextProperties.get(PACKAGE_NAME) + "."
+		final String targetPackageName = (String) templateContextProperties.get(PACKAGE_NAME);
+		@SuppressWarnings("unchecked")
+		final List<QueryFieldMetadata> queryFields = (List<QueryFieldMetadata>) templateContextProperties
+				.get(QUERY_FIELDS);
+		templateContextProperties.put(IMPORT_STATEMENTS, findRequiredImportStatements(targetPackageName, queryFields));
+		final String targetClassName = targetPackageName + "."
 				+ templateContextProperties.get(QUERY_METADATA_CLASS_NAME);
-		generateSourceCode(targetClassName, queryMetadataTemplate, templateContextProperties);
+		generateSourceCode(targetClassName, getQueryMetadataTemplate(), templateContextProperties);
 	}
 
 	/**
@@ -162,11 +155,35 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 	 * 
 	 * @throws IOException
 	 */
-	protected void generateProjectionMetadataSourceCode(final Map<String, Object> templateContextProperties)
+	private void generateProjectionMetadataSourceCode(final Map<String, Object> templateContextProperties)
 			throws IOException {
 		final String targetClassName = templateContextProperties.get(PACKAGE_NAME) + "."
 				+ templateContextProperties.get(PROJECTION_METADATA_CLASS_NAME);
-		generateSourceCode(targetClassName, embeddedProjectionMetadataTemplate, templateContextProperties);
+		final String targetPackageName = (String) templateContextProperties.get(PACKAGE_NAME);
+		@SuppressWarnings("unchecked")
+		final List<ProjectionFieldMetadata> queryFields = (List<ProjectionFieldMetadata>) templateContextProperties
+				.get(PROJECTION_FIELDS);
+		final List<String> findRequiredImportStatements = findRequiredImportStatements(targetPackageName, queryFields);
+		templateContextProperties.put(IMPORT_STATEMENTS, findRequiredImportStatements);
+		generateSourceCode(targetClassName, getProjectionMetadataTemplate(), templateContextProperties);
+	}
+
+	/**
+	 * Finds all required import statements that need to be included in the target template
+	 * 
+	 * @param targetPackageName
+	 *            the target package for the class to be generated
+	 * @param queryFields
+	 *            the query fields whose classes may need to ne imported
+	 * @return the {@link List} of class imports (excluding those in the same package)
+	 */
+	private List<String> findRequiredImportStatements(final String targetPackageName,
+			final List<? extends BaseFieldMetadata> queryFields) {
+		return queryFields.stream().map(f -> f.getRequiredJavaTypes()).flatMap(set -> set.stream()).distinct()
+				.filter(t -> {
+					final String packageCanonicalName = ClassUtils.getPackageCanonicalName(t);
+					return !packageCanonicalName.equals(targetPackageName) && !packageCanonicalName.equals("java.lang");
+				} ).collect(Collectors.toList());
 	}
 
 	/**

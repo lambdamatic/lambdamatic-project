@@ -9,6 +9,7 @@
 package org.lambdamatic.analyzer.ast.node;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.lambdamatic.testutils.JavaMethods.Object_equals;
 
 import org.junit.Test;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
@@ -25,12 +26,12 @@ public class InfixExpressionSimplificationMonitorTest {
 	public void shouldRecognizeForm() {
 		// given
 		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsFooMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class, 
-				new StringLiteral("foo"));
-		final MethodInvocation equalsBarMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class, 
-				new StringLiteral("bar"));
-		final MethodInvocation equalsBazMethod = new MethodInvocation(new FieldAccess(testPojo, "field"), "equals", Boolean.class, 
-				new StringLiteral("baz"));
+		final MethodInvocation equalsFooMethod = new MethodInvocation(new FieldAccess(testPojo, "field"),
+				Object_equals, new StringLiteral("foo"));
+		final MethodInvocation equalsBarMethod = new MethodInvocation(new FieldAccess(testPojo, "field"),
+				Object_equals, new StringLiteral("bar"));
+		final MethodInvocation equalsBazMethod = new MethodInvocation(new FieldAccess(testPojo, "field"),
+				Object_equals, new StringLiteral("baz"));
 		final InfixExpression expression = new InfixExpression(1, InfixOperator.CONDITIONAL_OR, new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsFooMethod, equalsBarMethod), equalsBazMethod);
 		final ExpressionSimplificationMonitor monitor = new ExpressionSimplificationMonitor(expression);

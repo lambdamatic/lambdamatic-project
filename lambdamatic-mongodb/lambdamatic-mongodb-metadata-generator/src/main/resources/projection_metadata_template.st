@@ -14,7 +14,7 @@ public class $projectionMetadataClassName$ implements ProjectionMetadata<$domain
 
 $projectionFields:{
   field | 
- 	public $field.javaFieldType$ $field.javaFieldName$ = new $field.javaFieldType$("$field.documentFieldName$");
+ 	public $field.javaFieldType.simpleName$ $field.javaFieldName$ = new $field.javaFieldType.simpleName$("$field.documentFieldName$");
   
 }$
 }

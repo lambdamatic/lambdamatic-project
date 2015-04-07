@@ -4,6 +4,10 @@
 package org.lambdamatic.analyzer.ast.node;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.lambdamatic.testutils.JavaMethods.Object_equals;
+import static org.lambdamatic.testutils.JavaMethods.TestPojo_getEnumPojo;
+import static org.lambdamatic.testutils.JavaMethods.TestPojo_getPrimitiveIntValue;
+import static org.lambdamatic.testutils.JavaMethods.TestPojo_getStringValue;
 
 import java.util.Collection;
 
@@ -23,8 +27,8 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyIdempotentLawWithConditionnalOROnTwoOperands() {
 		// given '(a + a)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsA1Method = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsA2Method = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
+		final MethodInvocation equalsA1Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsA2Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsA1Method, equalsA2Method);
 		// when
 		final Collection<Expression> results = expression.applyIdempotentLaw();
@@ -37,9 +41,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyIdempotentLawWithConditionnalOROnThreeOperands() {
 		// given '(a + a + b)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsA1Method = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsA2Method = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
+		final MethodInvocation equalsA1Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsA2Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsA1Method, equalsA2Method, equalsBMethod);
 		// when
 		final Collection<Expression> results = expression.applyIdempotentLaw();
@@ -52,8 +56,8 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyIdempotentLawWithConditionnalANDOnTwoOperands() {
 		// given '(a.a)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsA1Method = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsA2Method = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
+		final MethodInvocation equalsA1Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsA2Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsA1Method, equalsA2Method);
 		// when
 		final Collection<Expression> results = expression.applyIdempotentLaw();
@@ -66,9 +70,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyIdempotentLawWithConditionnalANDOnThreeOperands() {
 		// given '(a.a.b)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsA1Method = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsA2Method = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
+		final MethodInvocation equalsA1Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsA2Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsA1Method, equalsA2Method, equalsBMethod);
 		// when
 		final Collection<Expression> results = expression.applyIdempotentLaw();
@@ -81,9 +85,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyAssociativeLawWithConditionnalOR() {
 		// given '(a + (b + c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, equalsBMethod, equalsCMethod));
 		// when
@@ -98,9 +102,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyAssociativeLawWithConditionnalOR() {
 		// given '(a + (b . c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsBMethod, equalsCMethod));
 		// when
@@ -113,9 +117,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyAssociativeLawWithConditionnalAND() {
 		// given '(a . (b . c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsBMethod, equalsCMethod));
 		// when
@@ -130,9 +134,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyAssociativeLawWithConditionnalAND() {
 		// given '(a . (b + c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, equalsBMethod, equalsCMethod));
 		// when
@@ -145,7 +149,7 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyEmptySetLawsOnConditionalOROnTwoOperands() {
 		// given '(a + O)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final BooleanLiteral emptySetOperator = new BooleanLiteral(Boolean.FALSE);
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, emptySetOperator);
 		// when
@@ -159,8 +163,8 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyEmptySetLawsOnConditionalOROnThreeOperands() {
 		// given '(a + b + O)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final BooleanLiteral emptySetOperator = new BooleanLiteral(Boolean.FALSE);
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod, emptySetOperator);
 		// when
@@ -174,7 +178,7 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyEmptySetLawsOnConditionalANDOnTwoOperands() {
 		// given '(a.O)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, BooleanLiteral.EMPTY_SET_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyEmptySetLaw();
@@ -187,8 +191,8 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyEmptySetLawsOnConditionalANDOnThreeOperands() {
 		// given '(a.b.O)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, BooleanLiteral.EMPTY_SET_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyEmptySetLaw();
@@ -201,7 +205,7 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyUniversalSetLawsOnConditionalOROnTwoOperands() {
 		// given '(a + 1)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyUniversalSetLaw();
@@ -214,8 +218,8 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyUniversalSetLawsOnConditionalOROnThreeOperands() {
 		// given '(a + b + 1)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyUniversalSetLaw();
@@ -228,7 +232,7 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyUniversalSetLawsOnConditionalANDWithTwoOperands() {
 		// given '(a.1)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyUniversalSetLaw();
@@ -242,8 +246,8 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyUniversalSetLawsOnConditionalANDWithThreeOperands() {
 		// given '(a.b.1)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyUniversalSetLaw();
@@ -256,8 +260,8 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyUnaryOperationLawsOnConditionalOROnTwoOperands() {
 		// given '(a + !a)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A")).inverse();
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, notEqualsAMethod);
 		// when
 		final Collection<Expression> results = expression.applyUnaryOperationLaw();
@@ -270,9 +274,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyUnaryOperationLawsOnConditionalOROnThreeOperands() {
 		// given '(a + !a + b)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A")).inverse();
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, notEqualsAMethod, equalsBMethod);
 		// when
 		final Collection<Expression> results = expression.applyUnaryOperationLaw();
@@ -285,8 +289,8 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyUnaryOperationLawsOnConditionalANDOnTwoOperands() {
 		// given '(a . !a)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A")).inverse();
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, notEqualsAMethod);
 		// when
 		final Collection<Expression> results = expression.applyUnaryOperationLaw();
@@ -299,9 +303,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyUnaryOperationLawsOnConditionalANDOnThreeOperands() {
 		// given '(a . !a . b)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A")).inverse();
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, notEqualsAMethod, equalsBMethod);
 		// when
 		final Collection<Expression> results = expression.applyUnaryOperationLaw();
@@ -314,9 +318,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyAbsorptionLawOnAllOperandsOnConditionalAND() {
 		// given '(a.(a + b).(a + c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod));
@@ -331,9 +335,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyAbsorptionLawOnAllOperandsOnConditionalAND() {
 		// given '(a.(a.b).(a.c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod));
@@ -347,10 +351,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyAbsorptionLawOnSomeOperandsOnConditionalAND() {
 		// given '(a.(a + b).(a + c).d)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod), equalsDMethod);
@@ -365,10 +369,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyAbsorptionLawOnSomeOperandsOnConditionalAND() {
 		// given '(a.(a.b).(a.c).d)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod), equalsDMethod);
@@ -382,9 +386,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyAbsorptionLawOnAllOperandsOnConditionalOR() {
 		// given '(a + (a.b) + (a.c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod));
@@ -399,9 +403,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyAbsorptionLawOnAllOperandsOnConditionalOR() {
 		// given '(a + (a + b) + (a + c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod));
@@ -415,10 +419,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyAbsorptionLawOnSomeOperandsOnConditionalOR() {
 		// given '(a + (a.b) + (a.c) + d)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod), equalsDMethod);
@@ -433,10 +437,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyAbsorptionLawOnSomeOperandsOnConditionalOR() {
 		// given '(a + (a + b) + (a + c) + d)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod), equalsDMethod);
@@ -450,10 +454,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyRedundancyLawOnAllMethodInvocationOperandsOnConditionalAND() {
 		// given '(a.(!a + b).(!a + c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A")).inverse();
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, notEqualsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				notEqualsAMethod, equalsCMethod));
@@ -469,9 +473,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyRedundancyLawOnAllOperandsOnConditionalAND() {
 		// given '(a.(a + !b).(a + !c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation notEqualsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B")).inverse();
-		final MethodInvocation notEqualsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C")).inverse();
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation notEqualsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B")).inverse();
+		final MethodInvocation notEqualsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C")).inverse();
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, equalsAMethod, notEqualsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				equalsAMethod, notEqualsCMethod));
@@ -485,11 +489,11 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyRedundancyLawOnSomeOperandsOnConditionalAND() {
 		// given '(a.(!a + b).(!a + c).d)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A")).inverse();
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, notEqualsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				notEqualsAMethod, equalsCMethod), equalsDMethod);
@@ -505,10 +509,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyRedundancyLawOnSomeOperandsOnConditionalAND() {
 		// given '(a.(a + b).(a + c).d)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod), equalsDMethod);
@@ -522,10 +526,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyRedundancyLawOnAllMethodInvocationOperandsOnConditionalOR() {
 		// given '(a + (!a.!b) + (!a.c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A")).inverse();
-		final MethodInvocation notEqualsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B")).inverse();
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
+		final MethodInvocation notEqualsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B")).inverse();
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, notEqualsAMethod, notEqualsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				notEqualsAMethod, equalsCMethod));
@@ -563,9 +567,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyRedundancyLawOnAllOperandsOnConditionalOR() {
 		// given '(a + (a.b) + (a.c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod));
@@ -579,11 +583,11 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyRedundancyLawOnSomeOperandsOnConditionalOR() {
 		// given '(a + (!a.!b) + (!a.c) + d)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A")).inverse();
-		final MethodInvocation notEqualsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B")).inverse();
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
+		final MethodInvocation notEqualsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B")).inverse();
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, notEqualsAMethod, notEqualsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				notEqualsAMethod, equalsCMethod), equalsDMethod);
@@ -599,10 +603,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyRedundancyLawOnSomeOperandsOnConditionalOR() {
 		// given '(a + (a.b) + (a.c) + d)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod), equalsDMethod);
@@ -616,10 +620,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyFactorizationLawOnAllOperandsOnConditionalOR() {
 		// given '((a.b) + (a.c) + (a.d))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsDMethod));
@@ -636,10 +640,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyFactorizationLawOnSomeOperandsOnConditionalOR() {
 		// given '((a.b) + (b.d) + (a.c) )'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsBMethod, equalsDMethod));
@@ -660,10 +664,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyFactorizationLawOnAllOperandsOnConditionalAND() {
 		// given '((a + b).(a + c).(a + d))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsDMethod));
@@ -680,10 +684,10 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyFactorizationLawOnSomeOperandsOnConditionalAND() {
 		// given '((a + b).(b + d).(a + c))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsAMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("C"));
-		final MethodInvocation equalsDMethod = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("D"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
+		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsBMethod, equalsDMethod));
@@ -710,9 +714,9 @@ public class InfixExpressionSimplificationTest {
 		final FieldAccess fieldA = new FieldAccess(var, "fieldA");
 		final FieldAccess fieldB = new FieldAccess(var, "fieldB");
 		final FieldAccess fieldC = new FieldAccess(var, "fieldC");
-		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsAMethod.inverse(), equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod.inverse(),
@@ -732,9 +736,9 @@ public class InfixExpressionSimplificationTest {
 		final FieldAccess fieldA = new FieldAccess(var, "fieldA");
 		final FieldAccess fieldB = new FieldAccess(var, "fieldB");
 		final FieldAccess fieldC = new FieldAccess(var, "fieldC");
-		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsAMethod.inverse(), equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsCMethod));
@@ -753,9 +757,9 @@ public class InfixExpressionSimplificationTest {
 		final FieldAccess fieldA = new FieldAccess(var, "fieldA");
 		final FieldAccess fieldB = new FieldAccess(var, "fieldB");
 		final FieldAccess fieldC = new FieldAccess(var, "fieldC");
-		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, new InfixExpression(
 				InfixOperator.CONDITIONAL_OR, equalsAMethod.inverse(), equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsCMethod));
@@ -774,9 +778,9 @@ public class InfixExpressionSimplificationTest {
 		final FieldAccess fieldA = new FieldAccess(var, "fieldA");
 		final FieldAccess fieldB = new FieldAccess(var, "fieldB");
 		final FieldAccess fieldC = new FieldAccess(var, "fieldC");
-		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, "equals", Boolean.class,  new StringLiteral("A"));
-		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, "equals", Boolean.class,  new StringLiteral("B"));
-		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, "equals", Boolean.class,  new StringLiteral("C"));
+		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, Object_equals,  new StringLiteral("A"));
+		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, Object_equals,  new StringLiteral("B"));
+		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, Object_equals,  new StringLiteral("C"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
 				InfixOperator.CONDITIONAL_AND, equalsBMethod, equalsCMethod));
 		// when
@@ -792,9 +796,9 @@ public class InfixExpressionSimplificationTest {
 		// given '(foo.(bar + !baz)) + (!foo.!baz)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final FieldAccess fieldF = new FieldAccess(var, "f");
-		final MethodInvocation equalsFoo = new MethodInvocation(fieldF, "equals", Boolean.class,  new StringLiteral("foo"));
-		final MethodInvocation equalsBar = new MethodInvocation(fieldF, "equals", Boolean.class,  new StringLiteral("bar"));
-		final MethodInvocation equalsBaz = new MethodInvocation(fieldF, "equals", Boolean.class,  new StringLiteral("baz"));
+		final MethodInvocation equalsFoo = new MethodInvocation(fieldF, Object_equals,  new StringLiteral("foo"));
+		final MethodInvocation equalsBar = new MethodInvocation(fieldF, Object_equals,  new StringLiteral("bar"));
+		final MethodInvocation equalsBaz = new MethodInvocation(fieldF, Object_equals,  new StringLiteral("baz"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, 
 				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo, new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsBar, equalsBaz.inverse())),
 				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBaz.inverse()));
@@ -840,9 +844,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyDistributiveLawOnConditionalANDWithThreeOperands() {
 		// given '((foo.bar) + (foo.(!bar.!baz)))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsFoo = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("foo"));
-		final MethodInvocation equalsBar = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("bar"));
-		final MethodInvocation equalsBaz = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("baz"));
+		final MethodInvocation equalsFoo = new MethodInvocation(var, Object_equals,  new StringLiteral("foo"));
+		final MethodInvocation equalsBar = new MethodInvocation(var, Object_equals,  new StringLiteral("bar"));
+		final MethodInvocation equalsBaz = new MethodInvocation(var, Object_equals,  new StringLiteral("baz"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, 
 				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo, equalsBar),
 				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo, 
@@ -858,9 +862,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldSimplifyToConditionalORWithThreeOperands() {
 		// given (foo + (!foo.bar) + (!foo.!bar.baz))
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation equalsFoo = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("foo"));
-		final MethodInvocation equalsBar = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("bar"));
-		final MethodInvocation equalsBaz = new MethodInvocation(var, "equals", Boolean.class,  new StringLiteral("baz"));
+		final MethodInvocation equalsFoo = new MethodInvocation(var, Object_equals,  new StringLiteral("foo"));
+		final MethodInvocation equalsBar = new MethodInvocation(var, Object_equals,  new StringLiteral("bar"));
+		final MethodInvocation equalsBaz = new MethodInvocation(var, Object_equals,  new StringLiteral("baz"));
 		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsFoo,
 				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBar),
 				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBar.inverse(), equalsBaz));
@@ -875,7 +879,7 @@ public class InfixExpressionSimplificationTest {
 	public void shouldNotApplyDistributiveLawOnConditionalORWithThreeOperands() {
 		// given '(foo + (!foo.bar) + (!foo.bar.!baz)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(var, "getStringValue", String.class);
+		final MethodInvocation getStringValueMethod = new MethodInvocation(var, TestPojo_getStringValue);
 		final InfixExpression equalsFooExpr = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("foo"));
 		final InfixExpression equalsBarExpr = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("bar"));
 		final InfixExpression equalsBazExpr = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("baz"));
@@ -893,9 +897,9 @@ public class InfixExpressionSimplificationTest {
 	public void shouldSimplifyToConditionalORWithThreeOperands2() {
 		// given '(foo + (!foo.bar) + (!foo.bar.!baz)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final MethodInvocation getStringValueMethod = new MethodInvocation(var, "getStringValue", String.class);
-		final MethodInvocation getEnumPojoMethod = new MethodInvocation(var, "getEnumPojo", EnumPojo.class);
-		final MethodInvocation getPrimitiveIntMethod = new MethodInvocation(var, "getPrimitiveIntValue", int.class);
+		final MethodInvocation getStringValueMethod = new MethodInvocation(var, TestPojo_getStringValue);
+		final MethodInvocation getEnumPojoMethod = new MethodInvocation(var, TestPojo_getEnumPojo);
+		final MethodInvocation getPrimitiveIntMethod = new MethodInvocation(var, TestPojo_getPrimitiveIntValue);
 		final InfixExpression getStringValueMethodEqualsFoo = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("foo"));
 		final InfixExpression getEnumPojoMethodEqualsBar = new InfixExpression(InfixOperator.EQUALS, getEnumPojoMethod, new EnumLiteral(EnumPojo.BAR));
 		final InfixExpression getPrimitiveIntMethodEquals42 = new InfixExpression(InfixOperator.EQUALS, getPrimitiveIntMethod, new NumberLiteral(42));

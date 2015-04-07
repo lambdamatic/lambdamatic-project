@@ -10,19 +10,18 @@
 	<name>Lambdamatic for MongoDB - Core (Tests)</name>
 
 	<dependencies>
-		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.lambdamatic</groupId>
 			<artifactId>lambdamatic-mongodb-core</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.lambdamatic</groupId>
 			<artifactId>lambdamatic-mongodb-metadata-generator</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
+      <optional>true</optional>
 		</dependency>
+		<!-- Test dependencies -->
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -69,8 +68,9 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
-					<!-- see http://jira.codehaus.org/browse/MCOMPILER-236 -->
-					<useIncrementalCompilation>false</useIncrementalCompilation>
+					<!-- see http://jira.codehaus.org/browse/MCOMPILER-236 
+        	<useIncrementalCompilation>false</useIncrementalCompilation>
+        -->
 				</configuration>
 				<!-- see http://jira.codehaus.org/browse/MCOMPILER-97 <executions> <execution> 
 					<id>default-compile</id> <configuration> <compilerArgument>-proc:none</compilerArgument> 

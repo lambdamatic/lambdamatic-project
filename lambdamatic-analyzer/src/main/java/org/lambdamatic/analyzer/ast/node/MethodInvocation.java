@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.lambdamatic.analyzer.ast.ReflectionUtils;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 
 /**
@@ -25,15 +24,12 @@ public class MethodInvocation extends ComplexExpression {
 	/** the expression on which the method call is applied (may change if evaluated). */
 	private Expression sourceExpression;
 
-	/** the name of the called method. */
-	private final String methodName;
+	/** the underlying Java method that is called. */
+	private final Method javaMethod;
 
-	/** arguments the arguments passed as parameters during the call. */
+	/** the arguments passed as parameters during the call. */
 	private final List<Expression> arguments;
 
-	/** the return type of the underlying Java method.*/
-	private final Class<?> returnType;
-	
 	/**
 	 * Full constructor.
 	 * 
@@ -43,15 +39,16 @@ public class MethodInvocation extends ComplexExpression {
 	 * 
 	 * @param sourceExpression
 	 *            the expression on which the method call is applied.
-	 * @param methodName
-	 *            the name of the called method.
+	 * @param javaMethod
+	 *            the Java {@link Method} to be called.
 	 * @param returnType
 	 * 				the returned Java type of the underlying method.
 	 * @param arguments
 	 *            the arguments passed as parameters during the call.
 	 */
-	public MethodInvocation(final Expression sourceExpression, final String methodName, final Class<?> returnType, final Expression... arguments) {
-		this(generateId(), sourceExpression, methodName, Arrays.asList(arguments), returnType, false);
+	public MethodInvocation(final Expression sourceExpression, final Method javaMethod, 
+			final Expression... arguments) {
+		this(generateId(), sourceExpression, javaMethod, Arrays.asList(arguments), false);
 	}
 
 	/**
@@ -61,13 +58,14 @@ public class MethodInvocation extends ComplexExpression {
 	 *            the expression on which the method call is applied.
 	 * @param methodName
 	 *            the name of the called method.
-	 * @param arguments
-	 *            the arguments passed as parameters during the call.
 	 * @param returnType
 	 *            the returned Java type of the underlying method.
+	 * @param arguments
+	 *            the arguments passed as parameters during the call.
+	 * @param argTypes 
 	 */
-	public MethodInvocation(final Expression sourceExpression, final String methodName, final List<Expression> arguments, final Class<?> returnType) {
-		this(generateId(), sourceExpression, methodName, arguments, returnType, false);
+	public MethodInvocation(final Expression sourceExpression, final Method javaMethod, final List<Expression> arguments) {
+		this(generateId(), sourceExpression, javaMethod, arguments, false);
 	}
 
 	/**
@@ -77,23 +75,18 @@ public class MethodInvocation extends ComplexExpression {
 	 *            the synthetic id of this {@link Expression}.
 	 * @param sourceExpression
 	 *            the expression on which the method call is applied.
-	 * @param methodName
-	 *            the name of the called method.
+	 * @param javaMethod
+	 *            the actual Java {@link Method} being called.
 	 * @param arguments
 	 *            the arguments passed as parameters during the call.
-	 * @param returnType
-	 *            the returned Java type of the underlying method.
-	 * @param inverted
-	 *            the inversion flag of this {@link Expression}.
 	 */
-	public MethodInvocation(final int id, final Expression sourceExpression, final String methodName, final List<Expression> arguments,
-			final Class<?> returnType, final boolean inverted) {
+	public MethodInvocation(final int id, final Expression sourceExpression, final Method javaMethod, final List<Expression> arguments,
+			final boolean inverted) {
 		super(id, inverted);
 		setSourceExpression(sourceExpression);
-		this.methodName = methodName;
+		this.javaMethod = javaMethod;
 		this.arguments = arguments;
 		this.arguments.stream().forEach(e -> e.setParent(this));
-		this.returnType = returnType;
 	}
 
 	private void setSourceExpression(final Expression sourceExpression) {
@@ -108,7 +101,8 @@ public class MethodInvocation extends ComplexExpression {
 	 */
 	@Override
 	public MethodInvocation duplicate(int id) {
-		return new MethodInvocation(id, getSourceExpression().duplicate(), getMethodName(), Expression.duplicateExpressions(this.arguments), getReturnType(), isInverted());
+		return new MethodInvocation(id, getSourceExpression().duplicate(), this.javaMethod,
+				Expression.duplicateExpressions(this.arguments), isInverted());
 	}
 	
 	/**
@@ -134,8 +128,6 @@ public class MethodInvocation extends ComplexExpression {
 		return sourceExpression.anyElementMatches(type)
 				|| this.arguments.stream().anyMatch(a -> a.anyElementMatches(type));
 	}
-	
-
 
 	/**
 	 * Returns the return type of the method. If the return type is a primitive
@@ -153,7 +145,7 @@ public class MethodInvocation extends ComplexExpression {
 	 * @return the returned {@link Class} of the underlying Java {@link Method}.
 	 */
 	public Class<?> getReturnType() {
-		return returnType;
+		return this.javaMethod.getReturnType();
 	}
 	
 	/**
@@ -176,7 +168,7 @@ public class MethodInvocation extends ComplexExpression {
 	 * @return the name of the method
 	 */
 	public String getMethodName() {
-		return methodName;
+		return this.javaMethod.getName();
 	}
 
 	/**
@@ -187,14 +179,11 @@ public class MethodInvocation extends ComplexExpression {
 	}
 
 	/**
-	 * @return the fist Java {@link Method} in the parent {@link Class} that matches the name are parameter types (or supertypes)
+	 * @return the underlying Java {@link Method}
 	 * @throws AnalyzeException if not method was found.
 	 */
 	public Method getJavaMethod() {
-		final Class<?> sourceClass = this.sourceExpression.getJavaType();
-		final Class<?>[] givenParameterTypes = this.arguments.stream().map(a -> a.getJavaType())
-				.collect(Collectors.toList()).toArray(new Class<?>[0]);
-		return ReflectionUtils.findJavaMethod(sourceClass, methodName, givenParameterTypes);
+		return this.javaMethod;
 	}
 
 	@Override
@@ -234,11 +223,10 @@ public class MethodInvocation extends ComplexExpression {
 				args.add(methodArgValue);
 				argTypes[i] = arguments.get(i).getJavaType();
 			}
-			final Method m = ReflectionUtils.findJavaMethod(source, this.methodName, argTypes);
-			m.setAccessible(true);
-			return m.invoke(source, args.toArray());
+			this.javaMethod.setAccessible(true);
+			return javaMethod.invoke(source, args.toArray());
 		} catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			throw new AnalyzeException("Failed to invoke method '" + methodName + "' on '" + source + "'", e);
+			throw new AnalyzeException("Failed to invoke method '" + javaMethod.getName() + "' on '" + source + "'", e);
 		}
 	}
 
@@ -275,7 +263,8 @@ public class MethodInvocation extends ComplexExpression {
 	 */
 	@Override
 	public MethodInvocation inverse() {
-		return new MethodInvocation(generateId(), sourceExpression, methodName, Expression.duplicateExpressions(this.arguments), getReturnType(), !isInverted());
+		return new MethodInvocation(generateId(), sourceExpression, javaMethod,
+				Expression.duplicateExpressions(this.arguments), !isInverted());
 	};
 
 	/**
@@ -293,7 +282,7 @@ public class MethodInvocation extends ComplexExpression {
 	@Override
 	public String toString() {
 		List<String> args = arguments.stream().map(Expression::toString).collect(Collectors.toList());
-		return (isInverted() ? "!" : "") + sourceExpression.toString() + '.' + methodName + "(" + String.join(", ", args) + ")";
+		return (isInverted() ? "!" : "") + sourceExpression.toString() + '.' + javaMethod.getName() + "(" + String.join(", ", args) + ")";
 	}
 
 	/**
@@ -308,7 +297,7 @@ public class MethodInvocation extends ComplexExpression {
 		result = prime * result + ((getExpressionType() == null) ? 0 : getExpressionType().hashCode());
 		result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
 		result = prime * result + (isInverted() ? 1231 : 1237);
-		result = prime * result + ((methodName == null) ? 0 : methodName.hashCode());
+		result = prime * result + ((javaMethod == null) ? 0 : javaMethod.hashCode());
 		result = prime * result + ((sourceExpression == null) ? 0 : sourceExpression.hashCode());
 		return result;
 	}
@@ -334,10 +323,12 @@ public class MethodInvocation extends ComplexExpression {
 			return false;
 		if (isInverted() != other.isInverted())
 			return false;
-		if (methodName == null) {
-			if (other.methodName != null)
+		if (javaMethod == null) {
+			if (other.javaMethod != null)
 				return false;
-		} else if (!methodName.equals(other.methodName))
+		} else if (!javaMethod.getName().equals(other.javaMethod.getName()))
+			return false;
+		else if (!Arrays.deepEquals(javaMethod.getParameterTypes(), other.javaMethod.getParameterTypes()))
 			return false;
 		if (sourceExpression == null) {
 			if (other.sourceExpression != null)

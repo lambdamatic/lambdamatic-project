@@ -20,9 +20,18 @@ public class MetadataGenerationException extends Exception {
 	 * @param message
 	 *            the exception message
 	 */
-
-	public MetadataGenerationException(String message) {
+	public MetadataGenerationException(final String message) {
 		super(message);
 	}
 
+	/**
+	 * Exception constructor
+	 * 
+	 * @param cause
+	 *            the underlying cause
+	 */
+	public MetadataGenerationException(final Throwable cause) {
+		super(cause);
+	}
+	
 }

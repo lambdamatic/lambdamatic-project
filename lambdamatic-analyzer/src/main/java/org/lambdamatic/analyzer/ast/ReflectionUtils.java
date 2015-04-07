@@ -6,8 +6,9 @@ package org.lambdamatic.analyzer.ast;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 
@@ -69,7 +70,7 @@ public class ReflectionUtils {
 						&& methodParameterType.isArray()
 						&& (methodParameterType.getComponentType().equals(givenParameterType) || methodParameterType
 								.getComponentType().isAssignableFrom(givenParameterType));
-				if (isSameType && !isSubType && !isMatchingVarArg) {
+				if (!isSameType && !isSubType && !isMatchingVarArg) {
 					continue methods_loop;
 				}
 			}
@@ -78,7 +79,7 @@ public class ReflectionUtils {
 		}
 		throw new AnalyzeException("Could not find a method named '" + methodName + "' in class "
 				+ sourceClass.getName() + " with parameters matching "
-				+ String.join(", ", Arrays.asList(argTypes).stream().map(Class::getName).collect(Collectors.toList())));
+				+ String.join(", ", Stream.of(argTypes).map(Class::getName).collect(Collectors.toList())));
 	}
 
 	/**
@@ -116,6 +117,22 @@ public class ReflectionUtils {
 		final T[] array = (T[]) Array.newInstance(componentType, values.length);
 		System.arraycopy(values, 0, array, 0, values.length);
 		return array;
+	}
+
+	/**
+	 * Looks for the Java {@link Method} matching the given arguments
+	 * @param javaType the Java {@link Class} to which the method belongs to.
+	 * @param name the name of the method to find
+	 * @param parameterTypes the type of the parameters
+	 * @return the Java {@link Method} 
+	 * @throws AnalyzeException if the {@link Method} was not found or in case of {@link SecurityException}.
+	 */
+	public static Method findJavaMethod(final Class<?> javaType, final String name, final List<Class<?>> parameterTypes) {
+		try {
+			return javaType.getMethod(name, parameterTypes.toArray(new Class<?>[0]));
+		} catch (NoSuchMethodException | SecurityException e) {
+			throw new AnalyzeException("Failed to find method named '" + name + "' on class '" + javaType.getName() + "' with parameter types: " + parameterTypes, e);
+		}
 	}
 
 }

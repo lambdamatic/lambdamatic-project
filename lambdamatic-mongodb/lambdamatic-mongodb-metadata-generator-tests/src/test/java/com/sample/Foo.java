@@ -43,8 +43,8 @@ public class Foo {
 		private Location location;
 		private Date date;
 		private Bar bar;
-		private List<String> stringList;
-		private String[] stringArray;
+		private List<Bar> barList;
+		private EnumBar[] enumBarArray;
 		private Set<String> stringSet;
 
 		public FooBuilder withId(final ObjectId id) {
@@ -117,13 +117,13 @@ public class Foo {
 			return this;
 		}
 		
-		public FooBuilder withStringList(final String... values) {
-			this.stringList = Arrays.asList(values);
+		public FooBuilder withBarList(final Bar... values) {
+			this.barList = Arrays.asList(values);
 			return this;
 		}
 		
-		public FooBuilder withStringArray(final String... values) {
-			this.stringArray = values;
+		public FooBuilder withEnumBarArray(final EnumBar... values) {
+			this.enumBarArray = values;
 			return this;
 		}
 		
@@ -175,14 +175,14 @@ public class Foo {
 	private Location location;
 	
 	@DocumentCollection
-	private List<String> stringFields;
+	private List<Bar> barList;
 
 	private Bar bar;
 	
 	@DocumentField
 	private Date date;
 	
-	private String[] stringArray;
+	private EnumBar[] enumBarArray;
 
 	private Set<String> stringSet;
 
@@ -206,9 +206,9 @@ public class Foo {
 		this.primitiveShortField = fooBuilder.primitiveShortField;
 		this.date = fooBuilder.date;
 		this.bar = fooBuilder.bar;
-		this.stringFields = fooBuilder.stringList;
-		this.setStringArray(fooBuilder.stringArray);
-		this.setStringSet(fooBuilder.stringSet);
+		this.barList = fooBuilder.barList;
+		this.enumBarArray = fooBuilder.enumBarArray;
+		this.stringSet = fooBuilder.stringSet;
 	}
 
 	/**
@@ -387,12 +387,12 @@ public class Foo {
 		this.bar = bar;
 	}
 
-	public String[] getStringArray() {
-		return stringArray;
+	public EnumBar[] getEnumBarArray() {
+		return enumBarArray;
 	}
 
-	public void setStringArray(String[] stringArray) {
-		this.stringArray = stringArray;
+	public void setEnumBarArray(EnumBar[] enumBarArray) {
+		this.enumBarArray = enumBarArray;
 	}
 
 	public Set<String> getStringSet() {

@@ -85,6 +85,7 @@ public class LambdamaticAnnotationProcessorTest {
 				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "enumFoo");
 		FieldAssertion.assertThat(fooMetaClass, "bar").isType("com.sample.QBar").isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "bar");
+		fail("Verify stringArray, stringFields and stringSets: QueryArrayField<String, QueryField<String>");
 	}
 
 	@Test

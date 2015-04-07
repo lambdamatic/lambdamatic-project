@@ -8,6 +8,7 @@ import java.util.Stack;
 
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -17,6 +18,7 @@ import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
@@ -47,12 +49,17 @@ class LambdaExpressionClassVisitor extends ClassVisitor {
 	/** Flag to indicate if the caller class to the lambda expression is an interface.*/
 	private final boolean isInterface;
 
-	LambdaExpressionClassVisitor(final String lambdaImplClassName, final String lambdaImplMethodName,
-			final String lambdaImplMethodSignature) {
+	/**
+	 * Constructor
+	 * @param lambdaImplClassName
+	 * @param lambdaImplMethodName
+	 * @param lambdaImplMethodSignature
+	 */
+	LambdaExpressionClassVisitor(final SerializedLambdaInfo lambdaInfo) {
 		super(Opcodes.ASM5);
-		this.lambdaImplClassName = Type.getObjectType(lambdaImplClassName).getClassName();
-		this.lambdaImplMethodName = lambdaImplMethodName;
-		this.lambdaImplMethodSignature = lambdaImplMethodSignature;
+		this.lambdaImplClassName = lambdaInfo.getImplClassName();
+		this.lambdaImplMethodName = lambdaInfo.getImplMethodName();
+		this.lambdaImplMethodSignature = lambdaInfo.getImplMethodDesc();
 		LOGGER.debug("About to analyze {}.{}", this.lambdaImplClassName, this.lambdaImplMethodName);
 		this.isInterface = isInterface(this.lambdaImplClassName);
 	}
@@ -132,82 +139,88 @@ class LambdaExpressionClassVisitor extends ClassVisitor {
 		}
 
 		@Override
-		public void visitAttribute(Attribute attr) {
+		public void visitAttribute(final Attribute attr) {
 			LOGGER.trace("** IGNORED ** Attribute {}", attr);
 		}
 
 		@Override
-		public void visitInsn(int opcode) {
+		public void visitInsn(final int opcode) {
 			LOGGER.trace("Insn {}", Printer.OPCODES[opcode]);
 			addInstruction(new InsnNode(opcode));
 		}
 
 		@Override
-		public void visitIntInsn(int opcode, int operand) {
+		public void visitIntInsn(final int opcode, final int operand) {
 			LOGGER.trace("IntInsn {} {}", Printer.OPCODES[opcode], operand);
 			addInstruction(new IntInsnNode(opcode, operand));
 		}
 
 		@Override
-		public void visitVarInsn(int opcode, int var) {
+		public void visitVarInsn(final int opcode, final int var) {
 			LOGGER.trace("VarInsn {} #{}", Printer.OPCODES[opcode], var);
 			addInstruction(new VarInsnNode(opcode, var));
 		}
 
 		@Override
-		public void visitTypeInsn(int opcode, String type) {
+		public void visitTypeInsn(final int opcode, final String type) {
 			LOGGER.trace("TypeInsn {} {}", Printer.OPCODES[opcode], type);
 			addInstruction(new TypeInsnNode(opcode, type));
 		}
 
 		@Override
-		public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+		public void visitInvokeDynamicInsn(final String name, final String desc, final Handle bsm, final Object... bsmArgs) {
+			LOGGER.trace("InvokeDynamicInsn {} (desc={})", name, desc);
+			addInstruction(new InvokeDynamicInsnNode(name, desc, bsm, bsmArgs));
+		}
+		
+		@Override
+		public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc) {
 			LOGGER.trace("MethodInsn {} {}.{} (desc={})", Printer.OPCODES[opcode], owner, name, desc);
 			addInstruction(new MethodInsnNode(opcode, owner, name, desc, this.parentClassVisitor.isInterface));
 		}
 
 		@Override
-		public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+		public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc, final boolean itf) {
 			LOGGER.trace("MethodInsn {} {}.{} (desc={})", Printer.OPCODES[opcode], owner, name, desc);
 			addInstruction(new MethodInsnNode(opcode, owner, name, desc, this.parentClassVisitor.isInterface));
 		}
 		
 		@Override
-		public void visitLdcInsn(Object cst) {
+		public void visitLdcInsn(final Object cst) {
 			LOGGER.trace("LdcInsn {}", cst);
 			addInstruction(new LdcInsnNode(cst));
 		}
 
 		@Override
-		public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+		public void visitFieldInsn(final int opcode, final String owner, final String name, final String desc) {
 			LOGGER.trace("FieldInsn {} {}.{} (desc={})", Printer.OPCODES[opcode], owner, name, desc);
 			addInstruction(new FieldInsnNode(opcode, owner, name, desc));
 		}
 
 		@Override
-		public void visitIincInsn(int var, int increment) {
+		public void visitIincInsn(final int var, final int increment) {
 			LOGGER.trace("** IGNORED ** IincInsn #{} {}", var, increment);
 		}
 
 		@Override
-		public void visitJumpInsn(int opcode, Label label) {
+		public void visitJumpInsn(final int opcode, final Label label) {
 			LOGGER.trace("JumpInsn {} {}", Printer.OPCODES[opcode], label.toString());
 			addInstruction(new JumpInsnNode(opcode, new LabelNode(label)));
 		}
 
 		@Override
-		public void visitLabel(Label label) {
+		public void visitLabel(final Label label) {
 			LOGGER.trace("Label {}", label);
 			pendingLabels.add(label.toString());
 		}
 
 		@Override
-		public void visitParameter(String name, int access) {
+		public void visitParameter(final String name, final int access) {
 			LOGGER.trace("Parameter {} (ignored)", name);
 		}
 
 		@Override
-		public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
+		public void visitLocalVariable(final String name, final String desc, final String signature, final Label start, final Label end, final int index) {
 			LOGGER.trace("LocalVariable {} (desc={}) index={}", name, desc, index);
 			// fill localVariables list with null values if necessary
 			final int size = localVariables.size();

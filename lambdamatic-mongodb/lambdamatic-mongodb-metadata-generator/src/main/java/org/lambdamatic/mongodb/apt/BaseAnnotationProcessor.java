@@ -18,10 +18,35 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 import org.apache.commons.io.IOUtils;
+import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.stringtemplate.v4.AutoIndentWriter;
 import org.stringtemplate.v4.ST;
 
 public abstract class BaseAnnotationProcessor extends AbstractProcessor {
+
+	/**
+	 * Builds the simple name of the {@link QueryMetadata} class associated with the given {@code element}
+	 * 
+	 * @param element
+	 *            the type element from which the name will be generated
+	 * @return the simple name of the given type element, prefixed by
+	 *         {@link DocumentAnnotationProcessor#QUERY_METADATA_CLASSNAME_PREFIX}.
+	 */
+	public static String generateQueryMetadataSimpleClassName(final Element element) {
+		return QueryFieldMetadata.QUERY_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString();
+	}
+
+	/**
+	 * Builds the simple name of the {@link QueryMetadata} class associated with the given {@code element}
+	 * 
+	 * @param element
+	 *            the type element from which the name will be generated
+	 * @return the simple name of the given type element, prefixed by
+	 *         {@link DocumentAnnotationProcessor#QUERY_METADATA_CLASSNAME_PREFIX}.
+	 */
+	public static String generateProjectionSimpleClassName(final Element element) {
+		return ProjectionFieldMetadata.PROJECTION_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString();
+	}
 
 	@Override
 	public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {

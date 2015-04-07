@@ -15,6 +15,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.assertj.core.api.AbstractAssert;
 
@@ -52,7 +53,7 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
 	
 	public ClassAssertion isImplementing(final String expectedInterface) {
 		isNotNull();
-		final List<String> interfaces = Arrays.asList(actual.getInterfaces()).stream().map(Class::getName).collect(Collectors.toList());
+		final List<String> interfaces = Stream.of(actual.getInterfaces()).map(Class::getName).collect(Collectors.toList());
 		if (!interfaces.contains(expectedInterface)) {
 			failWithMessage("Expected class <%s> to implement <%s> but it only implements <%s>.", actual.getName(), expectedInterface, interfaces);
 		}
@@ -62,7 +63,7 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
 
 	public ClassAssertion isImplementing(final Class<?> expectedGenericInterface, final Class<?> parameterType) {
 		isNotNull();
-		boolean match = Arrays.asList(actual.getGenericInterfaces()).stream()
+		boolean match = Stream.of(actual.getGenericInterfaces())
 				.filter(i -> i instanceof ParameterizedType).map(i -> (ParameterizedType) i)
 				.filter(i -> i.getRawType().getTypeName().equals(expectedGenericInterface.getName()))
 				.filter(i -> i.getActualTypeArguments().length == 1).map(i -> i.getActualTypeArguments()[0])

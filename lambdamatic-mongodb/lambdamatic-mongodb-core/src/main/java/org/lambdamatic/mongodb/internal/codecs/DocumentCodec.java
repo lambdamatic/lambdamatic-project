@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 import java.util.Optional;
 import java.util.Set;
 
@@ -248,7 +249,7 @@ public class DocumentCodec<T> implements Codec<T> {
 		else if(value.getClass().isArray()) {
 			writer.writeStartArray(name);
 			final Object[] values = (Object[]) value;
-			Arrays.asList(values).stream().forEach(v -> writeValue(writer, v, encoderContext));
+			Stream.of(values).forEach(v -> writeValue(writer, v, encoderContext));
 			writer.writeEndArray();
 		} 
 		// other cases
