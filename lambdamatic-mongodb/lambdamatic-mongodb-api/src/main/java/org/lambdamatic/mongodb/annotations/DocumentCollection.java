@@ -9,13 +9,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Optional annotation for collection-type attributes of a class annotated with {@link Document}. Use this annotation to override the
- * default settings.
+ * Optional annotation for collection-type attributes of a class annotated with {@link Document}. Use this annotation to
+ * override the default settings.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
+@Deprecated
 public @interface DocumentCollection {
 
 	/**
@@ -25,4 +26,3 @@ public @interface DocumentCollection {
 	public String name() default "";
 
 }
-

@@ -6,7 +6,7 @@ package org.lambdamatic.mongodb.metadata;
 import java.util.Collection;
 
 /**
- * MongoDB operation available on a given Document field.
+ * MongoDB operations available on a given Document field when specifying a query filter.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *

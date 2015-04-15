@@ -19,6 +19,7 @@ import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentCollection;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
+import org.lambdamatic.mongodb.annotations.TransientField;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 
 /**
@@ -141,10 +142,12 @@ public class Foo {
 	@DocumentId 
 	private ObjectId id;
 	
-	@DocumentField
+	@DocumentField(name="stringField_")
 	private String stringField;
-
-	@DocumentField
+	
+	@TransientField
+	private String transientStringField;
+	
 	private byte primitiveByteField;
 	
 	@DocumentField

@@ -24,6 +24,7 @@ import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.TransientField;
 import org.lambdamatic.mongodb.metadata.ProjectionField;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
+import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryField;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.stringtemplate.v4.ST;
@@ -52,6 +53,12 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 	protected static final String QUERY_METADATA_CLASS_NAME = "queryMetadataClassName";
 
 	/**
+	 * constant to identify the fully qualified name of the {@link QueryArray} implementation class in the template
+	 * properties.
+	 */
+	protected static final String QUERY_ARRAY_METADATA_CLASS_NAME = "queryArrayMetadataClassName";
+	
+	/**
 	 * constant to identify the fully qualified name of the {@link ProjectionMetadata} implementation class in the
 	 * template properties.
 	 */
@@ -69,11 +76,17 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 	/** Name of the template file for {@link QueryMetadata} classes. */
 	private static final String QUERY_METADATA_TEMPLATE = "query_metadata_template.st";
 
+	/** Name of the template file for {@link QueryMetadata} classes. */
+	private static final String QUERY_ARRAY_METADATA_TEMPLATE = "query_array_metadata_template.st";
+	
 	/** StringTemplate for the {@link QueryMetadata} classes. */
-	private ST queryMetadataTemplate;
+	private final ST queryMetadataTemplate;
 
+	/** StringTemplate for the {@link QueryArray} classes. */
+	private final ST queryArrayMetadataTemplate;
+	
 	/** StringTemplate for the {@link ProjectionMetadata} embedded classes. */
-	private ST embeddedProjectionMetadataTemplate;
+	private final ST embeddedProjectionMetadataTemplate;
 
 	/**
 	 * Constructor
@@ -84,6 +97,7 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 	public EmbeddedDocumentAnnotationProcessor() throws IOException {
 		super();
 		this.queryMetadataTemplate = getStringTemplate(QUERY_METADATA_TEMPLATE);
+		this.queryArrayMetadataTemplate = getStringTemplate(QUERY_ARRAY_METADATA_TEMPLATE);
 		this.embeddedProjectionMetadataTemplate = getStringTemplate(EMBEDDED_PROJECTION_METADATA_TEMPLATE);
 	}
 
@@ -94,6 +108,13 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 		return queryMetadataTemplate;
 	}
 
+	/**
+	 * @return the {@link ST} template to generate the {@link QueryArray} class
+	 */
+	protected ST getQueryArrayMetadataTemplate() {
+		return queryArrayMetadataTemplate;
+	}
+	
 	/**
 	 * @return the {@link ST} template to generate the {@link ProjectionMetadata} class
 	 */
@@ -107,6 +128,7 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 		templateContextProperties.put(QUERY_FIELDS, getQueryFields(domainElement));
 		templateContextProperties.put(PROJECTION_FIELDS, getProjectionFields(domainElement));
 		templateContextProperties.put(QUERY_METADATA_CLASS_NAME, generateQueryMetadataSimpleClassName(domainElement));
+		templateContextProperties.put(QUERY_ARRAY_METADATA_CLASS_NAME, generateQueryArrayMetadataSimpleClassName(domainElement));
 		templateContextProperties.put(PROJECTION_METADATA_CLASS_NAME, generateProjectionSimpleClassName(domainElement));
 		return templateContextProperties;
 	}
@@ -123,6 +145,7 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 	@Override
 	protected void doProcess(final Map<String, Object> templateContextProperties) throws IOException {
 		generateQueryMetadataSourceCode(templateContextProperties);
+		generateQueryArrayMetadataSourceCode(templateContextProperties);
 		generateProjectionMetadataSourceCode(templateContextProperties);
 	}
 
@@ -144,6 +167,22 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 		final String targetClassName = targetPackageName + "."
 				+ templateContextProperties.get(QUERY_METADATA_CLASS_NAME);
 		generateSourceCode(targetClassName, getQueryMetadataTemplate(), templateContextProperties);
+	}
+
+	/**
+	 * Generates the {@code QueryArray} implementation source code for the annotated class currently being processed.
+	 * 
+	 * @param allContextProperties
+	 *            all properties to use when running the engine to generate the source code.
+	 * 
+	 * @throws IOException
+	 */
+	private void generateQueryArrayMetadataSourceCode(final Map<String, Object> templateContextProperties)
+			throws IOException {
+		final String targetPackageName = (String) templateContextProperties.get(PACKAGE_NAME);
+		final String targetClassName = targetPackageName + "."
+				+ templateContextProperties.get(QUERY_ARRAY_METADATA_CLASS_NAME);
+		generateSourceCode(targetClassName, getQueryArrayMetadataTemplate(), templateContextProperties);
 	}
 
 	/**

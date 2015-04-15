@@ -2,6 +2,7 @@
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -11,6 +12,7 @@ import org.apache.commons.lang3.ClassUtils;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
+import org.lambdamatic.mongodb.metadata.ProjectionArray;
 import org.lambdamatic.mongodb.metadata.ProjectionField;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 
@@ -35,7 +37,7 @@ public class ProjectionFieldMetadata extends BaseFieldMetadata {
 	 * @throws MetadataGenerationException 
 	 */
 	public ProjectionFieldMetadata(final VariableElement variableElement, final DocumentId documentIdAnnotation) throws MetadataGenerationException {
-		super(variableElement, documentIdAnnotation);
+		super(getMetadataFieldName(variableElement), getMetadataFieldType(variableElement.asType()), MONGOBD_DOCUMENT_ID);
 	}
 
 	/**
@@ -48,7 +50,7 @@ public class ProjectionFieldMetadata extends BaseFieldMetadata {
 	 * @throws MetadataGenerationException 
 	 */
 	public ProjectionFieldMetadata(final VariableElement variableElement, final DocumentField documentFieldAnnotation) throws MetadataGenerationException {
-		super(variableElement, documentFieldAnnotation);
+		super(getMetadataFieldName(variableElement), getMetadataFieldType(variableElement.asType()), getDocumentFieldName(documentFieldAnnotation));
 	}
 	
 	/**
@@ -60,18 +62,34 @@ public class ProjectionFieldMetadata extends BaseFieldMetadata {
 	 * @return
 	 * @throws MetadataGenerationException 
 	 */
-	@Override
-	protected FieldType getMetadataFieldType(final TypeMirror variableType) throws MetadataGenerationException {
+	protected static FieldType getMetadataFieldType(final TypeMirror variableType) throws MetadataGenerationException {
 		if (variableType instanceof PrimitiveType) {
 			return new FieldType(ProjectionField.class);
 		} else if (variableType instanceof DeclaredType) {
-			final Element variableTypeElement = ((DeclaredType) variableType).asElement();
-			if (variableTypeElement.getAnnotation(EmbeddedDocument.class) != null) {
-				return new FieldType(getProjectionMetadataType(variableTypeElement));
+			final DeclaredType declaredType = (DeclaredType) variableType;
+			final Element declaredElement = declaredType.asElement();
+			// embedded documents
+			if (declaredElement.getAnnotation(EmbeddedDocument.class) != null) {
+				return new FieldType(getProjectionMetadataType(declaredElement));
+			} 
+			// collections (list/set)
+			else if (isCollection(declaredElement)) {
+				final TypeMirror typeArgument = declaredType.getTypeArguments().get(0);
+				final FieldType queryFieldMetadata = QueryFieldMetadata.getMetadataFieldType(typeArgument);
+				return new FieldType(ProjectionArray.class, queryFieldMetadata);
+			} 
+			// other types (primitives, Enum, String, Date, etc.)
+			else {
+				return new FieldType(ProjectionField.class);
 			}
-			return new FieldType(ProjectionField.class);
-		} else if(variableType.getKind() == TypeKind.ARRAY) {
-			return new FieldType(ProjectionField.class);
+		} else if (variableType.getKind() == TypeKind.ARRAY) {
+			final TypeMirror componentType = ((ArrayType) variableType).getComponentType();
+			if (componentType.getAnnotation(EmbeddedDocument.class) != null) {
+				throw new MetadataGenerationException("Unsupported EmbeddedDocument type: " + variableType);
+				// return null; //generateQueryMetadataType(variableTypeElement);
+			} else {
+				return new FieldType(ProjectionArray.class, QueryFieldMetadata.getMetadataFieldType(componentType));
+			}
 		}
 		throw new MetadataGenerationException("Unexpected variable type: " + variableType);
 	}
@@ -80,13 +98,11 @@ public class ProjectionFieldMetadata extends BaseFieldMetadata {
 	 * @return the fully qualified name of the {@link ProjectionMetadata} class corresponding to the given {@link Element}
 	 * @param variableTypeElement the Element to use
 	 */
-	static String getProjectionMetadataType(final Element variableTypeElement) {
+	public static String getProjectionMetadataType(final Element variableTypeElement) {
 		final String packageName = ClassUtils.getPackageCanonicalName(variableTypeElement.toString());
 		final String shortClassName = PROJECTION_METADATA_CLASSNAME_PREFIX
 				+ ClassUtils.getShortClassName(variableTypeElement.toString());
 		return packageName + '.' + shortClassName;
 	}
-
-	
 
 }

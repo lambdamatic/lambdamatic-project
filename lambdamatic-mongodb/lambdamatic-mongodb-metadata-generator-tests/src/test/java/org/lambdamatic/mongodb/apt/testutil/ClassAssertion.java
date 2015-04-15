@@ -117,14 +117,13 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
 		return this;
 	}
 
-	public ClassAssertion hasField(final String fieldName) {
+	public ClassAssertion hasNoField(final String fieldName) {
 		isNotNull();
 		try {
 			actual.getField(fieldName);
+			failWithMessage("Did not expect class <%s> to have *public* field %s", actual.getName(), fieldName);
 		} catch (NoSuchFieldException | SecurityException e) {
-			failWithMessage("Expected class <%s> to have *public* field %s, but it only containes %s", actual.getName(), fieldName, actual.getFields());
 		}
-		
 		return this;
 	}
 

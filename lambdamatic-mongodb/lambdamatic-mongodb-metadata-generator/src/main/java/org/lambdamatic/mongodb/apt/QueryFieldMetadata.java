@@ -1,7 +1,5 @@
 package org.lambdamatic.mongodb.apt;
 
-import java.util.Collection;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
@@ -18,7 +16,7 @@ import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.lambdamatic.mongodb.metadata.LocationField;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
-import org.lambdamatic.mongodb.metadata.QueryArrayField;
+import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryField;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
 
@@ -30,9 +28,12 @@ import org.lambdamatic.mongodb.metadata.QueryMetadata;
  */
 public class QueryFieldMetadata extends BaseFieldMetadata {
 
-	/** Suffix to use for the generated {@link QueryMetadata} classes. */
+	/** Prefix to use for the generated {@link QueryMetadata} classes. */
 	public static String QUERY_METADATA_CLASSNAME_PREFIX = "Q";
 
+	/** Suffix to use for the generated {@link QueryArray} classes. */
+	public static String QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX = "Array";
+	
 	/**
 	 * Creates a {@link QueryFieldMetadata} from a field annotated with {@link DocumentId}.
 	 * 
@@ -44,7 +45,7 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 	 */
 	public QueryFieldMetadata(final VariableElement variableElement, final DocumentId documentIdAnnotation)
 			throws MetadataGenerationException {
-		super(variableElement, documentIdAnnotation);
+		super(getMetadataFieldName(variableElement), getMetadataFieldType(variableElement.asType()), MONGOBD_DOCUMENT_ID);
 	}
 
 	/**
@@ -58,7 +59,7 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 	 */
 	public QueryFieldMetadata(final VariableElement variableElement, final DocumentField documentFieldAnnotation)
 			throws MetadataGenerationException {
-		super(variableElement, documentFieldAnnotation);
+		super(getMetadataFieldName(variableElement), getMetadataFieldType(variableElement.asType()), getDocumentFieldName(documentFieldAnnotation));
 	}
 
 	/**
@@ -70,29 +71,26 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 	 * @return
 	 * @throws MetadataGenerationException
 	 */
-	// FIXME: should either use fully qualified names or add import declarations, especially in case of
-	// domain classes in other packages
-	@Override
-	protected FieldType getMetadataFieldType(final TypeMirror variableType) throws MetadataGenerationException {
+	protected static FieldType getMetadataFieldType(final TypeMirror variableType) throws MetadataGenerationException {
 		if (variableType instanceof PrimitiveType) {
 			return new FieldType(QueryField.class, getSimilarDeclaredType((PrimitiveType) variableType).getName());
 		} else if (variableType instanceof DeclaredType) {
 			final DeclaredType declaredType = (DeclaredType) variableType;
 			final Element declaredElement = declaredType.asElement();
-			try {
-				final Class<?> declaredClass = safeGetClass(declaredElement);
-				// enum
-				if (declaredElement.getKind() == ElementKind.ENUM) {
-					return new FieldType(QueryField.class, declaredElement.toString());
-				} 
 				// embedded documents
-				else if (declaredElement.getAnnotation(EmbeddedDocument.class) != null) {
-					return new FieldType(getQueryMetadataType(declaredElement));
+				if (declaredElement.getAnnotation(EmbeddedDocument.class) != null) {
+					return new FieldType(getQueryMetadataType(declaredElement.toString()));
 				} 
 				// collections (list/set)
-				else if (declaredClass != null && Collection.class.isAssignableFrom(declaredClass)) {
+				else if (isCollection(declaredElement)) {
 					final TypeMirror typeArgument = declaredType.getTypeArguments().get(0);
-					return new FieldType(QueryArrayField.class, getMetadataFieldType(typeArgument));
+					if(isEmbeddedDocumentType(typeArgument)) {
+						return new FieldType(getQueryArrayMetadataType(typeArgument.toString()));
+					} 
+					// otherwise, assume that the component type is a custom domain class
+					else {
+						return new FieldType(QueryArray.class, typeArgument.toString());
+					}
 				} else {
 					switch (variableType.toString()) {
 					case "org.lambdamatic.mongodb.types.geospatial.Location":
@@ -101,40 +99,52 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 						return new FieldType(QueryField.class, variableType.toString());
 					}
 				}
-			} catch (ClassNotFoundException e) {
-				throw new MetadataGenerationException(e);
-			}
 		} else if (variableType.getKind() == TypeKind.ARRAY) {
 			final TypeMirror componentType = ((ArrayType) variableType).getComponentType();
 			final Element variableTypeElement = ((DeclaredType) componentType).asElement();
 			if (variableTypeElement.getKind() == ElementKind.ENUM) {
-				return new FieldType(QueryArrayField.class, componentType.toString());
+				return new FieldType(QueryArray.class, componentType.toString());
 			} else if (componentType.getAnnotation(EmbeddedDocument.class) != null) {
 				throw new MetadataGenerationException("Unsupported EmbeddedDocument type: " + variableType);
 				// return null; //generateQueryMetadataType(variableTypeElement);
 			} else {
-				return new FieldType(QueryArrayField.class, componentType.toString());
+				return new FieldType(QueryArray.class, componentType.toString());
 			}
 		}
 		throw new MetadataGenerationException("Unexpected variable type: " + variableType);
 	}
 
-	private Class<?> safeGetClass(final Element declaredElement) throws ClassNotFoundException {
-		try {
-			return ClassUtils.getClass(declaredElement.toString());
-		} catch(ClassNotFoundException e) {
-			return null;
-		}
+	/**
+	 * @return <code>true</code> if the given argument is annotated with {@link EmbeddedDocument}, <code>false</code> otherwise. 
+	 * @param typeArgument the {@link TypeMirror} to analyze
+	 */
+	private static boolean isEmbeddedDocumentType(final TypeMirror typeArgument) {
+		if(typeArgument.getKind() == TypeKind.DECLARED) {
+			final DeclaredType declaredType = (DeclaredType) typeArgument;
+			return (declaredType.asElement().getAnnotation(EmbeddedDocument.class) != null);
+		};
+		return false;
 	}
 
 	/**
 	 * @return the fully qualified name of the {@link QueryMetadata} class corresponding to the given {@link Element}
-	 * @param variableTypeElement the Element to use
+	 * @param elementTypeName the fully qualified name of the Element to use
 	 */
-	static String getQueryMetadataType(final Element variableTypeElement) {
-		final String packageName = ClassUtils.getPackageCanonicalName(variableTypeElement.toString());
+	public static String getQueryMetadataType(final String elementTypeName) {
+		final String packageName = ClassUtils.getPackageCanonicalName(elementTypeName.toString());
 		final String shortClassName = QUERY_METADATA_CLASSNAME_PREFIX
-				+ ClassUtils.getShortClassName(variableTypeElement.toString());
+				+ ClassUtils.getShortClassName(elementTypeName.toString());
+		return packageName + '.' + shortClassName;
+	}
+
+	/**
+	 * @return the fully qualified name of the {@link QueryMetadata} class corresponding to the given {@link Element}
+	 * @param elementTypeName the fully qualified name of the Element to use
+	 */
+	public static String getQueryArrayMetadataType(final String elementTypeName) {
+		final String packageName = ClassUtils.getPackageCanonicalName(elementTypeName.toString());
+		final String shortClassName = QUERY_METADATA_CLASSNAME_PREFIX
+				+ ClassUtils.getShortClassName(elementTypeName.toString()) + QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX;
 		return packageName + '.' + shortClassName;
 	}
 

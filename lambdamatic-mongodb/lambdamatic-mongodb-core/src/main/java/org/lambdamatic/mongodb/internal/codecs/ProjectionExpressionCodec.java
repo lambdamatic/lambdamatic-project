@@ -139,6 +139,9 @@ public class ProjectionExpressionCodec implements Codec<SerializableFunction<Pro
 	 * 
 	 * @return a map of included/excluded (BSON) field names, indexed by {@link ProjectionType}
 	 */
+	// FIXME this does not work with projection of arrays which will probably have to be interfaces to provide some filter methods ($, elementMatch and slice)
+	// FIXME this whole part needs to be re-written.
+	@Deprecated
 	private Map<Projection.ProjectionType, List<String>> findProjections(final Projection projection) {
 		if(projection == null) {
 			throw new ConversionException("Projection cannot be null");

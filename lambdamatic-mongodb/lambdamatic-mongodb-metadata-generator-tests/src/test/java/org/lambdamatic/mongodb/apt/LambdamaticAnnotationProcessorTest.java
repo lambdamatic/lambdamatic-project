@@ -8,6 +8,8 @@ import static org.assertj.core.api.Assertions.fail;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.reflect.TypeUtils;
 import org.bson.types.ObjectId;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -21,13 +23,16 @@ import org.lambdamatic.mongodb.internal.LambdamaticMongoCollectionImpl;
 import org.lambdamatic.mongodb.internal.codecs.DocumentCodec;
 import org.lambdamatic.mongodb.internal.configuration.MongoClientConfiguration;
 import org.lambdamatic.mongodb.metadata.LocationField;
+import org.lambdamatic.mongodb.metadata.ProjectionArray;
 import org.lambdamatic.mongodb.metadata.ProjectionField;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
+import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryField;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
 
 import com.mongodb.MongoClient;
 import com.sample.Bar;
+import com.sample.EnumBar;
 import com.sample.EnumFoo;
 import com.sample.Foo;
 
@@ -48,98 +53,166 @@ public class LambdamaticAnnotationProcessorTest {
 	public void shouldProcessFooClassAndGenerateQueryMetadataClass() throws URISyntaxException, ClassNotFoundException,
 			NoSuchFieldException, SecurityException, InstantiationException, IllegalAccessException {
 		// verification
-		final Class<?> fooMetaClass = Class.forName("com.sample.QFoo");
-		ClassAssertion.assertThat(fooMetaClass).isNotAbstract().isImplementing(QueryMetadata.class, Foo.class);
-		FieldAssertion.assertThat(fooMetaClass, "id").isParameterizedType(QueryField.class, ObjectId.class)
+		final Class<?> fooQueryClass = Class.forName("com.sample.QFoo");
+		ClassAssertion.assertThat(fooQueryClass).isAbstract().isImplementing(QueryMetadata.class, Foo.class);
+		// id
+		FieldAssertion.assertThat(fooQueryClass, "id").isParameterizedType(QueryField.class, ObjectId.class)
 				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
 				.hasAttributeValue("name", DocumentCodec.MONGOBD_DOCUMENT_ID);
-		FieldAssertion.assertThat(fooMetaClass, "stringField").isParameterizedType(QueryField.class, String.class)
-				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "stringField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveByteField").isParameterizedType(QueryField.class, Byte.class)
+		// stringField: *custom name in the @DocumentField annotation*
+		FieldAssertion.assertThat(fooQueryClass, "stringField").isParameterizedType(QueryField.class, String.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
+				.hasAttributeValue("name", "stringField_");
+		// transientStringField: annotated with @Transient, should not be here
+		ClassAssertion.assertThat(fooQueryClass).hasNoField("transientStringField");
+		// primitiveByteField: on @DocumentField annotation: should use class field name as document field name
+		FieldAssertion.assertThat(fooQueryClass, "primitiveByteField").isParameterizedType(QueryField.class, Byte.class)
 				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
 				.hasAttributeValue("name", "primitiveByteField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveShortField")
+		// primitiveShortField
+		FieldAssertion.assertThat(fooQueryClass, "primitiveShortField")
 				.isParameterizedType(QueryField.class, Short.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveShortField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveIntField")
+		// primitiveIntField
+		FieldAssertion.assertThat(fooQueryClass, "primitiveIntField")
 				.isParameterizedType(QueryField.class, Integer.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveIntField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveLongField").isParameterizedType(QueryField.class, Long.class)
+		// primitiveLongField
+		FieldAssertion.assertThat(fooQueryClass, "primitiveLongField").isParameterizedType(QueryField.class, Long.class)
 				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
 				.hasAttributeValue("name", "primitiveLongField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveFloatField")
+		// primitiveFloatField
+		FieldAssertion.assertThat(fooQueryClass, "primitiveFloatField")
 				.isParameterizedType(QueryField.class, Float.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveFloatField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveDoubleField")
+		// primitiveDoubleField
+		FieldAssertion.assertThat(fooQueryClass, "primitiveDoubleField")
 				.isParameterizedType(QueryField.class, Double.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveDoubleField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveBooleanField")
+		// primitiveBooleanField
+		FieldAssertion.assertThat(fooQueryClass, "primitiveBooleanField")
 				.isParameterizedType(QueryField.class, Boolean.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveBooleanField");
-		FieldAssertion.assertThat(fooMetaClass, "primitiveCharField")
+		// primitiveCharField
+		FieldAssertion.assertThat(fooQueryClass, "primitiveCharField")
 				.isParameterizedType(QueryField.class, Character.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveCharField");
-		FieldAssertion.assertThat(fooMetaClass, "location").isType(LocationField.class).isNotFinal().isNotStatic()
+		// location
+		FieldAssertion.assertThat(fooQueryClass, "location").isType(LocationField.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "location");
-		FieldAssertion.assertThat(fooMetaClass, "enumFoo").isParameterizedType(QueryField.class, EnumFoo.class)
+		// enumFoo
+		FieldAssertion.assertThat(fooQueryClass, "enumFoo").isParameterizedType(QueryField.class, EnumFoo.class)
 				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "enumFoo");
-		FieldAssertion.assertThat(fooMetaClass, "bar").isType("com.sample.QBar").isNotFinal().isNotStatic()
+		// bar
+		FieldAssertion.assertThat(fooQueryClass, "bar").isType("com.sample.QBar").isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "bar");
-		fail("Verify stringArray, stringFields and stringSets: QueryArrayField<String, QueryField<String>");
+		// barList
+		FieldAssertion.assertThat(fooQueryClass, "barList")
+				.isType("com.sample.QBarArray").isNotFinal().isNotStatic()
+				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "barList");
+		final Class<?> barArrayClass = Class.forName("com.sample.QBarArray");
+		ClassAssertion.assertThat(barArrayClass).isAbstract().isImplementing(QueryArray.class, ClassUtils.getClass("com.sample.QBar"))
+				.isExtending(ClassUtils.getClass("com.sample.QBar"));
+
+		// enumBarArray
+		FieldAssertion.assertThat(fooQueryClass, "enumBarArray")
+				.isParameterizedType(QueryArray.class,ClassUtils.getClass("com.sample.EnumBar"))
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
+				.hasAttributeValue("name", "enumBarArray");
+		// stringSet
+		FieldAssertion.assertThat(fooQueryClass, "stringSet")
+				.isParameterizedType(QueryArray.class, String.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "stringSet");
 	}
 
 	@Test
 	@WithDomainClass(Foo.class)
 	@WithDomainClass(Bar.class)
-	public void shouldProcessFooClassAndGenerateProjectionMetadataClass() throws URISyntaxException,
-			ClassNotFoundException, NoSuchFieldException, SecurityException, IllegalArgumentException,
-			IllegalAccessException, InstantiationException {
+	public void shouldProcessFooClassAndGenerateProjectionMetadataClass()
+			throws URISyntaxException, ClassNotFoundException, NoSuchFieldException, SecurityException,
+			IllegalArgumentException, IllegalAccessException, InstantiationException {
 		// verification
-		final Class<?> fooMetaClass = Class.forName("com.sample.PFoo");
-		ClassAssertion.assertThat(fooMetaClass).isNotAbstract().isImplementing(ProjectionMetadata.class, Foo.class)
-				.isExtending("java.lang.Object");
-		FieldAssertion.assertThat(fooMetaClass, "id").isType(ProjectionField.class).isNotFinal().isNotStatic()
-				.hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("_id"));
-		FieldAssertion.assertThat(fooMetaClass, "stringField").isType(ProjectionField.class).isNotFinal().isNotStatic()
-				.hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("stringField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveByteField").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveByteField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveShortField").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveShortField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveIntField").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveIntField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveLongField").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveLongField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveFloatField").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveFloatField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveDoubleField").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveDoubleField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveBooleanField").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveBooleanField"));
-		FieldAssertion.assertThat(fooMetaClass, "primitiveCharField").isType(ProjectionField.class).isNotFinal()
-				.isNotStatic().hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("primitiveCharField"));
-		FieldAssertion.assertThat(fooMetaClass, "location").isType(ProjectionField.class).isNotFinal().isNotStatic()
-				.hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("location"));
-		FieldAssertion.assertThat(fooMetaClass, "enumFoo").isType(ProjectionField.class).isNotFinal().isNotStatic()
-				.hasNoAnnotation().hasDefaultValueEquals(new ProjectionField("enumFoo"));
-		FieldAssertion.assertThat(fooMetaClass, "bar").isType("com.sample.PBar").isNotFinal().isNotStatic()
-				.hasNoAnnotation();
+		final Class<?> fooProjectionClass = Class.forName("com.sample.PFoo");
+		ClassAssertion.assertThat(fooProjectionClass).isAbstract()
+				.isImplementing(ProjectionMetadata.class, Foo.class).isExtending("java.lang.Object");
+		// id
+		FieldAssertion.assertThat(fooProjectionClass, "id").isType(ProjectionField.class).isNotFinal().isNotStatic()
+				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "_id");
+		// stringField: *custom name in the @DocumentField annotation*
+		FieldAssertion.assertThat(fooProjectionClass, "stringField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "stringField_");
+		// transientStringField: annotated with @Transient, should not be here
+		ClassAssertion.assertThat(fooProjectionClass).hasNoField("transientStringField");
+		// primitiveByteField
+		FieldAssertion.assertThat(fooProjectionClass, "primitiveByteField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveByteField");
+
+		// primitiveShortField
+		FieldAssertion.assertThat(fooProjectionClass, "primitiveShortField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveShortField");
+
+		// primitiveIntField
+		FieldAssertion.assertThat(fooProjectionClass, "primitiveIntField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveIntField");
+
+		// primitiveLongField
+		FieldAssertion.assertThat(fooProjectionClass, "primitiveLongField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveLongField");
+
+		// primitiveFloatField
+		FieldAssertion.assertThat(fooProjectionClass, "primitiveFloatField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveFloatField");
+
+		// primitiveDoubleField
+		FieldAssertion.assertThat(fooProjectionClass, "primitiveDoubleField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveDoubleField");
+
+		// primitiveBooleanField
+		FieldAssertion.assertThat(fooProjectionClass, "primitiveBooleanField").isType(ProjectionField.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
+				.hasAttributeValue("name", "primitiveBooleanField");
+
+		// primitiveCharField
+		FieldAssertion.assertThat(fooProjectionClass, "primitiveCharField").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveCharField");
+
+		// location
+		FieldAssertion.assertThat(fooProjectionClass, "location").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "location");
+
+		// enumFoo
+		FieldAssertion.assertThat(fooProjectionClass, "enumFoo").isType(ProjectionField.class).isNotFinal()
+				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "enumFoo");
+
+		// bar
+		FieldAssertion.assertThat(fooProjectionClass, "bar").isType("com.sample.PBar").isNotFinal().isNotStatic()
+				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "bar");
 		// embedded PBar Projection class
-		final Class<?> barMetaClass = Class.forName("com.sample.PBar");
-		ClassAssertion.assertThat(barMetaClass).isNotAbstract().isImplementing(ProjectionMetadata.class, Bar.class)
+		final Class<?> barProjectionClass = Class.forName("com.sample.PBar");
+		ClassAssertion.assertThat(barProjectionClass).isImplementing(ProjectionMetadata.class, Bar.class)
 				.isExtending(ProjectionField.class);
+		// barList
+		FieldAssertion.assertThat(fooProjectionClass, "barList")
+				.isParameterizedType(ProjectionArray.class, Class.forName("com.sample.QBar")).isNotFinal().isNotStatic()
+				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "barList");
+		// enumBarArray
+		FieldAssertion.assertThat(fooProjectionClass, "enumBarArray")
+				.isParameterizedType(ProjectionArray.class, TypeUtils.parameterize(QueryField.class, EnumBar.class)).isNotFinal()
+				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "enumBarArray");
+		// stringSet
+		FieldAssertion.assertThat(fooProjectionClass, "stringSet")
+				.isParameterizedType(ProjectionArray.class, TypeUtils.parameterize(QueryField.class, String.class))
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "stringSet");
 
 	}
 
 	@Test
 	@WithDomainClass(Foo.class)
-	public void shouldProcessSingleDomainClassAndGenerateCollectionAndCollectionProducer() throws URISyntaxException,
-			ClassNotFoundException, NoSuchFieldException, SecurityException, IOException {
+	public void shouldProcessSingleDomainClassAndGenerateCollectionAndCollectionProducer()
+			throws URISyntaxException, ClassNotFoundException, NoSuchFieldException, SecurityException, IOException {
 		// verification
 		final Class<?> queryFooClass = Class.forName("com.sample.QFoo");
-		ClassAssertion.assertThat(queryFooClass).isNotNull();
 		final Class<?> projectionFooClass = Class.forName("com.sample.PFoo");
-		ClassAssertion.assertThat(projectionFooClass).isNotNull();
 		final Class<?> fooCollectionClass = Class.forName("com.sample.FooCollection");
 		ClassAssertion.assertThat(fooCollectionClass).isExtending(LambdamaticMongoCollectionImpl.class, Foo.class,
 				queryFooClass, projectionFooClass);
@@ -149,6 +222,20 @@ public class LambdamaticAnnotationProcessorTest {
 		ClassAssertion.assertThat(userCollectionProducerClass).hasMethod("getFooCollection", MongoClient.class,
 				MongoClientConfiguration.class);
 
+	}
+
+	@Test(expected = ClassNotFoundException.class)
+	@WithDomainClass(Bar.class)
+	public void shouldProcessSingleDomainClassAndNotGenerateCollection()
+			throws URISyntaxException, ClassNotFoundException, NoSuchFieldException, SecurityException, IOException {
+		Class.forName("com.sample.BarCollection");
+	}
+
+	@Test(expected = ClassNotFoundException.class)
+	@WithDomainClass(Bar.class)
+	public void shouldProcessSingleDomainClassAndNotGenerateCollectionProducer()
+			throws URISyntaxException, ClassNotFoundException, NoSuchFieldException, SecurityException, IOException {
+		Class.forName("com.sample.BarCollectionProducer");
 	}
 
 	@Ignore

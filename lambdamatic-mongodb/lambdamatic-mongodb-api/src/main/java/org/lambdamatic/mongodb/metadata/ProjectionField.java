@@ -5,7 +5,7 @@ package org.lambdamatic.mongodb.metadata;
 
 
 /**
- * Base annotation for all types of document fields.
+ * Annotation for all types of singular (ie, not arrays) document fields when specifying a query projection.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
@@ -31,19 +31,6 @@ public class ProjectionField {
 		return fieldName;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((fieldName == null) ? 0 : fieldName.hashCode());
-		return result;
-	}
-
-	
-	
 	/**
 	 * @see java.lang.Object#toString()
 	 */
@@ -52,6 +39,14 @@ public class ProjectionField {
 		return "ProjectionField [fieldName=" + fieldName + "]";
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((fieldName == null) ? 0 : fieldName.hashCode());
+		return result;
+	}
+	
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */

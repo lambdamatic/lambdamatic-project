@@ -12,10 +12,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.lang.reflect.Type;
 
+import org.apache.commons.lang3.reflect.TypeUtils;
 import org.assertj.core.api.AbstractAssert;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 
@@ -41,17 +40,16 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
 		return new FieldAssertion(field);
 	}
 
-	public FieldAssertion isParameterizedType(final Class<?> expectedRawType, final Class<?>... expectedTypeArguments) {
+	public FieldAssertion isParameterizedType(final Class<?> expectedRawType, final Type... expectedTypeArguments) {
 		isNotNull();
 		if(!(actual.getGenericType() instanceof ParameterizedType)) {
 			failWithMessage("Expected field <%s> to be a parameterized type but it was not", actual);
 		}
 		final ParameterizedType actualType = (ParameterizedType) actual.getGenericType();
-		final List<String> expectedTypeArgumentNames = Stream.of(expectedTypeArguments).map(a -> a.getName()).collect(Collectors.toList());
-		final List<String> actualTypeArgumentNames = Stream.of(actualType.getActualTypeArguments()).map(a -> a.getTypeName()).collect(Collectors.toList());
-		if (!actualType.getRawType().equals(expectedRawType) || !actualTypeArgumentNames.equals(expectedTypeArgumentNames)) {
-			failWithMessage("Expected field <%s><%s> to be of type <%s><%s> but it was <%s>", actualType.getRawType().getTypeName(), actualType.getActualTypeArguments(), expectedRawType,
-					expectedTypeArguments);
+		final ParameterizedType expectedParameterizedType = TypeUtils.parameterize(expectedRawType, expectedTypeArguments);
+		if (!TypeUtils.equals(actualType, expectedParameterizedType)) {
+			failWithMessage("Expected field %s.%s to be of type %s<%s> but it was %s<%s>", actual.getType().getName(), actual.getName(), expectedRawType,
+					expectedTypeArguments, actualType.getRawType().getTypeName(), actualType.getActualTypeArguments());
 		}
 		return this;
 	}

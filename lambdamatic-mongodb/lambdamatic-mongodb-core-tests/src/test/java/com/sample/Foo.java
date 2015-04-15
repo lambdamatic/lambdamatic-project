@@ -14,7 +14,6 @@ import java.util.List;
 
 import org.bson.types.ObjectId;
 import org.lambdamatic.mongodb.annotations.Document;
-import org.lambdamatic.mongodb.annotations.DocumentCollection;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.types.geospatial.Location;
@@ -173,12 +172,12 @@ public class Foo {
 	private char primitiveCharField;
 	
 	@DocumentField
-	private EnumFoo enumFoo;
+	private EnumFoo enumFoo; 
 	
 	@DocumentField
 	private Location location;
 	
-	@DocumentCollection
+	@DocumentField
 	private List<Bar> barList;
 
 	private Bar bar;
