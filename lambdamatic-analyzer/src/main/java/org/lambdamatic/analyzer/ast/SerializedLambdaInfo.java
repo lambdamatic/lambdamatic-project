@@ -7,7 +7,7 @@ import java.lang.invoke.SerializedLambda;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.lambdamatic.analyzer.ast.node.CapturedArgumentRef;
+import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.objectweb.asm.Type;
 
 /**
@@ -27,38 +27,40 @@ public class SerializedLambdaInfo {
 	/** the signature of the implementation method. */
 	private final String implMethodDesc;
 	
-	/** the (potentially empty) list of {@link CapturedArgumentRef}. */
-	private final List<CapturedArgumentRef> capturedArgs;
+	/** the (potentially empty) list of actual {@link CapturedArgument}. */
+	private final List<CapturedArgument> capturedArguments;
 
 	/**
 	 * Full constructor
 	 * @param serializedLambda the fully {@link SerializedLambda} carrying all the required info.
 	 */
 	public SerializedLambdaInfo(final SerializedLambda serializedLambda) {
-		super();
-		this.implClassName = Type.getObjectType(serializedLambda.getImplClass()).getClassName();
-		this.implMethodName = serializedLambda.getImplMethodName();
-		this.implMethodDesc = serializedLambda.getImplMethodSignature();
-		this.capturedArgs = new ArrayList<>();
-		for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
-			this.capturedArgs.add(new CapturedArgumentRef(i, serializedLambda.getCapturedArg(i)));
-		}
+		this(Type.getObjectType(serializedLambda.getImplClass()).getClassName(), serializedLambda.getImplMethodName(), serializedLambda.getImplMethodSignature(), getCapturedArguments(serializedLambda));
+	}
+	
+	/**
+	 * Constructor
+	 * @param implClassName the fully qualified name of the Lambda implementation Class
+	 * @param implMethodName the name of the Lambda implementation method
+	 * @param implMethodSignature the signature of the Lambda implementation method
+	 * @param capturedArguments the capture arguments when calling the Lambda expression
+	 */
+	SerializedLambdaInfo(final String implClassName, final String implMethodName, final String implMethodSignature,
+			final List<CapturedArgument> capturedArguments) {
+		this.implClassName = implClassName;
+		this.implMethodName = implMethodName;
+		this.implMethodDesc = implMethodSignature;
+		this.capturedArguments = capturedArguments;
 	}
 
-	/**
-	 * Full constructor
-	 * @param implClassName the fully qualified name of the implementation class.
-	 * @param implMethodName the name of the implementation method.
-	 * @param implMethodDesc the signature of the implementation method.
-	 * @param capturedArgs the (potentially empty) list of {@link CapturedArgumentRef}.
-	 */
-	public SerializedLambdaInfo(final String implClassName, final String implMethodName, final String implMethodDesc,
-			final List<CapturedArgumentRef> capturedArgs) {
-		super();
-		this.implClassName = Type.getObjectType(implClassName).getClassName();
-		this.implMethodName = implMethodName;
-		this.implMethodDesc = implMethodDesc;
-		this.capturedArgs = capturedArgs;
+
+
+	public static List<CapturedArgument> getCapturedArguments(final SerializedLambda serializedLambda) {
+		final List<CapturedArgument> capturedArguments = new ArrayList<>();
+		for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
+			capturedArguments.add(new CapturedArgument(serializedLambda.getCapturedArg(i)));
+		}
+		return capturedArguments;
 	}
 
 	/**
@@ -83,10 +85,10 @@ public class SerializedLambdaInfo {
 	}
 
 	/**
-	 * @return the (potentially empty) list of {@link CapturedArgumentRef}.
+	 * @return the (potentially empty) list of actual {@link CapturedArgument}.
 	 */
-	public List<CapturedArgumentRef> getCapturedArgs() {
-		return capturedArgs;
+	public List<CapturedArgument> getCapturedArguments() {
+		return capturedArguments;
 	}
 
 	/**
@@ -135,8 +137,7 @@ public class SerializedLambdaInfo {
 
 	@Override
 	public String toString() {
-		return "SerializedLambdaInfo [implClassName=" + implClassName + ", implMethodName=" + implMethodName
-				+ ", implMethodDesc=" + implMethodDesc + ", capturedArgs=" + capturedArgs + "]";
+		return "SerializedLambdaInfo for " + implClassName + "." + implMethodName;
 	}
 	
 }

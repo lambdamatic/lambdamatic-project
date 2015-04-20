@@ -16,7 +16,6 @@ import java.util.TreeSet;
 
 import org.bson.types.ObjectId;
 import org.lambdamatic.mongodb.annotations.Document;
-import org.lambdamatic.mongodb.annotations.DocumentCollection;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.TransientField;
@@ -177,7 +176,7 @@ public class Foo {
 	@DocumentField
 	private Location location;
 	
-	@DocumentCollection
+	@DocumentField
 	private List<Bar> barList;
 
 	private Bar bar;

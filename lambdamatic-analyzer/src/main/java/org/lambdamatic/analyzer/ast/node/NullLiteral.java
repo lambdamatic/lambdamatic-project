@@ -4,10 +4,10 @@
 package org.lambdamatic.analyzer.ast.node;
 
 /**
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class NullLiteral extends Expression {
+public class NullLiteral extends ObjectInstance {
 
 	/**
 	 * Full constructor
@@ -31,7 +31,7 @@ public class NullLiteral extends Expression {
 	 *            the inversion flag of this {@link Expression}.
 	 */
 	public NullLiteral(final int id, final boolean inverted) {
-		super(id, inverted);
+		super(id, null, inverted);
 	}
 
 	/**
@@ -46,58 +46,12 @@ public class NullLiteral extends Expression {
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
-	 */
-	@Override
-	public NullLiteral duplicate() {
-		return duplicate(generateId());
-	}
-
-	/**
-	 * {@inheritDoc}
+	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
 	 */
 	@Override
 	public ExpressionType getExpressionType() {
 		return ExpressionType.NULL_LITERAL;
-	}
-
-	/**
-	 * Returning {@link Void} to avoid {@link NullPointerException}
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getJavaType()
-	 */
-	@Override
-	public Class<?> getJavaType() {
-		return Void.class;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#inverse()
-	 */
-	@Override
-	public Expression inverse() {
-		throw new UnsupportedOperationException(this.getClass().getName() + " does not support inversion.");
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#canBeInverted()
-	 */
-	@Override
-	public boolean canBeInverted() {
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getValue()
-	 */
-	@Override
-	public Object getValue() {
-		return null;
 	}
 
 	/**
@@ -108,24 +62,4 @@ public class NullLiteral extends Expression {
 		return "null";
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((getExpressionType() == null) ? 0 : getExpressionType().hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		return true;
-	}
-
 }
-

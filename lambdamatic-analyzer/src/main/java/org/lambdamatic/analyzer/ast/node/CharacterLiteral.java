@@ -6,13 +6,10 @@ package org.lambdamatic.analyzer.ast.node;
 /**
  * A Character Literal Expression.
  * 
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class CharacterLiteral extends Expression {
-
-	/** The literal value. */
-	private final Character value;
+public class CharacterLiteral extends ObjectInstance {
 
 	/**
 	 * Full constructor
@@ -38,8 +35,7 @@ public class CharacterLiteral extends Expression {
 	 *            the inversion flag of this {@link Expression}.
 	 */
 	public CharacterLiteral(final int id, final Character value, final boolean inverted) {
-		super(id, inverted);
-		this.value = value;
+		super(id, value, inverted);
 	}
 
 	/**
@@ -53,15 +49,6 @@ public class CharacterLiteral extends Expression {
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
-	 */
-	@Override
-	public CharacterLiteral duplicate() {
-		return duplicate(generateId());
-	}
-	
-	/**
-	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
 	 */
 	@Override
@@ -71,39 +58,12 @@ public class CharacterLiteral extends Expression {
 	
 	/**
 	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getJavaType()
-	 */
-	@Override
-	public Class<?> getJavaType() {
-		return Character.class;
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getValue()
 	 */
 	@Override
 	public Character getValue() {
-		return value;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#inverse()
-	 */
-	@Override
-	public Expression inverse() {
-		throw new UnsupportedOperationException(this.getClass().getName() + " does not support inversion.");
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#canBeInverted()
-	 */
-	@Override
-	public boolean canBeInverted() {
-		return false;
+		return (Character)super.getValue();
 	}
 
 	/**
@@ -111,43 +71,7 @@ public class CharacterLiteral extends Expression {
 	 */
 	@Override
 	public String toString() {
-		return "'" + value.toString() + "'";
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((getExpressionType() == null) ? 0 : getExpressionType().hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		CharacterLiteral other = (CharacterLiteral) obj;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
-		return true;
+		return "'" + super.getValue().toString() + "'";
 	}
 
 }

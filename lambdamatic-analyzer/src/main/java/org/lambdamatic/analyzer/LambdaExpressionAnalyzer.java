@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
 
 import org.lambdamatic.analyzer.ast.CapturedArgumentsEvaluator;
 import org.lambdamatic.analyzer.ast.LambdaExpressionReader;
-import org.lambdamatic.analyzer.ast.LambdaExpressionRewriter;
+import org.lambdamatic.analyzer.ast.NestedLambdaExpressionsRemover;
+import org.lambdamatic.analyzer.ast.ExpressionSanitizer;
 import org.lambdamatic.analyzer.ast.ReturnTruePathFilter;
 import org.lambdamatic.analyzer.ast.SerializedLambdaInfo;
 import org.lambdamatic.analyzer.ast.node.ASTNodeUtils;
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
-import org.lambdamatic.analyzer.ast.node.CapturedArgumentRef;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
@@ -42,10 +42,12 @@ import org.slf4j.LoggerFactory;
  * Singleton service that analyzes the bytecode behind a Lambda Expression and returns its AST in the form of an
  * {@link Expression}, or executes the actual Lambda expression and returns the resulting Java object.
  * 
- * <p><strong>Note:</strong>Subsequent calls to analyze a given Lambda Expression return a cached version of the AST, only
- * {@link CapturedArgument} may be different.</p>
+ * <p>
+ * <strong>Note:</strong>Subsequent calls to analyze a given Lambda Expression return a cached version of the AST, only
+ * {@link CapturedArgument} may be different.
+ * </p>
  * 
- * @author Xavier Coulon <xcoulon@redhat.com> 
+ * @author Xavier Coulon <xcoulon@redhat.com>
  * 
  * @see http://cr.openjdk.java.net/~briangoetz/lambda/lambda-translation.html
  * 
@@ -102,13 +104,13 @@ public class LambdaExpressionAnalyzer {
 	 * @throws AnalyzeException
 	 *             if something wrong happened (a {@link NoSuchMethodException}, {@link IllegalArgumentException} or
 	 *             {@link InvocationTargetException} exception occurred).
-	 *             
+	 * 
 	 * @see http://cr.openjdk.java.net/~briangoetz/lambda/lambda-translation.html
 	 * @see http ://docs.oracle.com/javase/8/docs/api/java/lang/invoke/SerializedLambda.html
 	 * @see http ://stackoverflow.com/questions/21860875/printing-debug-info-on-errors
 	 *      -with-java-8-lambda-expressions/21879031 #21879031
 	 */
-	private <T> SerializedLambdaInfo getSerializedLambdaInfo(final Object expression) {
+	private static <T> SerializedLambdaInfo getSerializedLambdaInfo(final Object expression) {
 		final Class<?> cl = expression.getClass();
 		try {
 			final Method m = cl.getDeclaredMethod("writeReplace");
@@ -117,12 +119,16 @@ public class LambdaExpressionAnalyzer {
 			if (result instanceof SerializedLambda) {
 				final SerializedLambda serializedLambda = (SerializedLambda) result;
 				LOGGER.debug(" Lambda FunctionalInterface: {}.{} ({})", serializedLambda.getFunctionalInterfaceClass(),
-						serializedLambda.getFunctionalInterfaceMethodName(), serializedLambda.getFunctionalInterfaceMethodSignature());
-				LOGGER.debug(" Lambda Implementation: {}.{} ({})", serializedLambda.getImplClass(), serializedLambda.getImplMethodName(),
-						serializedLambda.getImplMethodSignature());
+						serializedLambda.getFunctionalInterfaceMethodName(),
+						serializedLambda.getFunctionalInterfaceMethodSignature());
+				LOGGER.debug(" Lambda Implementation: {}.{} ({})", serializedLambda.getImplClass(),
+						serializedLambda.getImplMethodName(), serializedLambda.getImplMethodSignature());
 				for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
-					LOGGER.debug("  with Captured Arg(" + i + "): '" + serializedLambda.getCapturedArg(i) + 
-							((serializedLambda.getCapturedArg(i) != null) ? "' (" + serializedLambda.getCapturedArg(i).getClass().getName() + ")" : ""));
+					LOGGER.debug(
+							"  with Captured Arg(" + i + "): '" + serializedLambda.getCapturedArg(i)
+									+ ((serializedLambda.getCapturedArg(i) != null)
+											? "' (" + serializedLambda.getCapturedArg(i).getClass().getName() + ")"
+											: ""));
 				}
 				return new SerializedLambdaInfo(serializedLambda);
 			}
@@ -140,7 +146,7 @@ public class LambdaExpressionAnalyzer {
 	 * @return the argument type
 	 * @throws ClassNotFoundException
 	 */
-	public Class<?> getArgumentType(final SerializedLambdaInfo lambdaInfo) {
+	private static Class<?> getArgumentType(final SerializedLambdaInfo lambdaInfo) {
 		// parameter type is the last argument
 		final Type[] argumentTypes = Type.getArgumentTypes(lambdaInfo.getImplMethodDesc());
 		final String argumentTypeClassName = argumentTypes[argumentTypes.length - 1].getClassName();
@@ -151,20 +157,20 @@ public class LambdaExpressionAnalyzer {
 			throw new AnalyzeException("Failed to retrieve the argument type for the Lambda expression", e);
 		}
 	}
-	
+
 	/**
 	 * Gets the type of the argument used in the Functional Interface
 	 * 
 	 * @param expression
-	 *            the Lambda Expression 
+	 *            the Lambda Expression
 	 * @return the argument type
 	 * @throws ClassNotFoundException
 	 */
-	public Class<?> getArgumentType(final Object expression) {
+	public static Class<?> getArgumentType(final Object expression) {
 		final SerializedLambdaInfo lambdaInfo = getSerializedLambdaInfo(expression);
 		return getArgumentType(lambdaInfo);
 	}
-	
+
 	/**
 	 * Analyzes the Java Bytecode for the given user-defined Lambda Expression object (whose body has already been
 	 * desugared by the compiler into a method in the caller class)
@@ -174,10 +180,12 @@ public class LambdaExpressionAnalyzer {
 	 * @return an {@link Expression} based on the bytecode generated to execute the given {@code lambdaExpression}.
 	 * @throws AnalyzeException
 	 */
-	public LambdaExpression analyzeExpression(final Object lambdaExpression)
-			throws AnalyzeException {
+	public LambdaExpression analyzeExpression(final Object lambdaExpression) throws AnalyzeException {
 		final SerializedLambdaInfo lambdaInfo = getSerializedLambdaInfo(lambdaExpression);
-		return analyzeExpression(lambdaInfo);
+		final LambdaExpression rawExpression = analyzeExpression(lambdaInfo);
+		final Expression resultExpression = evaluateCapturedArguments(rawExpression.getExpression(),
+				lambdaInfo.getCapturedArguments());
+		return new LambdaExpression(resultExpression, rawExpression.getArgumentType());
 	}
 
 	/**
@@ -193,18 +201,17 @@ public class LambdaExpressionAnalyzer {
 		try {
 			final Class<?> argumentTypeClass = getArgumentType(lambdaInfo);
 			final Expression rawExpression = getRawExpression(lambdaInfo);
-			final Expression resultExpression = evaluateCapturedArguments(rawExpression, lambdaInfo);
 			// final Expression resultExpression = evaluateLocalVariables(intermediateExpression, );
-			return new LambdaExpression(resultExpression, argumentTypeClass);
+			return new LambdaExpression(rawExpression, argumentTypeClass);
 		} catch (IOException | ClassNotFoundException e) {
 			throw new AnalyzeException("Failed to analyze lambda expression", e);
 		}
 	}
-	
+
 	/**
 	 * Returns the "raw" {@link Expression} matching the lambda expression implementation associated with the given
-	 * {@link SerializedLambda}, ie, an {@link Expression} whose {@link CapturedArgument} and
-	 * {@link CapturedArgumentRef} have not been evaluated yet.
+	 * {@link SerializedLambda}, ie, an {@link Expression} whose {@link CapturedArgument} and {@link CapturedArgument}
+	 * have not been evaluated yet.
 	 * 
 	 * @param serializedLambdaInfo
 	 *            the info about the Lambda Expression implementation
@@ -212,8 +219,8 @@ public class LambdaExpressionAnalyzer {
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
-	private Expression getRawExpression(final SerializedLambdaInfo serializedLambdaInfo) throws ClassNotFoundException,
-			IOException {
+	private Expression getRawExpression(final SerializedLambdaInfo serializedLambdaInfo)
+			throws ClassNotFoundException, IOException {
 		final String methodImplementationId = serializedLambdaInfo.getImplMethodId();
 		synchronized (methodImplementationId) {
 			if (cache.containsKey(methodImplementationId)) {
@@ -239,7 +246,8 @@ public class LambdaExpressionAnalyzer {
 	 * @throws AnalyzeException
 	 */
 	private Expression analyzeByteCode(final SerializedLambdaInfo lambdaInfo) throws IOException {
-		LOGGER.debug("Analyzing lambda expression bytecode...");
+		LOGGER.debug("Analyzing lambda expression bytecode at {}.{}", lambdaInfo.getImplClassName(),
+				lambdaInfo.getImplMethodName());
 		final Statement statement = new LambdaExpressionReader().readBytecodeStatement(lambdaInfo);
 		final Expression thinedOutExpression = thinOut(statement);
 		final Expression simplifiedExpression = simplifyExpression(thinedOutExpression);
@@ -270,31 +278,38 @@ public class LambdaExpressionAnalyzer {
 	 *         actual values.
 	 */
 	private Expression processMethodCalls(final Expression expression) {
-		return ExpressionVisitorUtil.visit(expression, new LambdaExpressionRewriter());
+		return ExpressionVisitorUtil.visit(expression, new ExpressionSanitizer());
 	}
 
 	/**
-	 * Performs the method calls on the {@link CapturedArgument}s wherever they would appear
-	 * in the given {@link Expression}.
+	 * Performs the method calls on the {@link CapturedArgument}s wherever they would appear in the given
+	 * {@link Expression}.
 	 * 
 	 * @param sourceExpression
 	 *            the original {@link Expression}
-	 * @param serializedLambda
-	 *            the {@link SerializedLambda} form
+	 * @param capturedArguments
+	 *            the actual captured arguments during the call
 	 * @return the equivalent expression, where method calls on {@link CapturedArgument}s have been replaced with their
 	 *         actual values.
 	 */
-	private Expression evaluateCapturedArguments(final Expression sourceExpression,
-			final SerializedLambdaInfo lambdaInfo) {
+	public static Expression evaluateCapturedArguments(final Expression sourceExpression,
+			final List<CapturedArgument> capturedArguments) {
+
+		// - the way arguments are captured should be recorded for nested Lambda Expressions (e.g., a matrix to select
+		// which entries of the main lambda should be used in the nested ones)
+		// - remove CapturedArgument class and rename CapturedArgument to CapturedArgument.
+
 		// nothing to process
-		if (lambdaInfo.getCapturedArgs().isEmpty()) {
-			return sourceExpression;
+		if (capturedArguments.isEmpty()) {
+			final ExpressionVisitor visitor = new NestedLambdaExpressionsRemover();
+			return ExpressionVisitorUtil.visit(sourceExpression, visitor);
+		} else {
+			// retrieve the captured arguments from the given serializedLambda
+			final List<Object> capturedArgValues = capturedArguments.stream().map(a -> a.getValue())
+					.collect(Collectors.toList());
+			final ExpressionVisitor visitor = new CapturedArgumentsEvaluator(capturedArgValues);
+			return ExpressionVisitorUtil.visit(sourceExpression, visitor);
 		}
-		// retrieve the captured arguments from the given serializedLambda
-		final List<Object> capturedArgs = lambdaInfo.getCapturedArgs().stream().map(a -> a.getValue())
-				.collect(Collectors.toList());
-		final ExpressionVisitor visitor = new CapturedArgumentsEvaluator(capturedArgs);
-		return ExpressionVisitorUtil.visit(sourceExpression, visitor);
 	}
 
 	/**
@@ -352,8 +367,8 @@ public class LambdaExpressionAnalyzer {
 			}
 
 		}
-		final Expression result = (expressions.size() > 1) ? new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				expressions) : expressions.get(0);
+		final Expression result = (expressions.size() > 1)
+				? new InfixExpression(InfixOperator.CONDITIONAL_OR, expressions) : expressions.get(0);
 		LOGGER.debug("Thinned out expression: #{}: {}", result.getId(), result.toString());
 		return result;
 	}

@@ -17,6 +17,7 @@ import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
+import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,10 +32,10 @@ import org.slf4j.LoggerFactory;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class LambdaExpressionRewriter extends ExpressionVisitor {
+public class ExpressionSanitizer extends ExpressionVisitor {
 
 	/** The logger. */
-	private static final Logger LOGGER = LoggerFactory.getLogger(LambdaExpressionRewriter.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ExpressionSanitizer.class);
 
 	/**
 	 * If the {@link InfixExpression} with a boolean conditions (eg:
@@ -61,6 +62,9 @@ public class LambdaExpressionRewriter extends ExpressionVisitor {
 		return true;
 	}
 	
+	/**
+	 * Removes all auto-boxing methods
+	 */
 	@Override
 	public boolean visitMethodInvocationExpression(final MethodInvocation methodInvocation) {
 		if(Stream.of(new MethodMatcher(Boolean.class, "booleanValue"), 
@@ -79,6 +83,9 @@ public class LambdaExpressionRewriter extends ExpressionVisitor {
 		return true;
 	}
 
+	/**
+	 * Attempts to replace a {@link FieldAccess} with its actual value.
+	 */ 
 	@Override
 	public boolean visitFieldAccessExpression(final FieldAccess fieldAccess) {
 		if (fieldAccess.getSourceExpression().getExpressionType() == ExpressionType.CLASS_LITERAL) {
@@ -98,7 +105,7 @@ public class LambdaExpressionRewriter extends ExpressionVisitor {
 				// no further visiting on this (obsolete) branch of the expression tree.
 				return false;
 			} catch (NoSuchFieldException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
-				LOGGER.error("Failed to execute method '{}' on class '{}'", fieldName, sourceClass.toString());
+				throw new AnalyzeException("Failed to execute method '" + fieldName + "' on class '" + sourceClass.toString() + "'", e);
 			}
 			
 		}

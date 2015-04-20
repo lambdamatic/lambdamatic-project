@@ -18,6 +18,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 import org.apache.commons.io.IOUtils;
+import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.stringtemplate.v4.AutoIndentWriter;
 import org.stringtemplate.v4.ST;

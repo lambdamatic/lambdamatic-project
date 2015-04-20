@@ -37,7 +37,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.analyzer.ast.node.ArrayVariable;
-import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.CharacterLiteral;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.EnumLiteral;
@@ -50,6 +49,7 @@ import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.ast.node.NullLiteral;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
+import org.lambdamatic.analyzer.ast.node.ObjectInstance;
 import org.lambdamatic.analyzer.ast.node.ObjectVariable;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.lambdamatic.testutils.TestWatcher;
@@ -152,7 +152,7 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 		final InfixExpression t_elements_dot_size_equals_0 = new InfixExpression(InfixOperator.EQUALS,
 				t_elements_dot_size, new NumberLiteral(0));
 		final List<Object> otherElements = new ArrayList<>();
-		final MethodInvocation t_elementList_dot_equals_otherElements = new MethodInvocation(t_elementList, Object_equals, new CapturedArgument(otherElements));
+		final MethodInvocation t_elementList_dot_equals_otherElements = new MethodInvocation(t_elementList, Object_equals, new ObjectInstance(otherElements));
 		final MethodInvocation t_dot_equals_newTestPojo = new MethodInvocation(var_t, Object_equals,
 				new ObjectVariable(TestPojo.class));
 		final ObjectVariable testPojoVariable = new ObjectVariable(TestPojo.class);
@@ -161,14 +161,14 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 				testPojoVariable);
 		final TestPojo otherTestPojo = new TestPojo();
 		final MethodInvocation t_dot_equals_otherTestPojo = new MethodInvocation(var_t, Object_equals,
-				new CapturedArgument(otherTestPojo));
+				new ObjectInstance(otherTestPojo));
 
 		final String[] arrayOfStrings = new String[] { new String("foo"), new String("bar") };
 		final StringLiteral[] arrayOfStringLiterals = new StringLiteral[] { new StringLiteral("foo"),
 				new StringLiteral("bar") };
 		final TestPojo[] arrayOfTestPojos = new TestPojo[] { new TestPojo(), new TestPojo() };
-		final CapturedArgument[] arrayOfTestPojoVariables = new CapturedArgument[] {
-				new CapturedArgument(new TestPojo()), new CapturedArgument(new TestPojo()) };
+		final ObjectInstance[] arrayOfTestPojoVariables = new ObjectInstance[] {
+				new ObjectInstance(new TestPojo()), new ObjectInstance(new TestPojo()) };
 
 		return new Object[][] {
 				// primitive boolean (comparisons are pretty straightforward in

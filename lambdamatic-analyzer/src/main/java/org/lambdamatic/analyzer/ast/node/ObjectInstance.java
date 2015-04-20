@@ -4,23 +4,24 @@
 package org.lambdamatic.analyzer.ast.node;
 
 /**
+ * {@link Expression} holding an instance of an Object
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class CapturedArgument extends Expression {
+public class ObjectInstance extends Expression {
 
 	private final Object value;
-
+	
 	/**
-	 * Constructor
-	 * 
-	  * <p>
+	 * Full constructor
+	 * <p>
 	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
 	 * </p>
+	 * 
 	 * @param value
-	 *            the captured argument
+	 *            the literal value
 	 */
-	public CapturedArgument(final Object value) {
+	public ObjectInstance(final Object value) {
 		this(generateId(), value, false);
 	}
 
@@ -34,64 +35,28 @@ public class CapturedArgument extends Expression {
 	 * @param inverted
 	 *            the inversion flag of this {@link Expression}.
 	 */
-	public CapturedArgument(final int id, final Object value, final boolean inverted) {
+	public ObjectInstance(final int id, final Object value, final boolean inverted) {
 		super(id, inverted);
 		this.value = value;
 	}
-
-	@Override
-	public ComplexExpression getParent() {
-		return (ComplexExpression)super.getParent();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)
-	 */
-	@Override
-	public CapturedArgument duplicate(int id) {
-		return new CapturedArgument(id, getValue(), isInverted());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
-	 */
-	@Override
-	public CapturedArgument duplicate() {
-		return duplicate(generateId());
-	}
 	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getValue()
-	 */
 	@Override
 	public Object getValue() {
 		return value;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public ExpressionType getExpressionType() {
-		return ExpressionType.CAPTURED_ARGUMENT;
+		return ExpressionType.OBJECT_VALUE;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getJavaType()
-	 */
 	@Override
 	public Class<?> getJavaType() {
-		return value.getClass();
+		return this.value != null ? this.value.getClass() : Void.class;
 	}
 
 	/**
 	 * {@inheritDoc}
-	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#inverse()
 	 */
 	@Override
@@ -108,17 +73,24 @@ public class CapturedArgument extends Expression {
 		return false;
 	}
 
+	@Override
+	public Expression duplicate(int id) {
+		return new ObjectInstance(id, value, isInverted());
+	}
+
+	@Override
+	public Expression duplicate() {
+		return duplicate(generateId());
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public String toString() {
-		return (value != null) ? value.toString() : "null";
+		return value != null ? value.toString() : "null";
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -127,9 +99,6 @@ public class CapturedArgument extends Expression {
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -138,7 +107,7 @@ public class CapturedArgument extends Expression {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		CapturedArgument other = (CapturedArgument) obj;
+		ObjectInstance other = (ObjectInstance) obj;
 		if (value == null) {
 			if (other.value != null)
 				return false;
@@ -146,6 +115,7 @@ public class CapturedArgument extends Expression {
 			return false;
 		return true;
 	}
-	
-}
 
+	
+
+}

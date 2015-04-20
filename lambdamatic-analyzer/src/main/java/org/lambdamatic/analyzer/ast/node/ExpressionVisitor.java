@@ -3,7 +3,6 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
-
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
@@ -13,12 +12,14 @@ public abstract class ExpressionVisitor {
 	/**
 	 * Dispatch to the other visitXYZ methods
 	 * <p>
-	 * This method should not be called directly. Users should call {@link Expression#accept(ExpressionVisitor)} instead.
+	 * This method should not be called directly. Users should call {@link Expression#accept(ExpressionVisitor)}
+	 * instead.
 	 * </p>
 	 * 
 	 * @param expr
 	 *            the {@link Expression} to visit
-	 * @return {@code true} if the visit on the given {@link Expression}'s children should continue, {@code false} otherwise.
+	 * @return {@code true} if the visit on the given {@link Expression}'s children should continue, {@code false}
+	 *         otherwise.
 	 * 
 	 * @see Expression#accept(ExpressionVisitor)
 	 */
@@ -51,12 +52,16 @@ public abstract class ExpressionVisitor {
 				return visitEnumLiteralExpression((EnumLiteral) expr);
 			case CLASS_LITERAL:
 				return visitClassLiteralExpression((ClassLiteral) expr);
+			case OBJECT_VALUE:
+				return visitObjectValue((ObjectInstance) expr);
 			case CAPTURED_ARGUMENT:
 				return visitCapturedArgument((CapturedArgument) expr);
 			case CAPTURED_ARGUMENT_REF:
 				return visitCapturedArgumentRef((CapturedArgumentRef) expr);
 			case LOCAL_VARIABLE:
 				return visitLocalVariable((LocalVariable) expr);
+			case LAMBDA_EXPRESSION:
+				return visitLambdaExpression((LambdaExpression) expr);
 			default:
 				break;
 			}
@@ -64,7 +69,15 @@ public abstract class ExpressionVisitor {
 		return true;
 	}
 
+	public boolean visitLambdaExpression(LambdaExpression expr) {
+		return true;
+	}
+
 	public boolean visitLocalVariable(final LocalVariable expr) {
+		return true;
+	}
+
+	public boolean visitObjectValue(final ObjectInstance expr) {
 		return true;
 	}
 
@@ -75,7 +88,7 @@ public abstract class ExpressionVisitor {
 	public boolean visitCapturedArgumentRef(final CapturedArgumentRef expr) {
 		return true;
 	}
-	
+
 	public boolean visitBooleanLiteralExpression(final BooleanLiteral expr) {
 		return true;
 	}
@@ -103,11 +116,11 @@ public abstract class ExpressionVisitor {
 	public boolean visitArrayVariableExpression(final ArrayVariable expr) {
 		return true;
 	}
-	
+
 	public boolean visitMethodInvocationExpression(final MethodInvocation expr) {
 		return true;
 	}
-	
+
 	public boolean visitNullLiteralExpression(final NullLiteral expr) {
 		return true;
 	}
@@ -123,9 +136,8 @@ public abstract class ExpressionVisitor {
 	public boolean visitEnumLiteralExpression(final EnumLiteral expr) {
 		return true;
 	}
-	
+
 	public boolean visitClassLiteralExpression(final ClassLiteral expr) {
 		return true;
 	}
 }
-

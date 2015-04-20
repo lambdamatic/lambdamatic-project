@@ -6,19 +6,16 @@ package org.lambdamatic.analyzer.ast.node;
 /**
  * A Boolean Literal Expression.
  * 
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class BooleanLiteral extends Expression {
+public class BooleanLiteral extends ObjectInstance {
 
 	/** The Universal Operator (or Boolean TRUE) */
 	public static final BooleanLiteral UNIVERSAL_OPERATOR = new BooleanLiteral(Boolean.TRUE);
 
 	/** The EmptySet Operator (or Boolean FALSE). */
 	public static final BooleanLiteral EMPTY_SET_OPERATOR = new BooleanLiteral(Boolean.FALSE);
-
-	/** The literal value. */
-	private final Boolean value;
 
 	/**
 	 * Full constructor
@@ -45,8 +42,7 @@ public class BooleanLiteral extends Expression {
 	 *            the inversion flag of this {@link Expression}.
 	 */
 	public BooleanLiteral(final int id, final Boolean value, final boolean inverted) {
-		super(id, inverted);
-		this.value = value;
+		super(id, value, inverted);
 	}
 
 	/**
@@ -61,15 +57,6 @@ public class BooleanLiteral extends Expression {
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
-	 */
-	@Override
-	public BooleanLiteral duplicate() {
-		return duplicate(generateId());
-	}
-	
-	/**
-	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
 	 */
 	@Override
@@ -79,21 +66,12 @@ public class BooleanLiteral extends Expression {
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getJavaType()
-	 */
-	@Override
-	public Class<?> getJavaType() {
-		return Boolean.class;
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getValue()
 	 */
 	@Override
 	public Boolean getValue() {
-		return value;
+		return (Boolean) super.getValue();
 	}
 
 	/**
@@ -111,50 +89,6 @@ public class BooleanLiteral extends Expression {
 	 */
 	@Override
 	public boolean canBeInverted() {
-		return true;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return value.toString();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((getExpressionType() == null) ? 0 : getExpressionType().hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		BooleanLiteral other = (BooleanLiteral) obj;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
 		return true;
 	}
 

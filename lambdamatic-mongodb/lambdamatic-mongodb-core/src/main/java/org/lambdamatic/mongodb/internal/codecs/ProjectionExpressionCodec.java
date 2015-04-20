@@ -115,7 +115,7 @@ public class ProjectionExpressionCodec implements Codec<SerializableFunction<Pro
 	private Projection getProjection(final SerializableFunction<ProjectionMetadata<?>, Projection> projectionExpression) {
 		try {
 			@SuppressWarnings("unchecked")
-			final Class<ProjectionMetadata<?>> argumentType = (Class<ProjectionMetadata<?>>) LambdaExpressionAnalyzer.getInstance().getArgumentType(projectionExpression);
+			final Class<ProjectionMetadata<?>> argumentType = (Class<ProjectionMetadata<?>>) LambdaExpressionAnalyzer.getArgumentType(projectionExpression);
 			final Projection projection = projectionExpression.apply(argumentType.newInstance());
 			return projection;
 		} catch (InstantiationException | IllegalAccessException e) {

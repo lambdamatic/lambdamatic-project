@@ -92,7 +92,7 @@ public class MongoQueryTest {
 	@Test
 	public void shouldFindOneFooWithElementMatchBar() throws IOException {
 		// when
-		final Foo foo = fooCollection.find(f -> f.barList.elementMatch(b -> b.stringField.equals("bar"), b -> b.stringField.equals("bar"))).first();
+		final Foo foo = fooCollection.find(f -> f.barList.elementMatch(b -> b.stringField.equals("bar"))).first();
 		// then
 		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override

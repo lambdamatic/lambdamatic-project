@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * Internal Utility Class that locates and reads the bytecode associated with the lambda expression converted into a
  * classic Java method in the capturing class at compilation time.
  * 
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  * 
  */
 class LambdaExpressionClassVisitor extends ClassVisitor {
@@ -116,7 +116,10 @@ class LambdaExpressionClassVisitor extends ClassVisitor {
 		DesugaredLambdaExpressionMethodVisitor(final LambdaExpressionClassVisitor parentClassVisitor, final String desc) {
 			super(Opcodes.ASM5);
 			this.parentClassVisitor = parentClassVisitor;
-			localVariables.add(new LocalVariableNode("this", Type.getObjectType(parentClassVisitor.lambdaImplClassName).getDescriptor(), null, null, null, 0));
+//			// The internal name of a class is its fully qualified name, as returned by Class.getName(), where '.' are replaced by '/'.
+//			final String lambdaImplClassInternalName = parentClassVisitor.lambdaImplClassName.replace('.', '/');
+//			// The 'this' reference is always stored at location 0 of the local variable table (for constructors and instance methods only)
+//			localVariables.add(new LocalVariableNode("this", Type.getObjectType(lambdaImplClassInternalName).getDescriptor(), null, null, null, 0));
 		}
 
 		public Map<String, AbstractInsnNode> getLabels() {

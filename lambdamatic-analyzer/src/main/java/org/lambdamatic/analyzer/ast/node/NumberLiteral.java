@@ -4,13 +4,10 @@
 package org.lambdamatic.analyzer.ast.node;
 
 /**
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class NumberLiteral extends Expression {
-
-	/** The literal value. */
-	private final Number value;
+public class NumberLiteral extends ObjectInstance {
 
 	/**
 	 * Full constructor
@@ -36,12 +33,12 @@ public class NumberLiteral extends Expression {
 	 *            the inversion flag of this {@link Expression}.
 	 */
 	public NumberLiteral(final int id, final Number value, final boolean inverted) {
-		super(id, inverted);
-		this.value = value;
+		super(id, value, inverted);
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)
 	 */
 	@Override
@@ -51,24 +48,7 @@ public class NumberLiteral extends Expression {
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
-	 */
-	@Override
-	public NumberLiteral duplicate() {
-		return duplicate(generateId());
-	}
-	
-	/**
-	 * @return the value
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Number getValue() {
-		return value;
-	}
-
-	/**
-	 * {@inheritDoc}
+	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
 	 */
 	@Override
@@ -76,77 +56,9 @@ public class NumberLiteral extends Expression {
 		return ExpressionType.NUMBER_LITERAL;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getJavaType()
-	 */
 	@Override
-	public Class<?> getJavaType() {
-		return value.getClass();
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#inverse()
-	 */
-	@Override
-	public Expression inverse() {
-		throw new UnsupportedOperationException(this.getClass().getName() + " does not support inversion.");
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#canBeInverted()
-	 */
-	@Override
-	public boolean canBeInverted() {
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return getValue().toString();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((getExpressionType() == null) ? 0 : getExpressionType().hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		NumberLiteral other = (NumberLiteral) obj;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
-		return true;
+	public Number getValue() {
+		return (Number) super.getValue();
 	}
 
 }
-

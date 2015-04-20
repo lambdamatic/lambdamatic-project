@@ -115,7 +115,7 @@ public class ExpressionRewriterTest {
 	@Test
 	public void shouldRewriteExpression() {
 		// given
-		final LambdaExpressionRewriter expressionRewriter = new LambdaExpressionRewriter();
+		final ExpressionSanitizer expressionRewriter = new ExpressionSanitizer();
 		// when
 		ExpressionVisitorUtil.visit(expression, expressionRewriter);
 		expression.accept(expressionRewriter);

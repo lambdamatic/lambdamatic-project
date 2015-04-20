@@ -16,6 +16,7 @@ import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sample.model.OtherTestPojo;
 import com.sample.model.TestPojo;
 
 /**
@@ -33,21 +34,20 @@ public class IsolatedLambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseExpression() throws IOException, NoSuchMethodException, SecurityException {
 		// given
-		final String foo = "foo";
+		final OtherTestPojo otherPojo = new OtherTestPojo();
 		final SerializableFunction<TestPojo, Boolean> expression = (SerializableFunction<TestPojo, Boolean>) ((
-				TestPojo t) -> t.elementMatch(e -> e.field.equals(foo)));
+				TestPojo t) -> t.elementMatch(e -> e.field.equals(otherPojo.getStringValue())));
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeExpression(expression);
 		// then
 		final LocalVariable e = new LocalVariable(0, "e", TestPojo.class);
 		final MethodInvocation fieldEqualsFooMethod = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("foo"));
-		final LambdaExpression nestedExpression = new LambdaExpression(fieldEqualsFooMethod, TestPojo.class);
 		final LocalVariable t = new LocalVariable(1, "t", TestPojo.class);
-		final MethodInvocation elementMatchMethod = new MethodInvocation(t, TestPojo_elementMatch, nestedExpression);
-		final LambdaExpression result = new LambdaExpression(elementMatchMethod, TestPojo.class);
+		final MethodInvocation elementMatchMethod = new MethodInvocation(t, TestPojo_elementMatch, fieldEqualsFooMethod);
+		final LambdaExpression expectedExpression = new LambdaExpression(elementMatchMethod, TestPojo.class);
 		// verification
 		LOGGER.info("Result: {}", resultExpression);
-		assertThat(resultExpression).isEqualTo(result);
+		assertThat(resultExpression).isEqualTo(expectedExpression);
 	}
 }
 

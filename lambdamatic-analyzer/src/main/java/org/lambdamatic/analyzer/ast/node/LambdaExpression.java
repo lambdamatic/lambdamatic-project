@@ -6,7 +6,7 @@ package org.lambdamatic.analyzer.ast.node;
 /**
  * The AST form of the user-defined Lambda Expression and its relevant data in a form that can be further manipulated.
  * 
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public class LambdaExpression extends Expression{
@@ -33,6 +33,11 @@ public class LambdaExpression extends Expression{
 		return ExpressionType.LAMBDA_EXPRESSION;
 	}
 
+	@Override
+	public ComplexExpression getParent() {
+		return (ComplexExpression) super.getParent();
+	}
+	
 	@Override
 	public Class<?> getJavaType() {
 		return argumentType;
