@@ -1,0 +1,54 @@
+= Document Mapping
+
+Users familiar with JPA should feel very quickly comfortable with the Document mappings. For the others, this should be pretty straightforward, too.
+
+== Document Mapping
+
+Domain classes must be annotated with *org.lambdamatic.mongodb.annotations.Document*.
+This annotation provides a mandatory attribute *collection* to specify the name of the Collection in the Mongo Database.
+
+The identify field in the Domain class must be annotated with *org.lambdamatic.mongodb.annotations.DocumentId*. It will be persisted as the *_id* field
+in the MongoDB Document. Other fields (including embedded elements and nested collections) may be annotated with *org.lambdamatic.mongodb.annotations.DocumentField*.
+The optional *name* attribute of this annotation can be used to specify the field name in the database.
+If this attribute is not specified or if the annotation is missing, Lambdamatic will use the class' field name.
+Transient attribute (i.e., not persisted in the database) must be annotated with *org.lambdamatic.mongodb.annotations.TransientField*.
+
+[source,java]
+----
+import org.lambdamatic.mongodb.annotations.Document;
+import org.lambdamatic.mongodb.annotations.DocumentField;
+import org.lambdamatic.mongodb.annotations.DocumentId;
+
+/**
+ * A Bike Station
+ *
+ */
+@Document(collection="bikestations")
+public class BikeStation {
+
+	@DocumentId // the document id
+	private String id;
+
+	@DocumentField // persisted as 'stationName'
+	private String stationName;
+
+  @DocumentField(name="available") // persisted as 'available'
+	private int availableDocks;
+
+  // persisted as 'totalDocks'
+	private int totalDocks;
+
+  @TransientField // not persisted
+	private boolean testStation;
+
+  ...
+
+}
+----
+
+== Embedded Document Mapping
+
+
+== Special Types
+
+=== Geolocation

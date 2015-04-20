@@ -1,0 +1,5 @@
+= About Lambdamatic
+
+== Philosophy
+
+== License

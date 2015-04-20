@@ -1,0 +1,11 @@
+= Managing Documents
+
+== Insertion
+
+== Queries
+
+=== Projections
+
+== Update
+
+== Deletion
