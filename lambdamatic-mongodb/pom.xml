@@ -16,7 +16,7 @@
 		<mongodb.driver.version>3.0.0</mongodb.driver.version>
 		<jackson.version>2.4.0</jackson.version>
 		<bson4jackson.version>2.4.0</bson4jackson.version>
-		<stringtemplate.version>4.0.2</stringtemplate.version>
+		<mustachejava.version>0.9.0</mustachejava.version>
 	</properties>
 
 	<modules>
@@ -35,9 +35,9 @@
 				<version>${mongodb.driver.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.antlr</groupId>
-				<artifactId>stringtemplate</artifactId>
-				<version>${stringtemplate.version}</version>
+				<groupId>com.github.spullara.mustache.java</groupId>
+				<artifactId>compiler</artifactId>
+				<version>${mustachejava.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>

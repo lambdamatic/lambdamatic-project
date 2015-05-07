@@ -19,6 +19,7 @@ import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryField;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
+import org.lambdamatic.mongodb.metadata.ext.QStringArray;
 
 /**
  * Information about a given field that should be generated in a {@link ProjectionMetadata} class.
@@ -84,13 +85,7 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 				// collections (list/set)
 				else if (isCollection(declaredElement)) {
 					final TypeMirror typeArgument = declaredType.getTypeArguments().get(0);
-					if(isEmbeddedDocumentType(typeArgument)) {
-						return new FieldType(getQueryArrayMetadataType(typeArgument.toString()));
-					} 
-					// otherwise, assume that the component type is a custom domain class
-					else {
-						return new FieldType(QueryArray.class, typeArgument.toString());
-					}
+					return new FieldType(getQueryArrayMetadataType(typeArgument.toString()));
 				} else {
 					switch (variableType.toString()) {
 					case "org.lambdamatic.mongodb.types.geospatial.Location":
@@ -115,18 +110,6 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 	}
 
 	/**
-	 * @return <code>true</code> if the given argument is annotated with {@link EmbeddedDocument}, <code>false</code> otherwise. 
-	 * @param typeArgument the {@link TypeMirror} to analyze
-	 */
-	private static boolean isEmbeddedDocumentType(final TypeMirror typeArgument) {
-		if(typeArgument.getKind() == TypeKind.DECLARED) {
-			final DeclaredType declaredType = (DeclaredType) typeArgument;
-			return (declaredType.asElement().getAnnotation(EmbeddedDocument.class) != null);
-		};
-		return false;
-	}
-
-	/**
 	 * @return the fully qualified name of the {@link QueryMetadata} class corresponding to the given {@link Element}
 	 * @param elementTypeName the fully qualified name of the Element to use
 	 */
@@ -142,10 +125,16 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 	 * @param elementTypeName the fully qualified name of the Element to use
 	 */
 	public static String getQueryArrayMetadataType(final String elementTypeName) {
-		final String packageName = ClassUtils.getPackageCanonicalName(elementTypeName.toString());
-		final String shortClassName = QUERY_METADATA_CLASSNAME_PREFIX
-				+ ClassUtils.getShortClassName(elementTypeName.toString()) + QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX;
-		return packageName + '.' + shortClassName;
+		switch (elementTypeName) {
+		//FIXME: implements other base types
+		case "java.lang.String":
+			return QStringArray.class.getName();
+		default:
+			final String packageName = ClassUtils.getPackageCanonicalName(elementTypeName.toString());
+			final String shortClassName = QUERY_METADATA_CLASSNAME_PREFIX
+					+ ClassUtils.getShortClassName(elementTypeName.toString()) + QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX;
+			return packageName + '.' + shortClassName;
+		}
 	}
 
 	private static Class<?> getSimilarDeclaredType(final PrimitiveType variableType) {

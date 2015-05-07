@@ -29,9 +29,11 @@ import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryField;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
+import org.lambdamatic.mongodb.metadata.ext.QStringArray;
 
 import com.mongodb.MongoClient;
 import com.sample.Bar;
+import com.sample.Baz;
 import com.sample.EnumBar;
 import com.sample.EnumFoo;
 import com.sample.Foo;
@@ -120,9 +122,8 @@ public class LambdamaticAnnotationProcessorTest {
 				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
 				.hasAttributeValue("name", "enumBarArray");
 		// stringSet
-		FieldAssertion.assertThat(fooQueryClass, "stringSet")
-				.isParameterizedType(QueryArray.class, String.class)
-				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "stringSet");
+		FieldAssertion.assertThat(fooQueryClass, "stringSet").isType(QStringArray.class).isNotFinal().isNotStatic()
+				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "stringSet");
 	}
 
 	@Test
@@ -189,8 +190,7 @@ public class LambdamaticAnnotationProcessorTest {
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "bar");
 		// embedded PBar Projection class
 		final Class<?> barProjectionClass = Class.forName("com.sample.PBar");
-		ClassAssertion.assertThat(barProjectionClass).isImplementing(ProjectionMetadata.class, Bar.class)
-				.isExtending(ProjectionField.class);
+		ClassAssertion.assertThat(barProjectionClass).isImplementing(ProjectionMetadata.class, Bar.class);
 		// barList
 		FieldAssertion.assertThat(fooProjectionClass, "barList")
 				.isParameterizedType(ProjectionArray.class, Class.forName("com.sample.QBar")).isNotFinal().isNotStatic()
@@ -218,8 +218,34 @@ public class LambdamaticAnnotationProcessorTest {
 				queryFooClass, projectionFooClass);
 		// should it rather provide a 'users' public field instead of a
 		// getUsers() method ?
-		final Class<?> userCollectionProducerClass = Class.forName("com.sample.FooCollectionProducer");
-		ClassAssertion.assertThat(userCollectionProducerClass).hasMethod("getFooCollection", MongoClient.class,
+		final Class<?> fooCollectionProducerClass = Class.forName("com.sample.FooCollectionProducer");
+		ClassAssertion.assertThat(fooCollectionProducerClass).hasMethod("getFooCollection", MongoClient.class,
+				MongoClientConfiguration.class);
+
+	}
+	
+	@Test
+	@WithDomainClass(Foo.class)
+	@WithDomainClass(Bar.class)
+	@WithDomainClass(Baz.class)
+	public void shouldProcessAllDomainClassesAndGenerateCollectionAndCollectionProducer()
+			throws URISyntaxException, ClassNotFoundException, NoSuchFieldException, SecurityException, IOException {
+		// verification
+		final Class<?> queryFooClass = Class.forName("com.sample.QFoo");
+		final Class<?> projectionFooClass = Class.forName("com.sample.PFoo");
+		final Class<?> fooCollectionClass = Class.forName("com.sample.FooCollection");
+		ClassAssertion.assertThat(fooCollectionClass).isExtending(LambdamaticMongoCollectionImpl.class, Foo.class,
+				queryFooClass, projectionFooClass);
+		final Class<?> fooCollectionProducerClass = Class.forName("com.sample.FooCollectionProducer");
+		ClassAssertion.assertThat(fooCollectionProducerClass).hasMethod("getFooCollection", MongoClient.class,
+				MongoClientConfiguration.class);
+		final Class<?> queryBazClass = Class.forName("com.sample.QBaz");
+		final Class<?> projectionBazClass = Class.forName("com.sample.PBaz");
+		final Class<?> bazCollectionClass = Class.forName("com.sample.BazCollection");
+		ClassAssertion.assertThat(bazCollectionClass).isExtending(LambdamaticMongoCollectionImpl.class, Baz.class,
+				queryBazClass, projectionBazClass);
+		final Class<?> bazCollectionProducerClass = Class.forName("com.sample.BazCollectionProducer");
+		ClassAssertion.assertThat(bazCollectionProducerClass).hasMethod("getBazCollection", MongoClient.class,
 				MongoClientConfiguration.class);
 
 	}

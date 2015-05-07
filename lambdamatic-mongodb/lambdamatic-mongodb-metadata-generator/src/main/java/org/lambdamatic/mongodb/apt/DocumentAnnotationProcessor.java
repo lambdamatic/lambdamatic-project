@@ -13,8 +13,8 @@ import javax.lang.model.element.TypeElement;
 
 import org.lambdamatic.mongodb.annotations.BaseDocument;
 import org.lambdamatic.mongodb.annotations.Document;
-import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
-import org.stringtemplate.v4.ST;
+
+import com.github.mustachejava.Mustache;
 
 /**
  * Processor for classes annotated with {@code Document} or {@link BaseDocument}. Generates their associated metadata
@@ -24,44 +24,9 @@ import org.stringtemplate.v4.ST;
  *
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@SupportedAnnotationTypes({ "org.lambdamatic.mongodb.annotations.BaseDocument",
+@SupportedAnnotationTypes({ 
 		"org.lambdamatic.mongodb.annotations.Document" })
-//FIXME avoid extending EmbeddedDocumentAnnotationProcessor and move all/more common code into BaseAnnotationProcessor instead ?
-// the EmbeddedDocumentAnnotationProcessor should actually prevent having @DocumentId, instead of accepting it 
-public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProcessor {
-
-	/** constant to identify the fully qualified name of the collection producer class in the template properties. */
-	protected static final String MONGO_COLLECTION_PRODUCER_CLASS_NAME = "mongoCollectionProducerClassName";
-
-	/** constant to identify the fully qualified name of the collection class in the template properties. */
-	protected static final String MONGO_COLLECTION_CLASS_NAME = "mongoCollectionClassName";
-
-	/** constant to identify the fully qualified name of the collection name in the template properties. */
-	private static final String MONGO_COLLECTION_NAME = "mongoCollectionName";
-
-	/** Name of the template file for {@link ProjectionMetadata} classes. */
-	private static final String PROJECTION_METADATA_TEMPLATE = "projection_metadata_template.st";
-
-	/** Name of the template file for the LambdamaticMongoCollection implementation classes. */
-	private static final String MONGO_COLLECTION_TEMPLATE = "mongo_collection_template.st";
-
-	/** Suffix to use for the generated LambdamaticMongoCollection implementation classes. */
-	private static String MONGO_COLLECTION_CLASSNAME_SUFFIX = "Collection";
-
-	/** Name of the template file for the LambdamaticMongoCollection implementation producer classes. */
-	private static final String MONGO_COLLECTION_PRODUCER_TEMPLATE = "mongo_collection_producer_template.st";
-
-	/** Suffix to use for the generated LambdamaticMongoCollection implementation producer classes. */
-	private static String MONGO_COLLECTION_PRODUCER_CLASSNAME_SUFFIX = "CollectionProducer";
-
-	/** StringTemplate for the LambdamaticMongoCollection implementation classes. */
-	private ST mongoCollectionTemplate;
-
-	/** StringTemplate for LambdamaticMongoCollection implementation producer classes. */
-	private ST mongoCollectionProducerTemplate;
-
-	/** StringTemplate for the {@link ProjectionMetadata} classes. */
-	private ST projectionMetadataTemplate;
+public class DocumentAnnotationProcessor extends BaseAnnotationProcessor {
 
 	/**
 	 * Constructor
@@ -71,34 +36,31 @@ public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProce
 	 */
 	public DocumentAnnotationProcessor() throws IOException {
 		super();
-		this.projectionMetadataTemplate = getStringTemplate(PROJECTION_METADATA_TEMPLATE);
-		this.mongoCollectionTemplate = getStringTemplate(MONGO_COLLECTION_TEMPLATE);
-		this.mongoCollectionProducerTemplate = getStringTemplate(MONGO_COLLECTION_PRODUCER_TEMPLATE);
 	}
 
-	/**
-	 * @return the {@link ST} template to generate the {@link ProjectionMetadata} class
-	 */
-	protected ST getProjectionMetadataTemplate() {
-		return projectionMetadataTemplate;
-	}
-	
 	@Override
 	protected void doProcess(final Map<String, Object> templateContextProperties) throws IOException {
-		super.doProcess(templateContextProperties);
-		generateMongoCollectionSourceCode(templateContextProperties);
-		generateMongoCollectionProducerSourceCode(templateContextProperties);
+		generateQueryMetadataSourceCode(getTemplate(Constants.QUERY_METADATA_TEMPLATE), templateContextProperties);
+		generateQueryArrayMetadataSourceCode(getTemplate(Constants.QUERY_ARRAY_METADATA_TEMPLATE), templateContextProperties);
+		generateProjectionMetadataSourceCode(getTemplate(Constants.PROJECTION_METADATA_TEMPLATE), templateContextProperties);
+		generateMongoCollectionSourceCode(getTemplate(Constants.MONGO_COLLECTION_TEMPLATE), templateContextProperties);
+		generateMongoCollectionProducerSourceCode(getTemplate(Constants.MONGO_COLLECTION_PRODUCER_TEMPLATE), templateContextProperties);
 	}
 
 	@Override
 	protected Map<String, Object> initializeTemplateContextProperties(final TypeElement domainElement) {
-		final Map<String, Object> properties = super.initializeTemplateContextProperties(domainElement);
+		final Map<String, Object> templateContextProperties = super.initializeTemplateContextProperties(domainElement);
+		templateContextProperties.put(Constants.QUERY_FIELDS, getQueryFields(domainElement));
+		templateContextProperties.put(Constants.PROJECTION_FIELDS, getProjectionFields(domainElement));
+		templateContextProperties.put(Constants.QUERY_METADATA_CLASS_NAME, generateQueryMetadataSimpleClassName(domainElement));
+		templateContextProperties.put(Constants.QUERY_ARRAY_METADATA_CLASS_NAME, generateQueryArrayMetadataSimpleClassName(domainElement));
+		templateContextProperties.put(Constants.PROJECTION_METADATA_CLASS_NAME, generateProjectionSimpleClassName(domainElement));
 		final Document documentAnnotation = domainElement.getAnnotation(Document.class);
-		properties.put(MONGO_COLLECTION_NAME, documentAnnotation.collection());
-		properties.put(MONGO_COLLECTION_CLASS_NAME, generateMongoCollectionSimpleClassName(domainElement));
-		properties.put(MONGO_COLLECTION_PRODUCER_CLASS_NAME,
+		templateContextProperties.put(Constants.MONGO_COLLECTION_NAME, documentAnnotation.collection());
+		templateContextProperties.put(Constants.MONGO_COLLECTION_CLASS_NAME, generateMongoCollectionSimpleClassName(domainElement));
+		templateContextProperties.put(Constants.MONGO_COLLECTION_PRODUCER_CLASS_NAME,
 				generateMongoCollectionProviderSimpleClassName(domainElement));
-		return properties;
+		return templateContextProperties;
 	}
 
 	/**
@@ -110,10 +72,10 @@ public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProce
 	 * 
 	 * @throws IOException
 	 */
-	protected void generateMongoCollectionSourceCode(final Map<String, Object> templateContextProperties) throws IOException {
+	protected void generateMongoCollectionSourceCode(final Mustache template, final Map<String, Object> templateContextProperties) throws IOException {
 		final String targetClassName = templateContextProperties.get("packageName") + "."
-				+ templateContextProperties.get(MONGO_COLLECTION_CLASS_NAME);
-		generateSourceCode(targetClassName, mongoCollectionTemplate, templateContextProperties);
+				+ templateContextProperties.get(Constants.MONGO_COLLECTION_CLASS_NAME);
+		generateSourceCode(targetClassName, template, templateContextProperties);
 	}
 
 	/**
@@ -124,11 +86,11 @@ public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProce
 	 * 
 	 * @throws IOException
 	 */
-	protected void generateMongoCollectionProducerSourceCode(final Map<String, Object> templateContextProperties)
+	protected void generateMongoCollectionProducerSourceCode(final Mustache template, final Map<String, Object> templateContextProperties)
 			throws IOException {
 		final String targetClassName = templateContextProperties.get("packageName") + "."
-				+ templateContextProperties.get(MONGO_COLLECTION_PRODUCER_CLASS_NAME);
-		generateSourceCode(targetClassName, mongoCollectionProducerTemplate, templateContextProperties);
+				+ templateContextProperties.get(Constants.MONGO_COLLECTION_PRODUCER_CLASS_NAME);
+		generateSourceCode(targetClassName, template, templateContextProperties);
 	}
 
 	/**
@@ -138,10 +100,10 @@ public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProce
 	 * @param typeElement
 	 *            the type element from which the name will be generated
 	 * @return the simple name of the given type element, followed by
-	 *         {@link DocumentAnnotationProcessor#MONGO_COLLECTION_CLASSNAME_SUFFIX}.
+	 *         {@link Constants#MONGO_COLLECTION_CLASSNAME_SUFFIX}.
 	 */
 	public static String generateMongoCollectionSimpleClassName(final TypeElement typeElement) {
-		return typeElement.getSimpleName().toString() + MONGO_COLLECTION_CLASSNAME_SUFFIX;
+		return typeElement.getSimpleName().toString() + Constants.MONGO_COLLECTION_CLASSNAME_SUFFIX;
 	}
 
 	/**
@@ -151,10 +113,10 @@ public class DocumentAnnotationProcessor extends EmbeddedDocumentAnnotationProce
 	 * @param typeElement
 	 *            the type element from which the name will be generated
 	 * @return the simple name of the given type element, followed by
-	 *         {@link DocumentAnnotationProcessor#MONGO_COLLECTION_PRODUCER_CLASSNAME_SUFFIX}.
+	 *         {@link Constants#MONGO_COLLECTION_PRODUCER_CLASSNAME_SUFFIX}.
 	 */
 	public static String generateMongoCollectionProviderSimpleClassName(final TypeElement typeElement) {
-		return typeElement.getSimpleName().toString() + MONGO_COLLECTION_PRODUCER_CLASSNAME_SUFFIX;
+		return typeElement.getSimpleName().toString() + Constants.MONGO_COLLECTION_PRODUCER_CLASSNAME_SUFFIX;
 	}
 
 }
