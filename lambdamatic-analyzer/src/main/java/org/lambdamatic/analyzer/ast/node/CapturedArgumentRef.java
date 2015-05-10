@@ -31,8 +31,8 @@ public class CapturedArgumentRef extends Expression {
 	 * 
 	 * @param index
 	 *            the captured value index
-	 * @param value
-	 *            the actual captured argument value
+	 * @param javaType
+	 *            the actual type of the captured argument 
 	 */
 	public CapturedArgumentRef(final int index, final Class<?> javaType) {
 		this(generateId(), index, javaType, false);
@@ -43,8 +43,8 @@ public class CapturedArgumentRef extends Expression {
 	 * 
 	 * @param id
 	 *            the synthetic id of this {@link Expression}.
-	 * @param value
-	 *            the actual captured argument value
+	 * @param javaType
+	 *            the actual type of the captured argument 
 	 * @param inverted
 	 *            the inversion flag of this {@link Expression}.
 	 */

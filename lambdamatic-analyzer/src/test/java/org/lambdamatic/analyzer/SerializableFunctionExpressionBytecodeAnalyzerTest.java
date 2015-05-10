@@ -53,8 +53,8 @@ public class SerializableFunctionExpressionBytecodeAnalyzerTest {
 		final FieldAccess testPojo_dot_dateValue = new FieldAccess(testPojo, "dateValue");
 		final FieldAccess testPojo_dot_elementList = new FieldAccess(testPojo, "elementList");
 		final FieldAccess e_dot_field = new FieldAccess(new LocalVariable(0, "e", TestPojo.class), "field");
-		final MethodInvocation e_dot_field_equals_foo = new MethodInvocation(e_dot_field, Object_equals,
-				new StringLiteral("foo"));
+		final LambdaExpression e_dot_field_equals_foo = new LambdaExpression(new MethodInvocation(e_dot_field, Object_equals,
+				new StringLiteral("foo")), TestPojo.class, "e");
 
 		return new Object[][] {
 				new Object[] {

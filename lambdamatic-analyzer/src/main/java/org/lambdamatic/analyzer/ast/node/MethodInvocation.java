@@ -196,16 +196,6 @@ public class MethodInvocation extends ComplexExpression {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getValue()
-	 */
-	@Override
-	public Object getValue() {
-		return null;
-	}
-	
-	/**
 	 * Will attempt to evaluate this {@link MethodInvocation} and return its result, even if the arguments contains
 	 * {@link CapturedArgument}.
 	 * 

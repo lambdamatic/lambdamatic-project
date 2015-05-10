@@ -116,10 +116,6 @@ class LambdaExpressionClassVisitor extends ClassVisitor {
 		DesugaredLambdaExpressionMethodVisitor(final LambdaExpressionClassVisitor parentClassVisitor, final String desc) {
 			super(Opcodes.ASM5);
 			this.parentClassVisitor = parentClassVisitor;
-//			// The internal name of a class is its fully qualified name, as returned by Class.getName(), where '.' are replaced by '/'.
-//			final String lambdaImplClassInternalName = parentClassVisitor.lambdaImplClassName.replace('.', '/');
-//			// The 'this' reference is always stored at location 0 of the local variable table (for constructors and instance methods only)
-//			localVariables.add(new LocalVariableNode("this", Type.getObjectType(lambdaImplClassInternalName).getDescriptor(), null, null, null, 0));
 		}
 
 		public Map<String, AbstractInsnNode> getLabels() {
@@ -225,7 +221,7 @@ class LambdaExpressionClassVisitor extends ClassVisitor {
 		@Override
 		public void visitLocalVariable(final String name, final String desc, final String signature, final Label start, final Label end, final int index) {
 			LOGGER.trace("LocalVariable {} (desc={}) index={}", name, desc, index);
-			// fill localVariables list with null values if necessary
+			// fill localVariables list with null values if necessary (for example, if the method being visited is static, the slot #0 reserved to 'this' will remain empty.
 			final int size = localVariables.size();
 			for(int i = index; i >= size; i--) {
 				localVariables.add(null);

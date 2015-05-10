@@ -13,9 +13,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.lambdamatic.analyzer.LambdaExpressionAnalyzer;
 import org.lambdamatic.analyzer.ast.node.ASTNode;
 import org.lambdamatic.analyzer.ast.node.ArrayVariable;
@@ -111,22 +114,13 @@ public class LambdaExpressionReader {
 	static final Logger LOGGER = LoggerFactory.getLogger(LambdaExpressionReader.class);
 
 	/**
-	 * Reads the given {@link List} of (bytecode) {@link AbstractInsnNode} and computes a simplified {@link Statement}
+	 * Reads the given {@link List} of (bytecode) {@link AbstractInsnNode} located at the known {@link SerializedLambdaInfo} and computes a simplified {@link Statement}
 	 * based tree representing the initial lambda expression.
-	 * 
-	 * @param implClass
-	 *            the fully qualified name of the implementation class
-	 * @param implMethodName
-	 *            the name of the implementation method
-	 * @param implMethodSignature
-	 *            the signature of the implementation method
-	 * @param capturedArgs
-	 *            the captured arguments
 	 * 
 	 * @return the {@link Statement}-based tree
 	 * @throws IOException
 	 */
-	public Statement readBytecodeStatement(final SerializedLambdaInfo lambdaInfo) throws IOException {
+	public Pair<Statement, List<LocalVariable>> readBytecodeStatement(final SerializedLambdaInfo lambdaInfo) throws IOException {
 		final LambdaExpressionClassVisitor desugaredExpressionVisitor = new LambdaExpressionClassVisitor(lambdaInfo);
 		final InputStream serializedLambdaStream = Thread.currentThread().getContextClassLoader()
 				.getResourceAsStream(lambdaInfo.getImplClassName().replace('.', '/') + ".class");
@@ -138,7 +132,11 @@ public class LambdaExpressionReader {
 		final InsnCursor insnCursor = new InsnCursor(instructions, labels);
 		// we must set the cursor on the first instruction before calling the readStatementSubTree() method
 		insnCursor.next();
-		return readStatementSubTree(insnCursor, new Stack<>(), lambdaInfo.getCapturedArguments(), localVariables);
+		final Statement statement = readStatementSubTree(insnCursor, new Stack<>(), lambdaInfo.getCapturedArguments(), localVariables);
+		// now, let's identify the lambda expression arguments (_excluding_ the captured arguments)
+		final int argsCount = Type.getArgumentTypes(lambdaInfo.getImplMethodDesc()).length;
+		final List<LocalVariable> lambdaExpressionArguments = localVariables.stream().filter(v -> v!= null && !v.name.equals("this")).limit(argsCount).map(var -> new LocalVariable(var.index, var.name, readSignature(var.desc))).collect(Collectors.toList());
+		return new ImmutablePair<Statement, List<LocalVariable>>(statement, lambdaExpressionArguments);
 	}
 
 	/**
@@ -160,6 +158,7 @@ public class LambdaExpressionReader {
 			switch (currentInstruction.getType()) {
 			case AbstractInsnNode.VAR_INSN:
 				final VarInsnNode varInstruction = (VarInsnNode) currentInstruction;
+				// The 'var' operand is the index of a local variable
 				if (varInstruction.var < capturedArguments.size()) {
 					// not using actual captured argument but rather, use a _reference_ to it.
 					final Object capturedArgumentValue = capturedArguments.get(varInstruction.var).getValue();
@@ -290,7 +289,6 @@ public class LambdaExpressionReader {
 			}
 			insnCursor.next();
 		}
-		;
 		return null;
 	}
 

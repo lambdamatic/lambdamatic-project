@@ -43,11 +43,12 @@ public class IsolatedLambdaBytecodeAnalyzerTest {
 		final LocalVariable e = new LocalVariable(0, "e", TestPojo.class);
 		final MethodInvocation fieldEqualsFooMethod = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("foo"));
 		final LocalVariable t = new LocalVariable(1, "t", TestPojo.class);
-		final MethodInvocation elementMatchMethod = new MethodInvocation(t, TestPojo_elementMatch, fieldEqualsFooMethod);
-		final LambdaExpression expectedExpression = new LambdaExpression(elementMatchMethod, TestPojo.class);
+		final MethodInvocation elementMatchMethod = new MethodInvocation(t, TestPojo_elementMatch, new LambdaExpression(fieldEqualsFooMethod, TestPojo.class, "e"));
+		final LambdaExpression expectedExpression = new LambdaExpression(elementMatchMethod, TestPojo.class, "t");
 		// verification
 		LOGGER.info("Result: {}", resultExpression);
 		assertThat(resultExpression).isEqualTo(expectedExpression);
+		assertThat(resultExpression.getArgumentName()).isEqualTo("t");
 	}
 }
 

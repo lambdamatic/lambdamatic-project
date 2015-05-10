@@ -109,7 +109,7 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
 		// run another CapturedArgumentsEvaluator on the given lambdaExpression
 		final Expression evaluatedExpression = ExpressionVisitorUtil.visit(lambdaExpression.getExpression(), new CapturedArgumentsEvaluator(this.capturedArgs));
 		final ComplexExpression parentExpression = lambdaExpression.getParent();
-		parentExpression.replaceElement(lambdaExpression, evaluatedExpression);
+		parentExpression.replaceElement(lambdaExpression, new LambdaExpression(evaluatedExpression, lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName()));
 		// no need to further visit this expression.
 		return false;
 	}

@@ -9,7 +9,7 @@ package org.lambdamatic.analyzer.ast.node;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class LambdaExpression extends Expression{
+public class LambdaExpression extends Expression {
 
 	/** The AST form of the user-defined Lambda Expression AST with captured arguments. */
 	private final Expression expression;
@@ -17,15 +17,19 @@ public class LambdaExpression extends Expression{
 	/** The type of the element being evaluated in the AST form of the user-defined Lambda Expression. */
 	private final Class<?> argumentType;
 	
+	/** The name of the element being evaluated in the AST form of the user-defined Lambda Expression. */
+	private final String argumentName;
+	
 	/**
 	 * Constructor
 	 * @param expression The AST form of the user-defined Lambda Expression with its captured arguments.
 	 * @param argumentType The type of the element being evaluated in the AST form of the user-defined Lambda Expression.
 	 */
-	public LambdaExpression(final Expression expression, final Class<?> argumentType) {
+	public LambdaExpression(final Expression expression, final Class<?> argumentType, final String argumentName) {
 		super(generateId(), false);
 		this.expression = expression;
 		this.argumentType = argumentType;
+		this.argumentName = argumentName;
 	}
 	
 	@Override
@@ -42,10 +46,10 @@ public class LambdaExpression extends Expression{
 	public Class<?> getJavaType() {
 		return argumentType;
 	}
-
+	
 	@Override
 	public Expression inverse() {
-		return new LambdaExpression(expression.inverse(), argumentType);
+		return new LambdaExpression(expression.inverse(), argumentType, argumentName);
 	}
 
 	@Override
@@ -54,12 +58,12 @@ public class LambdaExpression extends Expression{
 	}
 
 	@Override
-	public Expression duplicate(int id) {
-		return new LambdaExpression(expression.duplicate(id), argumentType);
+	public LambdaExpression duplicate(int id) {
+		return new LambdaExpression(expression.duplicate(id), argumentType, argumentName);
 	}
 
 	@Override
-	public Expression duplicate() {
+	public LambdaExpression duplicate() {
 		return this.duplicate(generateId());
 	}
 
@@ -75,6 +79,13 @@ public class LambdaExpression extends Expression{
 	 */
 	public Class<?> getArgumentType() {
 		return argumentType;
+	}
+	
+	/**
+	 * @return The name of the element being evaluated in the AST form of the user-defined Lambda Expression.
+	 */
+	public String getArgumentName() {
+		return argumentName;
 	}
 
 	@Override
@@ -104,6 +115,11 @@ public class LambdaExpression extends Expression{
 			if (other.argumentType != null)
 				return false;
 		} else if (!argumentType.getName().equals(other.argumentType.getName()))
+			return false;
+		if (argumentName == null) {
+			if (other.argumentName != null)
+				return false;
+		} else if (!argumentName.equals(other.argumentName))
 			return false;
 		if (expression == null) {
 			if (other.expression != null)
