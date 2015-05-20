@@ -16,7 +16,7 @@ import org.lambdamatic.mongodb.LambdamaticMongoCollection;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public interface ProjectionArray<T> {
+public interface ProjectionArray<T> extends ProjectionField {
 
 	/**
 	 * The positional {@link MongoOperator#FIRST} operator limits the contents of an array from the query results to
@@ -33,7 +33,7 @@ public interface ProjectionArray<T> {
 
 	/**
 	 * The {@link MongoOperator#ELEMEMT_MATCH} operator limits the contents of an array field from the query results to
-	 * contain only the first element matching the given {@code expression} condition.
+	 * contain only the <strong>first element</strong> matching the given {@code expression} condition.
 	 * 
 	 * @param expression
 	 *            the condition to specify which elements should be returned
@@ -41,6 +41,6 @@ public interface ProjectionArray<T> {
 	 * @see http://docs.mongodb.org/manual/reference/operator/projection/elemMatch/#proj._S_elemMatch
 	 */
 	@MongoOperation(MongoOperator.ELEMEMT_MATCH)
-	public void elementMatch(final SerializablePredicate<T> expression);
+	public ProjectionField elementMatch(final SerializablePredicate<T> expression);
 
 }

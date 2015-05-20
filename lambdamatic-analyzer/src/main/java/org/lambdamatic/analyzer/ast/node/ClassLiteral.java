@@ -72,5 +72,10 @@ public class ClassLiteral extends ObjectInstance {
 	public Class<?> getValue() {
 		return (Class<?>) super.getValue();
 	}
+	
+	@Override
+	public String toString() {
+		return this.getValue().getName();
+	}
 
 }

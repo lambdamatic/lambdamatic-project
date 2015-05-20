@@ -11,6 +11,8 @@ package com.sample;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.bson.types.ObjectId;
 import org.lambdamatic.mongodb.annotations.Document;
@@ -22,7 +24,7 @@ import org.lambdamatic.mongodb.types.geospatial.Location;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-@Document(collection="foos")
+@Document(collection="foo")
 public class Foo {
 
 	public static class FooBuilder {
@@ -43,6 +45,7 @@ public class Foo {
 		private List<Bar> barList;
 		private EnumBar[] enumBarArray;
 		private List<String> stringList;
+		private Set<String> stringSet;
 		private String[] stringArray;
 
 		public FooBuilder withId(final ObjectId id) {
@@ -130,6 +133,11 @@ public class Foo {
 			return this;
 		}
 		
+		public FooBuilder withStringSet(final String... values) {
+			this.stringSet = new TreeSet<String>(Arrays.asList(values));
+			return this;
+		}
+		
 		public FooBuilder withStringArray(final String... values) {
 			this.stringArray = values;
 			return this;
@@ -189,6 +197,8 @@ public class Foo {
 
 	private List<String> stringList;
 
+	private Set<String> stringSet;
+
 	private String[] stringArray;
 
 	public Foo() {
@@ -214,6 +224,7 @@ public class Foo {
 		this.barList = fooBuilder.barList;
 		this.enumBarArray = fooBuilder.enumBarArray;
 		this.stringList = fooBuilder.stringList;
+		this.stringSet = fooBuilder.stringSet;
 		this.stringArray = fooBuilder.stringArray;
 	}
 
@@ -389,6 +400,10 @@ public class Foo {
 		return bar;
 	}
 	
+	public List<Bar> getBarList() {
+		return barList;
+	}
+	
 	public void setBar(Bar bar) {
 		this.bar = bar;
 	}
@@ -408,9 +423,21 @@ public class Foo {
 	public String[] getStringArray() {
 		return stringArray;
 	}
+
+	public Set<String> getStringSet() {
+		return stringSet;
+	}
 	
 	public void setStringList(List<String> stringList) {
 		this.stringList = stringList;
+	}
+	
+	public void setStringArray(String[] stringArray) {
+		this.stringArray = stringArray;
+	}
+	
+	public void setStringSet(Set<String> stringSet) {
+		this.stringSet = stringSet;
 	}
 	
 	@Override

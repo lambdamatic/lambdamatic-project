@@ -25,6 +25,7 @@ import org.lambdamatic.analyzer.ast.node.ASTNodeUtils;
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
+import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitorUtil;
 import org.lambdamatic.analyzer.ast.node.IfStatement;
@@ -34,6 +35,7 @@ import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.Statement;
+import org.lambdamatic.analyzer.ast.node.Statement.StatementType;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,10 +212,11 @@ public class LambdaExpressionAnalyzer {
 		LOGGER.debug("Analyzing lambda expression bytecode at {}.{}", lambdaInfo.getImplClassName(),
 				lambdaInfo.getImplMethodName());
 		final LambdaExpressionReader lambdaExpressionReader = new LambdaExpressionReader();
-		final Pair<Statement, List<LocalVariable>> bytecode = lambdaExpressionReader.readBytecodeStatement(lambdaInfo);
+		final Pair<List<Statement>, List<LocalVariable>> bytecode = lambdaExpressionReader.readBytecodeStatement(lambdaInfo);
 		final List<LocalVariable> lambdaExpressionArguments = bytecode.getRight();
-		final Statement lambdaStatement = bytecode.getLeft();
-		final Expression thinedOutExpression = thinOut(lambdaStatement);
+		final List<Statement> lambdaStatements = bytecode.getLeft();
+		// FIXME: support multiple statements, iterate on each one to thinOut/simplify
+		final Expression thinedOutExpression = thinOut(lambdaStatements.get(0));
 		final Expression simplifiedExpression = simplifyExpression(thinedOutExpression);
 		final Expression processedExpression = processMethodCalls(simplifiedExpression);
 		final LocalVariable lambdaExpressionArgument = lambdaExpressionArguments.get(0);
@@ -281,55 +284,59 @@ public class LambdaExpressionAnalyzer {
 	 */
 	private Expression thinOut(final Statement statement) {
 		LOGGER.debug("About to simplify \n\t{}", ASTNodeUtils.prettyPrint(statement));
-		// find branches that end with 'return 1'
-		final ReturnTruePathFilter filter = new ReturnTruePathFilter();
-		statement.accept(filter);
-		final List<ReturnStatement> returnStmts = filter.getReturnStmts();
-		final List<Expression> expressions = new ArrayList<>();
-		for (ReturnStatement returnStmt : returnStmts) {
-			final LinkedList<Expression> relevantExpressions = new LinkedList<>();
-			// current node being evaluated
-			Statement currentStmt = returnStmt;
-			// previous node evaluated, because it is important to remember
-			// the path that was taken (in case of ConditionalStatements)
-			Statement previousStmt = null;
-			while (currentStmt != null) {
-				switch (currentStmt.getStatementType()) {
-				case IF_STMT:
-					final IfStatement ifStatement = (IfStatement) currentStmt;
-					final Expression ifExpression = ifStatement.getIfExpression();
-					// if we come from the "eval true" path on this
-					// condition
-					if (ifStatement.getThenStatement().equals(previousStmt)) {
-						relevantExpressions.add(0, ifExpression);
-					} else {
-						relevantExpressions.add(0, ifExpression.inverse());
+		if (statement.getStatementType() == StatementType.EXPRESSION_STMT) {
+			return ((ExpressionStatement) statement).getExpression();
+		} else {
+			// find branches that end with 'return 1'
+			final ReturnTruePathFilter filter = new ReturnTruePathFilter();
+			statement.accept(filter);
+			final List<ReturnStatement> returnStmts = filter.getReturnStmts();
+			final List<Expression> expressions = new ArrayList<>();
+			for (ReturnStatement returnStmt : returnStmts) {
+				final LinkedList<Expression> relevantExpressions = new LinkedList<>();
+				// current node being evaluated
+				Statement currentStmt = returnStmt;
+				// previous node evaluated, because it is important to remember
+				// the path that was taken (in case of ConditionalStatements)
+				Statement previousStmt = null;
+				while (currentStmt != null) {
+					switch (currentStmt.getStatementType()) {
+					case IF_STMT:
+						final IfStatement ifStatement = (IfStatement) currentStmt;
+						final Expression ifExpression = ifStatement.getIfExpression();
+						// if we come from the "eval true" path on this
+						// condition
+						if (ifStatement.getThenStatements().contains(previousStmt)) {
+							relevantExpressions.add(0, ifExpression);
+						} else {
+							relevantExpressions.add(0, ifExpression.inverse());
+						}
+						break;
+					case RETURN_STMT:
+						final Expression returnExpression = ((ReturnStatement) currentStmt).getExpression();
+						if (returnExpression.getExpressionType() == ExpressionType.METHOD_INVOCATION) {
+							relevantExpressions.add(0, returnExpression);
+						}
+						break;
+					default:
+						LOGGER.debug("Ignoring node '{}'", currentStmt);
+						break;
 					}
-					break;
-				case RETURN_STMT:
-					final Expression returnExpression = ((ReturnStatement) currentStmt).getExpression();
-					if (returnExpression.getExpressionType() == ExpressionType.METHOD_INVOCATION) {
-						relevantExpressions.add(0, returnExpression);
-					}
-					break;
-				default:
-					LOGGER.debug("Ignoring node '{}'", currentStmt);
-					break;
+					previousStmt = currentStmt;
+					currentStmt = currentStmt.getParent();
 				}
-				previousStmt = currentStmt;
-				currentStmt = currentStmt.getParent();
-			}
-			if (relevantExpressions.size() > 1) {
-				expressions.add(new InfixExpression(InfixOperator.CONDITIONAL_AND, relevantExpressions));
-			} else {
-				expressions.add(relevantExpressions.getFirst());
-			}
+				if (relevantExpressions.size() > 1) {
+					expressions.add(new InfixExpression(InfixOperator.CONDITIONAL_AND, relevantExpressions));
+				} else {
+					expressions.add(relevantExpressions.getFirst());
+				}
 
+			}
+			final Expression result = (expressions.size() > 1)
+					? new InfixExpression(InfixOperator.CONDITIONAL_OR, expressions) : expressions.get(0);
+			LOGGER.debug("Thinned out expression: #{}: {}", result.getId(), result.toString());
+			return result;
 		}
-		final Expression result = (expressions.size() > 1)
-				? new InfixExpression(InfixOperator.CONDITIONAL_OR, expressions) : expressions.get(0);
-		LOGGER.debug("Thinned out expression: #{}: {}", result.getId(), result.toString());
-		return result;
 	}
 
 }

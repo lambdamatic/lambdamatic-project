@@ -8,23 +8,18 @@
 
 package org.lambdamatic.mongodb;
 
-import static com.lordofthejars.nosqlunit.mongodb.MongoDbConfigurationBuilder.mongoDb;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import org.junit.Rule;
 import org.junit.Test;
-import org.lambdamatic.mongodb.testutils.DropMongoCollectionsRule;
 
 import com.lordofthejars.nosqlunit.annotation.ShouldMatchDataSet;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import com.lordofthejars.nosqlunit.core.LoadStrategyEnum;
-import com.lordofthejars.nosqlunit.mongodb.MongoDbRule;
 import com.mongodb.MongoBulkWriteException;
-import com.mongodb.MongoClient;
 import com.sample.Bar;
 import com.sample.Bar.BarBuilder;
 import com.sample.EnumBar;
@@ -38,22 +33,8 @@ import com.sample.FooCollection;
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  */
-public class MongoInsertionTest {
+public class MongoInsertionTest extends MongoBaseTest {
 
-	private static final String DATABASE_NAME = "lambdamatic-tests";
-
-	private static final String COLLECTION_NAME = ((org.lambdamatic.mongodb.annotations.Document) Foo.class
-			.getAnnotation(org.lambdamatic.mongodb.annotations.Document.class)).collection();
-
-	private MongoClient mongoClient = new MongoClient();
-
-	@Rule
-	public DropMongoCollectionsRule collectionCleaning = new DropMongoCollectionsRule(mongoClient, DATABASE_NAME,
-			COLLECTION_NAME);
-
-	@Rule
-	public MongoDbRule remoteMongoDbRule = new MongoDbRule(mongoDb().databaseName(DATABASE_NAME).build());
-	
 	@Test
 	@UsingDataSet(loadStrategy=LoadStrategyEnum.DELETE_ALL)
 	@ShouldMatchDataSet(location="/expected-insertions.json")

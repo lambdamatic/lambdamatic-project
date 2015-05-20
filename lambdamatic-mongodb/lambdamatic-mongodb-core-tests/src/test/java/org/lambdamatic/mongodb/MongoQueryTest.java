@@ -16,15 +16,8 @@ import java.net.UnknownHostException;
 import org.assertj.core.api.Condition;
 import org.assertj.core.description.TextDescription;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.lambdamatic.mongodb.annotations.Document;
 
-import static org.lambdamatic.mongodb.metadata.Projection.*;
-
-import org.lambdamatic.mongodb.testutils.DropMongoCollectionsRule;
-
-import com.mongodb.MongoClient;
 import com.sample.Bar;
 import com.sample.EnumFoo;
 import com.sample.Foo;
@@ -37,16 +30,7 @@ import com.sample.FooCollection;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class MongoQueryTest {
-
-	private static final String DATABASE_NAME = "lambdamatic-tests";
-
-	private static final String COLLECTION_NAME = ((Document)Foo.class.getAnnotation(Document.class)).collection();
-	
-	private MongoClient mongoClient = new MongoClient();
-	
-	@Rule
-	public DropMongoCollectionsRule collectionCleaning = new DropMongoCollectionsRule(mongoClient, DATABASE_NAME, COLLECTION_NAME);
+public class MongoQueryTest extends MongoBaseTest {
 
 	private FooCollection fooCollection;
 
@@ -57,6 +41,7 @@ public class MongoQueryTest {
 		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO)
 				.withLocation(40, -70)
 				.withBar(new Bar.BarBuilder().withStringField("bar").build())
+				.withBarList(new Bar.BarBuilder().withStringField("bar1").build(), new Bar.BarBuilder().withStringField("bar2").build())
 				.build();
 		this.fooCollection.insert(foo);
 	}
@@ -79,7 +64,7 @@ public class MongoQueryTest {
 	@Test
 	public void shouldFindOneFooBar() throws IOException {
 		// when
-		final Foo foo = fooCollection.find(f -> f.barList.stringField.equals("bar")).first();
+		final Foo foo = fooCollection.find(f -> f.barList.stringField.equals("bar1")).first();
 		// then
 		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override
@@ -92,7 +77,7 @@ public class MongoQueryTest {
 	@Test
 	public void shouldFindOneFooWithElementMatchBar() throws IOException {
 		// when
-		final Foo foo = fooCollection.find(f -> f.barList.elementMatch(b -> b.stringField.equals("bar"))).first();
+		final Foo foo = fooCollection.find(f -> f.barList.elementMatch(b -> b.stringField.equals("bar1"))).first();
 		// then
 		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override
@@ -107,14 +92,14 @@ public class MongoQueryTest {
 		// when
 		final Foo foo = fooCollection
 				.find(f -> f.stringField.equals("jdoe"))
-				.projection(f -> include(f.stringField, f.location))
+				.projection(f -> Projection.include(f.stringField, f.barList.elementMatch(b -> b.stringField.equals("bar1"))))
 				.first();
 		// then
 		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override
 			public boolean matches(final Foo value) {
 				return value.getId() == null && value.getStringField().equals("jdoe") && value.getPrimitiveIntField() == 0
-						&& value.getEnumFoo() == null && value.getLocation() != null;
+						&& value.getEnumFoo() == null && value.getLocation() == null && value.getBarList().size() == 1;
 			}
 		}.as(new TextDescription("only a 'stringField' and 'location' fields initialized")));
 	}

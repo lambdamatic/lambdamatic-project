@@ -3,6 +3,8 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
+import java.util.List;
+
 /**
  * An If Statement:
  * {@code if( Expression) ThenStatement else ElseStatement} 
@@ -15,24 +17,24 @@ public class IfStatement extends Statement {
 	/** The Expression in the "if()".*/
 	private final Expression ifExpression;
 
-	/** The Statement to execution when the expression is true.*/
-	private final Statement thenStatement;
+	/** The Statements to execution when the expression is true.*/
+	private final List<Statement> thenStatements;
 
-	/** The Statement to execution when the expression is false.*/
-	private final Statement elseStatement;
+	/** The Statements to execution when the expression is false.*/
+	private final List<Statement> elseStatements;
 	
 	/**
 	 * The full constructor
 	 * @param ifExpression The Expression in the "if()"
-	 * @param thenStatement The Statement to execution when the expression is true.
-	 * @param elseStatement The Statement to execution when the expression is false.
+	 * @param thenStatements The Statement to execution when the expression is true.
+	 * @param elseStatements The Statement to execution when the expression is false.
 	 */
-	public IfStatement(final Expression ifExpression, final Statement thenStatement, final Statement elseStatement) {
+	public IfStatement(final Expression ifExpression, final List<Statement> thenStatements, final List<Statement> elseStatements) {
 		this.ifExpression = ifExpression;
-		this.thenStatement = thenStatement;
-		this.thenStatement.setParent(this);
-		this.elseStatement = elseStatement;
-		this.elseStatement.setParent(this);
+		this.thenStatements = thenStatements;
+		this.thenStatements.stream().forEach(s -> s.setParent(this));
+		this.elseStatements = elseStatements;
+		this.elseStatements.stream().forEach(s -> s.setParent(this));
 	}
 
 	@Override
@@ -43,8 +45,8 @@ public class IfStatement extends Statement {
 	@Override
 	public void accept(final StatementVisitor visitor) {
 		if(visitor.visit(this)) {
-			thenStatement.accept(visitor);
-			elseStatement.accept(visitor);
+			thenStatements.stream().forEach(s -> s.accept(visitor));
+			elseStatements.stream().forEach(s -> s.accept(visitor));
 		}
 	}
 
@@ -56,17 +58,17 @@ public class IfStatement extends Statement {
 	}
 
 	/**
-	 * @return the thenStatement
+	 * @return the thenStatements
 	 */
-	public Statement getThenStatement() {
-		return thenStatement;
+	public List<Statement> getThenStatements() {
+		return thenStatements;
 	}
 
 	/**
-	 * @return the elseStatement
+	 * @return the elseStatements
 	 */
-	public Statement getElseStatement() {
-		return elseStatement;
+	public List<Statement> getElseStatements() {
+		return elseStatements;
 	}
 
 	@Override
@@ -74,9 +76,9 @@ public class IfStatement extends Statement {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("if(");
 		builder.append(this.ifExpression.toString()).append(") {");
-		builder.append(this.thenStatement.toString());
+		builder.append(this.thenStatements.toString());
 		builder.append("} else {");
-		builder.append(this.elseStatement.toString()).append('}');
+		builder.append(this.elseStatements.toString()).append('}');
 		return builder.toString();
 	}
 	
@@ -88,9 +90,9 @@ public class IfStatement extends Statement {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((elseStatement == null) ? 0 : elseStatement.hashCode());
+		result = prime * result + ((elseStatements == null) ? 0 : elseStatements.hashCode());
 		result = prime * result + ((ifExpression == null) ? 0 : ifExpression.hashCode());
-		result = prime * result + ((thenStatement == null) ? 0 : thenStatement.hashCode());
+		result = prime * result + ((thenStatements == null) ? 0 : thenStatements.hashCode());
 		return result;
 	}
 
@@ -107,20 +109,20 @@ public class IfStatement extends Statement {
 		if (getClass() != obj.getClass())
 			return false;
 		IfStatement other = (IfStatement) obj;
-		if (elseStatement == null) {
-			if (other.elseStatement != null)
+		if (elseStatements == null) {
+			if (other.elseStatements != null)
 				return false;
-		} else if (!elseStatement.equals(other.elseStatement))
+		} else if (!elseStatements.equals(other.elseStatements))
 			return false;
 		if (ifExpression == null) {
 			if (other.ifExpression != null)
 				return false;
 		} else if (!ifExpression.equals(other.ifExpression))
 			return false;
-		if (thenStatement == null) {
-			if (other.thenStatement != null)
+		if (thenStatements == null) {
+			if (other.thenStatements != null)
 				return false;
-		} else if (!thenStatement.equals(other.thenStatement))
+		} else if (!thenStatements.equals(other.thenStatements))
 			return false;
 		return true;
 	}

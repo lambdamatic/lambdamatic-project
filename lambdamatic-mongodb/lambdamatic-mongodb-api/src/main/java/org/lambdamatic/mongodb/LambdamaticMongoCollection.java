@@ -29,7 +29,7 @@ public interface LambdamaticMongoCollection<T, QM extends QueryMetadata<T>, PM e
 	 * @param expression the query in the form of a lambda expression 
 	 * @return the {@link FindTerminalContext} element to carry on with the query
 	 */
-	public FindContext<T, PM> find(final SerializablePredicate<QM> expression);
+	public FindContext<T, PM> find(final FilterExpression<QM> expression);
 
 	/**
 	 * Insert the given {@code domainObjects} in the underlying MongoDB

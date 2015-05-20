@@ -19,9 +19,10 @@ import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
+import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
+import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
-import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.lambdamatic.mongodb.metadata.MongoOperation;
 import org.lambdamatic.mongodb.metadata.MongoOperator;
@@ -36,7 +37,6 @@ import org.slf4j.LoggerFactory;
  * Writes a given {@link Expression} into a MongoDB {@link BsonWriter}.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
- * @param <M>
  */
 class FilterExpressionEncoder extends ExpressionVisitor {
 
@@ -48,31 +48,61 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	 */
 	private final Class<?> queryMetadataClass;
 
+	/**
+	 * The {@link QueryMetadata} var name used in the Lambda Expression to analyze.
+	 */
+	private final String queryMetadataVarName;
+
 	/** The {@link BsonWriter} to use. */
 	private final BsonWriter writer;
 
 	/** The {@link EncoderContext} to use. */
 	private final EncoderContext encoderContext;
 
+	/** boolean to indicate if the expression to encode is nested, ie, it must not be written with its own document. */
+	private final boolean nestedExpression;
+
 	/**
 	 * Full constructor
 	 * 
 	 * @param queryMetadataClass
 	 *            the {@link Class} linked to the {@link Expression} to visit.
+	 * @param queryMetadataVarName
+	 *            The {@link QueryMetadata} var name used in the Lambda Expression to analyze
 	 * @param writer
 	 *            the {@link BsonWriter} in which the {@link SerializablePredicate} representation will be written.
 	 * @see: http://docs.mongodb.org/manual/reference/operator/query/
 	 */
-	FilterExpressionEncoder(final Class<?> queryMetadataClass, final BsonWriter writer,
-			final EncoderContext encoderContext) {
+	FilterExpressionEncoder(final Class<?> queryMetadataClass, final String queryMetadataVarName,
+			final BsonWriter writer, final EncoderContext encoderContext) {
+		this(queryMetadataClass, queryMetadataVarName, writer, encoderContext, false);
+	}
+
+	/**
+	 * Full constructor
+	 * 
+	 * @param queryMetadataClass
+	 *            the {@link Class} linked to the {@link Expression} to visit.
+	 * @param queryMetadataVarName
+	 *            The {@link QueryMetadata} var name used in the Lambda Expression to analyze
+	 * @param writer
+	 *            the {@link BsonWriter} in which the {@link SerializablePredicate} representation will be written.
+	 * @see: http://docs.mongodb.org/manual/reference/operator/query/
+	 */
+	FilterExpressionEncoder(final Class<?> queryMetadataClass, final String queryMetadataVarName,
+			final BsonWriter writer, final EncoderContext encoderContext, final boolean nestedExpression) {
 		this.queryMetadataClass = queryMetadataClass;
+		this.queryMetadataVarName = queryMetadataVarName;
 		this.writer = writer;
 		this.encoderContext = encoderContext;
+		this.nestedExpression = nestedExpression;
 	}
 
 	@Override
 	public boolean visitInfixExpression(final InfixExpression expr) {
-		writer.writeStartDocument();
+		if (!this.nestedExpression) {
+			writer.writeStartDocument();
+		}
 		switch (expr.getOperator()) {
 		case CONDITIONAL_AND:
 			// Syntax: { $and: [ { <expression1> }, { <expression2> } , ... , {
@@ -86,7 +116,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			break;
 		case EQUALS:
 			// eg: int == 3
-			// Syntax: {field: value} }
+			// Syntax: {field: value}
 			writeOperation(MongoOperator.EQUALS, expr.getOperands().get(0), expr.getOperands().get(1),
 					expr.isInverted());
 			break;
@@ -97,10 +127,13 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 					expr.isInverted());
 			break;
 		default:
-			throw new UnsupportedOperationException("Generating a query with '" + expr.getOperator()
-					+ "' is not supported yet (shame...)");
+			throw new UnsupportedOperationException(
+					"Generating a query with '" + expr.getOperator() + "' is not supported yet (shame...)");
 		}
-		writer.writeEndDocument();
+		if (!this.nestedExpression) {
+			writer.writeEndDocument();
+		}
+		// TODO: do we need to flush explicitly ?
 		writer.flush();
 		return false;
 	}
@@ -109,7 +142,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	 * Writes a logical operation of the following form:
 	 * 
 	 * <pre>
-	 * { $operator: [ { <expression1> }, { <expression2> } , ... , {<expressionN> } ] }
+	 * { $operator: [ { <operand1> }, { <operand2> } , ... , {<operandN> } ] }
 	 * </pre>
 	 * 
 	 * @param operator
@@ -117,13 +150,13 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	 * @param operands
 	 *            the operands to write
 	 */
-	private void writeLogicalOperation(final MongoOperator operator, List<Expression> operands) {
+	private void writeLogicalOperation(final MongoOperator operator, final List<Expression> operands) {
 		writer.writeStartArray(operator.getLiteral());
 		for (Expression operand : operands) {
 			final BsonDocument operandDocument = new BsonDocument();
 			final BsonWriter operandBsonWriter = new BsonDocumentWriter(operandDocument);
-			final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(queryMetadataClass,
-					operandBsonWriter, this.encoderContext);
+			final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(this.queryMetadataClass,
+					this.queryMetadataVarName, operandBsonWriter, this.encoderContext);
 			operand.accept(operandEncoder);
 			final BsonReader operandBsonReader = new BsonDocumentReader(operandDocument);
 			writer.pipe(operandBsonReader);
@@ -147,17 +180,21 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		if (annotation != null) {
 			// FIXME: support other operands
 			// FIXME: use $not: http://docs.mongodb.org/manual/reference/operator/query/not/#op._S_not
-			writer.writeStartDocument();
+			if (!this.nestedExpression) {
+				writer.writeStartDocument();
+			}
 			switch (annotation.value()) {
 			case GEO_WITHIN:
 				writeGeoWithin(methodInvocation.getSourceExpression(), methodInvocation.getArguments(),
 						methodInvocation.isInverted());
 				break;
 			default:
-				writeOperation(annotation.value(), methodInvocation.getSourceExpression(), methodInvocation
-						.getArguments().get(0), methodInvocation.isInverted());
+				writeOperation(annotation.value(), methodInvocation.getSourceExpression(),
+						methodInvocation.getArguments().get(0), methodInvocation.isInverted());
 			}
-			writer.writeEndDocument();
+			if (!this.nestedExpression) {
+				writer.writeEndDocument();
+			}
 		} else {
 			methodInvocation.getParent().replaceElement(methodInvocation,
 					ExpressionFactory.getExpression(methodInvocation.evaluate()));
@@ -188,16 +225,65 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		if (operator == MongoOperator.EQUALS && !inverted) {
 			writeNamedExpression(key, valueExpr);
 		} else {
-			writer.writeStartDocument(key);
+			if (key != null && !this.nestedExpression) {
+				writer.writeStartDocument(key);
+			}
 			if (inverted) {
 				writer.writeStartDocument(MongoOperator.NOT.getLiteral());
 				writeNamedExpression(operator.getLiteral(), valueExpr);
 				writer.writeEndDocument();
+			} else if (valueExpr.getExpressionType() == ExpressionType.LAMBDA_EXPRESSION) {
+				writeNamedLambdaExpression(operator.getLiteral(), (LambdaExpression) valueExpr);
 			} else {
 				writeNamedExpression(operator.getLiteral(), valueExpr);
 			}
-			writer.writeEndDocument();
+			if (key != null && !this.nestedExpression) {
+				writer.writeEndDocument();
+			}
 		}
+	}
+
+	/**
+	 * Writes the given named {@link LambdaExpression} in a compact form.
+	 * <p>
+	 * E.g:
+	 * </p>
+	 * 
+	 * <pre>
+	 * $elemMatch: { &lt;operand1&gt;, &lt;operand2&gt; ... }
+	 * </pre>
+	 * 
+	 * @param name
+	 *            the LambdaExpression name
+	 * @param valueExpr
+	 *            the LambdaExpression itself
+	 */
+	private void writeNamedLambdaExpression(final String name, final LambdaExpression lambdaExpression) {
+		writer.writeStartDocument(name);
+		// writer each operand of the LambdaExpression in a compact form.
+		switch (lambdaExpression.getExpression().getExpressionType()) {
+		case INFIX:
+			final InfixExpression infixExpression = (InfixExpression) lambdaExpression.getExpression();
+			// assume that this is a logical AND operation
+			if (infixExpression.getOperator() != InfixOperator.CONDITIONAL_AND) {
+				throw new ConversionException("Did not expect a logical operation of type '"
+						+ infixExpression.getOperator() + "' while writing a nested Lambda Expression");
+			}
+			for (Expression operand : infixExpression.getOperands()) {
+				final FilterExpressionEncoder operandEncoder = new FilterExpressionEncoder(this.queryMetadataClass,
+						this.queryMetadataVarName, writer, encoderContext, true);
+				operand.accept(operandEncoder);
+			}
+			break;
+		default:
+			final Expression expression = lambdaExpression.getExpression();
+			final FilterExpressionEncoder expressionEncoder = new FilterExpressionEncoder(
+					lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName(), writer, encoderContext, true);
+			expression.accept(expressionEncoder);
+		}
+
+		writer.writeEndDocument();
+
 	}
 
 	/**
@@ -209,6 +295,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	 *            the Expression itself
 	 */
 	private void writeNamedExpression(final String name, final Expression valueExpr) {
+		// LambdaExpressions have to be treated differently
 		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
 		if (value == null) {
 			writer.writeNull(name);
@@ -268,8 +355,8 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			}
 			writer.writeEndArray();
 		} else {
-			throw new UnsupportedOperationException("Writing value of a '" + value.getClass()
-					+ "' is not supported yet");
+			throw new UnsupportedOperationException(
+					"Writing value of a '" + value.getClass() + "' is not supported yet");
 		}
 	}
 
@@ -385,7 +472,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	}
 
 	private String extractKey(final LocalVariable expr) {
-		if (expr.getType().equals(queryMetadataClass)) {
+		if (expr.getType().equals(queryMetadataClass) && expr.getName().equals(this.queryMetadataVarName)) {
 			LOGGER.trace("Skipping variable '{}' ({})", expr.getName(), expr.getJavaType().getName());
 			return null;
 		}
@@ -399,23 +486,8 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			builder.append(target).append('.');
 		}
 		final String fieldName = expr.getFieldName();
-		try {
-			final java.lang.reflect.Field field = queryMetadataClass.getField(fieldName);
-			if (field != null) {
-				final DocumentField fieldAnnotation = field.getAnnotation(DocumentField.class);
-				if (fieldAnnotation != null) {
-					final String annotatedFieldName = fieldAnnotation.name();
-					if (annotatedFieldName != null && !annotatedFieldName.isEmpty()) {
-						builder.append(annotatedFieldName);
-					} else {
-						builder.append(field.getName());
-					}
-				}
-			}
-		} catch (NoSuchFieldException | SecurityException cause) {
-			throw new ConversionException("Failed to get field '" + fieldName + "' on class '"
-					+ queryMetadataClass.getName() + "'", cause);
-		}
+		final String documentFieldName = EncoderUtils.getDocumentFieldName(queryMetadataClass, fieldName);
+		builder.append(documentFieldName);
 		return builder.toString();
 	}
 

@@ -29,6 +29,7 @@ import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
+import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.IfStatement;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
@@ -117,10 +118,10 @@ public class LambdaExpressionReader {
 	 * Reads the given {@link List} of (bytecode) {@link AbstractInsnNode} located at the known {@link SerializedLambdaInfo} and computes a simplified {@link Statement}
 	 * based tree representing the initial lambda expression.
 	 * 
-	 * @return the {@link Statement}-based tree
+	 * @return the {@link List} of {@link Statement} found while reading the bytecode
 	 * @throws IOException
 	 */
-	public Pair<Statement, List<LocalVariable>> readBytecodeStatement(final SerializedLambdaInfo lambdaInfo) throws IOException {
+	public Pair<List<Statement>, List<LocalVariable>> readBytecodeStatement(final SerializedLambdaInfo lambdaInfo) throws IOException {
 		final LambdaExpressionClassVisitor desugaredExpressionVisitor = new LambdaExpressionClassVisitor(lambdaInfo);
 		final InputStream serializedLambdaStream = Thread.currentThread().getContextClassLoader()
 				.getResourceAsStream(lambdaInfo.getImplClassName().replace('.', '/') + ".class");
@@ -132,11 +133,11 @@ public class LambdaExpressionReader {
 		final InsnCursor insnCursor = new InsnCursor(instructions, labels);
 		// we must set the cursor on the first instruction before calling the readStatementSubTree() method
 		insnCursor.next();
-		final Statement statement = readStatementSubTree(insnCursor, new Stack<>(), lambdaInfo.getCapturedArguments(), localVariables);
+		final List<Statement> statements = readStatements(insnCursor, new Stack<>(), lambdaInfo.getCapturedArguments(), localVariables);
 		// now, let's identify the lambda expression arguments (_excluding_ the captured arguments)
 		final int argsCount = Type.getArgumentTypes(lambdaInfo.getImplMethodDesc()).length;
 		final List<LocalVariable> lambdaExpressionArguments = localVariables.stream().filter(v -> v!= null && !v.name.equals("this")).limit(argsCount).map(var -> new LocalVariable(var.index, var.name, readSignature(var.desc))).collect(Collectors.toList());
-		return new ImmutablePair<Statement, List<LocalVariable>>(statement, lambdaExpressionArguments);
+		return new ImmutablePair<List<Statement>, List<LocalVariable>>(statements, lambdaExpressionArguments);
 	}
 
 	/**
@@ -151,8 +152,9 @@ public class LambdaExpressionReader {
 	 *            the local variables
 	 * @return
 	 */
-	private Statement readStatementSubTree(final InsnCursor insnCursor, final Stack<Expression> expressionStack,
+	private List<Statement> readStatements(final InsnCursor insnCursor, final Stack<Expression> expressionStack,
 			final List<CapturedArgument> capturedArguments, final List<LocalVariableNode> localVariables) {
+		final List<Statement> statements = new ArrayList<Statement>();
 		while (insnCursor.hasCurrent()) {
 			final AbstractInsnNode currentInstruction = insnCursor.getCurrent();
 			switch (currentInstruction.getType()) {
@@ -269,16 +271,15 @@ public class LambdaExpressionReader {
 				// handle.getOwner() + "." + handle.getName() + " (desc=" + handle.getDesc() + ")");
 				break;
 			case AbstractInsnNode.JUMP_INSN:
-				return readJumpInstruction(insnCursor, expressionStack, capturedArguments, localVariables);
+				statements.addAll(readJumpInstruction(insnCursor, expressionStack, capturedArguments, localVariables));
+				break;
 			case AbstractInsnNode.INT_INSN:
 				readIntInstruction((IntInsnNode) currentInstruction, expressionStack, localVariables);
 				break;
 			case AbstractInsnNode.INSN:
-				final Statement instructionStmt = readInstruction(insnCursor, expressionStack, capturedArguments,
+				final List<Statement> instructionStmts = readInstruction(insnCursor, expressionStack, capturedArguments,
 						localVariables);
-				if (instructionStmt != null) {
-					return instructionStmt;
-				}
+				statements.addAll(instructionStmts);
 				break;
 			case AbstractInsnNode.TYPE_INSN:
 				readTypeInstruction((TypeInsnNode) currentInstruction, expressionStack, localVariables);
@@ -289,7 +290,7 @@ public class LambdaExpressionReader {
 			}
 			insnCursor.next();
 		}
-		return null;
+		return statements;
 	}
 
 	/**
@@ -302,7 +303,7 @@ public class LambdaExpressionReader {
 	 */
 	private Class<?> getArrayType(final Type type) throws NegativeArraySizeException {
 		try {
-			// FIXME: can we avoid the array instantiation ?
+			// TODO: can we avoid the array instantiation ?
 			final Type elementType = Type.getType(type.getDescriptor());
 			return Array.newInstance(Class.forName(elementType.getClassName()), 0).getClass();
 		} catch (ClassNotFoundException e) {
@@ -320,7 +321,7 @@ public class LambdaExpressionReader {
 	private Class<?> getType(final Type type) {
 		try {
 			if (type.getSort() == Type.ARRAY) {
-				// FIXME: can we avoid the array instantiation ?
+				// TODO: can we avoid the array instantiation ?
 				final Type elementType = type.getElementType();
 				return Array.newInstance(Class.forName(elementType.getClassName()), 0).getClass();
 			} else {
@@ -379,14 +380,21 @@ public class LambdaExpressionReader {
 	 *            the local variables
 	 * @return a {@link Statement} or {@code null}
 	 */
-	private Statement readInstruction(final InsnCursor insnCursor, final Stack<Expression> expressionStack,
+	private List<Statement> readInstruction(final InsnCursor insnCursor, final Stack<Expression> expressionStack,
 			final List<CapturedArgument> capturedArguments, final List<LocalVariableNode> localVariables) {
+		final List<Statement> statements = new ArrayList<Statement>();
 		final AbstractInsnNode insnNode = insnCursor.getCurrent();
 		switch (insnNode.getOpcode()) {
 		case Opcodes.ARETURN:
 		case Opcodes.IRETURN:
-			final Expression returnExpression = expressionStack.pop();
-			return new ReturnStatement(returnExpression);
+			statements.add(new ReturnStatement(expressionStack.pop()));
+			break;
+		case Opcodes.RETURN:
+			// any previous expression in the stack should be wrapped into statements, but the 
+			// empty 'return' statement can be ignored because it does not carry any semantic
+			expressionStack.stream().forEach(e -> statements.add(new ExpressionStatement(e)));
+			//statements.add(new ReturnStatement(null));
+			break;
 		case Opcodes.ACONST_NULL:
 			expressionStack.add(new NullLiteral());
 			break;
@@ -433,8 +441,11 @@ public class LambdaExpressionReader {
 			break;
 		case Opcodes.LCMP:
 		case Opcodes.DCMPL:
+		case Opcodes.DCMPG:
 		case Opcodes.FCMPL:
-			return readJumpInstruction(insnCursor.next(), expressionStack, capturedArguments, localVariables);
+		case Opcodes.FCMPG:
+			statements.addAll(readJumpInstruction(insnCursor.next(), expressionStack, capturedArguments, localVariables));
+			break;
 		case Opcodes.IADD:
 			expressionStack.add(addIntegers(expressionStack));
 			break;
@@ -445,7 +456,7 @@ public class LambdaExpressionReader {
 			expressionStack.add(inverseInteger(expressionStack));
 			break;
 		case Opcodes.POP:
-			expressionStack.pop();
+			statements.add(new ExpressionStatement(expressionStack.pop()));
 			break;
 		case Opcodes.DUP:
 			final Expression lastExpression = expressionStack.peek();
@@ -455,11 +466,11 @@ public class LambdaExpressionReader {
 			readArrayStoreInstruction(insnNode, expressionStack);
 			break;
 		default:
-			LOGGER.warn("InsnNode with OpCode {} was ignored.", insnNode.getOpcode());
+			throw new AnalyzeException("Bytecode instruction with OpCode '" + insnNode.getOpcode() + "' was ignored.");
 		}
 		// no statement to return for now, instruction was put on top of
 		// ExpressionStack for further usage
-		return null;
+		return statements;
 	}
 
 	/**
@@ -633,7 +644,7 @@ public class LambdaExpressionReader {
 	 * @param localVariables
 	 * @return
 	 */
-	private Statement readJumpInstruction(final InsnCursor instructionCursor, final Stack<Expression> expressionStack,
+	private List<Statement> readJumpInstruction(final InsnCursor instructionCursor, final Stack<Expression> expressionStack,
 			final List<CapturedArgument> capturedArguments, final List<LocalVariableNode> localVariables) {
 		final JumpInsnNode jumpInsnNode = (JumpInsnNode) instructionCursor.getCurrent();
 		final LabelNode jumpLabel = jumpInsnNode.label;
@@ -657,11 +668,11 @@ public class LambdaExpressionReader {
 		case Opcodes.IF_ICMPGT:
 		case Opcodes.IF_ACMPEQ:
 		case Opcodes.IF_ACMPNE:
-			return buildComparisonStatement(instructionCursor, expressionStack, capturedArguments, localVariables);
+			return Arrays.asList(buildComparisonStatement(instructionCursor, expressionStack, capturedArguments, localVariables));
 		case Opcodes.GOTO:
 			final InsnCursor jumpInstructionCursor = instructionCursor.duplicate();
 			jumpInstructionCursor.move(jumpLabel.getLabel());
-			return readStatementSubTree(jumpInstructionCursor, expressionStack, capturedArguments, localVariables);
+			return readStatements(jumpInstructionCursor, expressionStack, capturedArguments, localVariables);
 		default:
 			throw new AnalyzeException("Unexpected JumpInsnNode OpCode: " + jumpInsnNode.getOpcode());
 		}
@@ -686,9 +697,9 @@ public class LambdaExpressionReader {
 		final LabelNode jumpLabel = jumpInsnNode.label;
 		final InsnCursor jumpInstructionCursor = insnCursor.duplicate().move(jumpLabel.getLabel());
 		final Expression comparisonExpression = getComparisonExpression(jumpInsnNode, expressionStack);
-		final Statement thenStatement = (Statement) readStatementSubTree(jumpInstructionCursor, expressionStack,
+		final List<Statement> thenStatement = (List<Statement>) readStatements(jumpInstructionCursor, expressionStack,
 				capturedArguments, localVariables);
-		final Statement elseStatement = (Statement) readStatementSubTree(insnCursor.next(), expressionStack,
+		final List<Statement> elseStatement = (List<Statement>) readStatements(insnCursor.next(), expressionStack,
 				capturedArguments, localVariables);
 		return new IfStatement(comparisonExpression, thenStatement, elseStatement);
 	}

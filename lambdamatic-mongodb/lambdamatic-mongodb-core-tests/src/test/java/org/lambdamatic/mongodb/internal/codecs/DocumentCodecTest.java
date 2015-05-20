@@ -96,11 +96,11 @@ public class DocumentCodecTest {
 						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
 								+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
 								+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
-								+ "stringFields:['bar', 'baz', 'foo']}" },
+								+ "stringList:['bar', 'baz', 'foo']}" },
 				new Object[] { "Document with set of String",
 						new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
 								.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2)
-								.withDate(date).withStringList("bar", "baz", "foo").build(),
+								.withDate(date).withStringSet("bar", "baz", "foo").build(),
 						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
 								+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
 								+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
@@ -123,7 +123,7 @@ public class DocumentCodecTest {
 	public Object foo; // may be a list of documents
 
 	@Parameter(2)
-	public String jsonString;
+	public String expectedJson;
 
 	@Test
 	public void shouldEncodeDocumentWithLogging() throws IOException, JSONException {
@@ -147,9 +147,9 @@ public class DocumentCodecTest {
 		new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY, new BindingService()).encode(bsonWriter, (Foo)foo,
 				context);
 		// then
-		final String actual = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
-		LOGGER.debug("Output JSON: {}", actual);
-		JSONAssert.assertEquals(jsonString, actual, true);
+		final String actualJson = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
+		LOGGER.debug("Comparing \nexpected: {} vs \nactual: {}", expectedJson, actualJson);
+		JSONAssert.assertEquals(expectedJson, actualJson, true);
 	}
 
 	@Test
@@ -166,7 +166,7 @@ public class DocumentCodecTest {
 
 	private void shouldDecodeDocument(boolean loggerEnabled) {
 		// given
-		final BsonReader bsonReader = new JsonReader(jsonString);
+		final BsonReader bsonReader = new JsonReader(expectedJson);
 		final DecoderContext decoderContext = DecoderContext.builder().build();
 		// when
 		final Foo actualFoo = new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY, new BindingService())

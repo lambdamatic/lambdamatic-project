@@ -8,165 +8,68 @@
 
 package org.lambdamatic.mongodb.internal.codecs;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
-import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.codecs.Codec;
-import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
-import org.bson.json.JsonReader;
-import org.bson.json.JsonWriter;
-import org.lambdamatic.SerializableFunction;
-import org.lambdamatic.analyzer.LambdaExpressionAnalyzer;
+import org.lambdamatic.SerializableConsumer;
+import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
+import org.lambdamatic.analyzer.ast.node.MethodInvocation;
+import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
+import org.lambdamatic.mongodb.Projection;
 import org.lambdamatic.mongodb.exceptions.ConversionException;
-import org.lambdamatic.mongodb.metadata.Projection;
-import org.lambdamatic.mongodb.metadata.Projection.ProjectionType;
-import org.lambdamatic.mongodb.metadata.ProjectionField;
+import org.lambdamatic.mongodb.internal.codecs.ProjectionExpressionEncoder.ProjectionType;
+import org.lambdamatic.mongodb.metadata.ExcludeFields;
+import org.lambdamatic.mongodb.metadata.IncludeFields;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
-import org.lambdamatic.mongodb.query.context.FindContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 
 /**
- * Standalone {@link Codec} for Lambda {@link SerializableFunction}s.
+ * Standalone {@link Codec} for Lambda with {@link SerializableConsumer}s.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class ProjectionExpressionCodec implements Codec<SerializableFunction<ProjectionMetadata<?>,Projection>> {
+public class ProjectionExpressionCodec extends BaseQueryExpressionCodec<SerializableConsumer<ProjectionMetadata<?>>> {
 
-	/** The Logger name to use when logging conversion results.*/
-	static final String LOGGER_NAME = ProjectionExpressionCodec.class.getName();
-	
-	/** The usual Logger */
-	private static final Logger LOGGER = LoggerFactory.getLogger(LOGGER_NAME);
-
-	@Override
-	public Class<SerializableFunction<ProjectionMetadata<?>,Projection>> getEncoderClass() {
-		return null;
-	}
-
-	@Override
-	public void encode(final BsonWriter writer, final SerializableFunction<ProjectionMetadata<?>,Projection> projectionExpression,
-			final EncoderContext encoderContext) {
-		if (LOGGER.isInfoEnabled()) {
-			try {
-				// use an intermediate JsonWriter whose Outputstream can be
-				// retrieved
-				final ByteArrayOutputStream jsonOutputStream = new ByteArrayOutputStream();
-				final BsonWriter debugWriter = new JsonWriter(new OutputStreamWriter(jsonOutputStream, "UTF-8"));
-				doEncodeProjection(debugWriter, projectionExpression, encoderContext);
-				final String jsonContent = IOUtils.toString(jsonOutputStream.toByteArray(), "UTF-8");
-				LOGGER.info("Projection expression: {}", jsonContent);
-				// now, write the document in the target writer
-				final JsonReader jsonContentReader = new JsonReader(jsonContent);
-				writer.pipe(jsonContentReader);
-				writer.flush();
-			} catch (IOException e) {
-				throw new ConversionException("Failed to pipe content into a te;porary JSON document while encoding the specified projection", e);
-			}
-		} else {
-			doEncodeProjection(writer, projectionExpression, encoderContext);
+	void encodeExpression(final LambdaExpression lambdaExpression, final BsonWriter writer, final EncoderContext encoderContext) {
+		final Expression expression = lambdaExpression.getExpression();
+		if(expression.getExpressionType() != ExpressionType.METHOD_INVOCATION) {
+			throw new ConversionException("Invalid projection. See " + Projection.class.getName());
 		}
-	}
-
-	/**
-	 * Encodes the given {@link Projection} into the given {@link BsonWriter}, using the {@link EncoderContext} if necessary.
-	 * @param writer the output writer
-	 * @param projectionExpressiom the {@link Projection} to encode
-	 * @param encoderContext then encoder context
-	 */
-	protected void doEncodeProjection(final BsonWriter writer, final SerializableFunction<ProjectionMetadata<?>, Projection> projectionExpression, final EncoderContext encoderContext) {
-		final Projection projection = getProjection(projectionExpression);
-		final Map<Projection.ProjectionType, List<String>> projections = findProjections(projection);
-		writer.writeStartDocument();
-		projections.get(ProjectionType.INCLUDE).stream().forEach(fieldName -> {
-			writer.writeInt32(fieldName, 1);
-		});
-		projections.get(ProjectionType.EXCLUDE).stream().forEach(fieldName -> {
-			writer.writeInt32(fieldName, 0);
-		});
-		writer.writeEndDocument();
+		final MethodInvocation methodInvocation = (MethodInvocation) expression;
+		final Method method = methodInvocation.getJavaMethod();
+		final ProjectionType projectionType = getProjectionType(method);
+		if(projectionType == null && methodInvocation.getParent().getExpressionType() == ExpressionType.LAMBDA_EXPRESSION && methodInvocation.getParent().getParent() == null) {
+			throw new ConversionException("Invalid projection. See " + Projection.class.getName());
+		}
+		final List<Expression> arguments = methodInvocation.getArguments();
+		if(arguments.size() != 1) {
+			throw new ConversionException("Invalid projection: missing fields or fields not wrapped in an array");
+		}
+		final Expression argument = arguments.get(0);
+		final ProjectionExpressionEncoder expressionEncoder = new ProjectionExpressionEncoder(
+				lambdaExpression.getArgumentType(), writer, encoderContext, projectionType);
+		argument.accept(expressionEncoder);
 		writer.flush();
 	}
-
+	
 	/**
-	 * Evaluates the given {@link SerializableFunction} and returns the {@link Projection} result. The argument passed
-	 * to the expression during the call is a {@link Class#newInstance()} of the expected type (a subclass of
-	 * {@link ProjectionMetadata}.
-	 * 
-	 * @param projectionExpression
-	 *            the lambda expression to call
-	 * @return the expression result.
-	 * @throws ConversionException if something went wrong while instantiating the argument.
-	 * @see SerializableFunction#apply(Object)
+	 * Finds the {@link ProjectionType} associated with the given Java {@link Method}, depending on whether it is annotated with {@link IncludeFields} ({@link ProjectionType#INCLUDE}) or with {@link ExcludeFields} ({@link ProjectionType#EXCLUDE}).
+	 * @param method the method to analyze
+	 * @return the corresponding {@link ProjectionType} or <code>null</code> if no relevant annotation was found on the given {@link Method}.
 	 */
-	private Projection getProjection(final SerializableFunction<ProjectionMetadata<?>, Projection> projectionExpression) {
-		try {
-			@SuppressWarnings("unchecked")
-			final Class<ProjectionMetadata<?>> argumentType = (Class<ProjectionMetadata<?>>) LambdaExpressionAnalyzer.getArgumentType(projectionExpression);
-			final Projection projection = projectionExpression.apply(argumentType.newInstance());
-			return projection;
-		} catch (InstantiationException | IllegalAccessException e) {
-			throw new ConversionException("Failed to retrieve the result of the Projection lambda expression", e);
+	private ProjectionType getProjectionType(final Method method) {
+		if(method.getAnnotation(IncludeFields.class) != null) {
+			return ProjectionType.INCLUDE;
 		}
-	}
-
-	/**
-	 * Look ups the {@link ProjectionMetadata} {@link ProjectionField} used in the given {@link LambdaExpression} to
-	 * determine which fields should be included or excluded as part of the Projection BSON document.
-	 * 
-	 * <p>
-	 * <strong>note:</strong> if <code>_id</code> field is not explicitly specified in the
-	 * {@link ProjectionType#INCLUDE} list of fields, it is excluded (because the current API does not allow for mixing
-	 * {@link ProjectionType#INCLUDE} and {@link ProjectionType#EXCLUDE}.
-	 * </p>
-	 * 
-	 * @param projection
-	 *            the {@link Projection} object resulting of the lambda expression passed in the
-	 *            {@link FindContext#projection(SerializableFunction)} method.
-	 * 
-	 * @return a map of included/excluded (BSON) field names, indexed by {@link ProjectionType}
-	 */
-	// FIXME this does not work with projection of arrays which will probably have to be interfaces to provide some filter methods ($, elementMatch and slice)
-	// FIXME this whole part needs to be re-written.
-	@Deprecated
-	private Map<Projection.ProjectionType, List<String>> findProjections(final Projection projection) {
-		if(projection == null) {
-			throw new ConversionException("Projection cannot be null");
+		if(method.getAnnotation(ExcludeFields.class) != null) {
+			return ProjectionType.EXCLUDE;
 		}
-		try {
-			final Map<Projection.ProjectionType, List<String>> result = new HashMap<>();
-			result.put(ProjectionType.INCLUDE, new ArrayList<>());
-			result.put(ProjectionType.EXCLUDE, new ArrayList<>());
-			projection.getFields().stream().forEach(f -> {
-				result.get(projection.getType()).add(f.getFieldName());
-			});
-			// specific case of '_id' field: add to exclusions if not specified in inclusions
-			if(!result.get(ProjectionType.INCLUDE).contains(DocumentCodec.MONGOBD_DOCUMENT_ID)) {
-				result.get(ProjectionType.EXCLUDE).add(DocumentCodec.MONGOBD_DOCUMENT_ID);
-			}
-			return result;
-		} catch(SecurityException e) {
-			throw new ConversionException("Failed to generate projection Bson document while reading metadata class fields", e);
-		}
-	}
-
-	@Override
-	public SerializableFunction<ProjectionMetadata<?>, Projection> decode(final BsonReader reader, final DecoderContext decoderContext) {
-		// the filter expression is used in the queries, so it can only be
-		// encoded, never decoded
 		return null;
 	}
 

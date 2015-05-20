@@ -16,7 +16,7 @@ import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.lambdamatic.SerializablePredicate;
+import org.lambdamatic.mongodb.FilterExpression;
 import org.lambdamatic.mongodb.LambdamaticMongoCollection;
 import org.lambdamatic.mongodb.internal.codecs.BindingService;
 import org.lambdamatic.mongodb.internal.codecs.DocumentCodecProvider;
@@ -97,7 +97,7 @@ public class LambdamaticMongoCollectionImpl<T, QM extends QueryMetadata<T>, PM e
 	 * {@inheritDoc}
 	 */
 	@Override
-	public FindContext<T, PM> find(final SerializablePredicate<QM> filterExpression) {
+	public FindContext<T, PM> find(final FilterExpression<QM> filterExpression) {
 		final BsonDocument filterDocument = BsonDocumentWrapper.asBsonDocument(filterExpression, this.codecRegistry);
 		return new FindContextImpl<T, PM>(mongoCollection.find(filterDocument), this.codecRegistry);
 	}

@@ -20,7 +20,6 @@ import org.lambdamatic.SerializablePredicate;
 // db.test.insert({tags:[{name:"foo", score:1}, {name:"bar", score:2}]} )
 // db.test.find({"tags.name":"bar", "tags.score":{$gt:1}}, {"tags.$":1}) // find tag with 'name' == 'bar' OR 'score' > 1
 // and db.test.find({tags : { $elemMatch : { name : "foo", score : 1}}})
-
 public interface QueryArray<T> {
 
 	/**
@@ -35,27 +34,14 @@ public interface QueryArray<T> {
 
 	/**
 	 * Matches documents that contain an array field with at least one element that matches the specified query
-	 * criterium 
-	 * 
+	 * expression. 
 	 * @param expression
-	 *            the query criterium in the form of a lambda expression
+	 *            the query in the form of a lambda expression
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/elemMatch/#op._S_elemMatch">MongoDB
 	 *      documentation</a>
 	 */
 	@MongoOperation(MongoOperator.ELEMEMT_MATCH)
 	public boolean elementMatch(final SerializablePredicate<T> expression);
-
-	/**
-	 * Matches documents that contain an array field with at least one element that matches all the specified query
-	 * criteria
-	 * 
-	 * @param expressions
-	 *            the query criteria in the form of a lambda expression
-	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/elemMatch/#op._S_elemMatch">MongoDB
-	 *      documentation</a>
-	 */
-	@MongoOperation(MongoOperator.ELEMEMT_MATCH)
-	public boolean elementMatch(@SuppressWarnings("unchecked") final SerializablePredicate<T>... expressions);
 
 	/**
 	 * Matches any array with the number of elements specified by the argument.

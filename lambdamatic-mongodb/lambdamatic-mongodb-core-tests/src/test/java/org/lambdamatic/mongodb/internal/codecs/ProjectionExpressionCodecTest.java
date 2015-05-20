@@ -21,9 +21,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.lambdamatic.SerializableFunction;
+import org.lambdamatic.SerializableConsumer;
+import org.lambdamatic.mongodb.Projection;
 import org.lambdamatic.mongodb.internal.codecs.ProjectionExpressionCodec;
-import org.lambdamatic.mongodb.metadata.Projection;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;
@@ -64,22 +64,38 @@ public class ProjectionExpressionCodecTest {
 	public static void resetLoggerLevel() {
 		getCodecLogger().setLevel(previousLoggerLevel);
 	}
-	
+
 	@Parameters(name = "[{index}] {1}")
 	public static Object[][] data() {
 		return new Object[][] {
+				new Object[] { (SerializableConsumer<PFoo>) ((PFoo foo) -> Projection.include(foo.stringField)),
+						"{stringField: 1, _id: 0}" },
+				new Object[] { (SerializableConsumer<PFoo>) ((PFoo foo) -> Projection.include(foo.stringField, foo.id)),
+						"{stringField: 1, _id: 1}" },
 				new Object[] {
-						(SerializableFunction<PFoo, Projection>) ((PFoo foo) -> Projection.include(foo.stringField,
-								foo.location)), "{stringField: 1, location: 1, _id: 0}" },
+						(SerializableConsumer<PFoo>) ((PFoo foo) -> Projection.include(foo.stringField, foo.location)),
+						"{stringField: 1, location: 1, _id: 0}" },
+				new Object[] { (SerializableConsumer<PFoo>) ((PFoo foo) -> Projection.include(foo.id, foo.stringField,
+						foo.location)), "{stringField: 1, location: 1, _id: 1}" },
+				// @see http://docs.mongodb.org/manual/reference/operator/projection/elemMatch/
 				new Object[] {
-						(SerializableFunction<PFoo, Projection>) ((PFoo foo) -> Projection.include(foo.id,
-								foo.stringField, foo.location)), "{stringField: 1, location: 1, _id: 1}" }
+						(SerializableConsumer<PFoo>) ((PFoo foo) -> Projection.include(foo.id,
+								foo.barList.elementMatch(b -> b.stringField.equals("bar")), foo.location)),
+						"{barList: { $elemMatch: { stringField: 'bar' } }, location: 1, _id: 1}" },
+				new Object[] {
+						(SerializableConsumer<PFoo>) ((PFoo foo) -> Projection
+								.include(foo.barList.elementMatch(b -> b.stringField.equals("bar")), foo.location)),
+						"{barList: { $elemMatch: { stringField: 'bar' } }, location: 1, _id: 0}" },
+				new Object[] {
+						(SerializableConsumer<PFoo>) ((PFoo foo) -> Projection
+								.include(foo.barList.elementMatch(b -> b.stringField.equals("bar")))),
+						"{barList: { $elemMatch: { stringField: 'bar' } }, _id: 0}" },
 
 		};
 	}
 
 	@Parameter(0)
-	public SerializableFunction<ProjectionMetadata<?>,Projection> projectionExpression;
+	public SerializableConsumer<ProjectionMetadata<?>> projectionExpression;
 
 	@Parameter(1)
 	public String jsonString;
@@ -88,7 +104,7 @@ public class ProjectionExpressionCodecTest {
 	public void setupCodec() {
 		codec = new ProjectionExpressionCodec();
 	}
-	
+
 	@Test
 	public void shouldEncodeProjectionWithLogging() throws IOException, JSONException {
 		getCodecLogger().setLevel(Level.DEBUG);

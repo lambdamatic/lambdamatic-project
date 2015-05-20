@@ -14,6 +14,7 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.lambdamatic.SerializablePredicate;
+import org.lambdamatic.mongodb.FilterExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ public class FilterExpressionCodecProvider implements CodecProvider {
 	@Override
 	public <QM> Codec<QM> get(final Class<QM> clazz, final CodecRegistry registry) {
 		try {
-			if(Arrays.stream(clazz.getInterfaces()).anyMatch(i -> i.equals(SerializablePredicate.class))) {
+			if(Arrays.stream(clazz.getInterfaces()).anyMatch(i -> i.equals(FilterExpression.class))) {
 				return (Codec<QM>) new FilterExpressionCodec();
 			}
 		} catch (SecurityException | IllegalArgumentException e) {

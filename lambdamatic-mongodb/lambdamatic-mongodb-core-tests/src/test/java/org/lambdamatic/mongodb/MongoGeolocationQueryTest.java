@@ -17,14 +17,10 @@ import java.util.List;
 
 import org.assertj.core.api.Condition;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.lambdamatic.mongodb.annotations.Document;
-import org.lambdamatic.mongodb.testutils.DropMongoCollectionsRule;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 import org.lambdamatic.mongodb.types.geospatial.Polygon;
 
-import com.mongodb.MongoClient;
 import com.sample.Foo;
 import com.sample.Foo.FooBuilder;
 import com.sample.FooCollection;
@@ -35,17 +31,7 @@ import com.sample.FooCollection;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class MongoGeolocationQueryTest {
-
-	private static final String DATABASE_NAME = "lambdamatic-tests";
-
-	private static final String COLLECTION_NAME = ((Document) Foo.class.getAnnotation(Document.class)).collection();
-
-	private MongoClient mongoClient = new MongoClient();
-
-	@Rule
-	public DropMongoCollectionsRule collectionCleaning = new DropMongoCollectionsRule(mongoClient, DATABASE_NAME,
-			COLLECTION_NAME);
+public class MongoGeolocationQueryTest extends MongoBaseTest{
 
 	private FooCollection fooCollection;
 

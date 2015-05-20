@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.lambdamatic.SerializableFunction;
+import org.lambdamatic.SerializableConsumer;
 import org.lambdamatic.analyzer.ast.node.ArrayVariable;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.Expression;
@@ -34,12 +34,12 @@ import com.sample.model.TestPojo;
  * @author Xavier Coulon <xcoulon@redhat.com>
  */
 @RunWith(Parameterized.class)
-public class SerializableFunctionExpressionBytecodeAnalyzerTest {
+public class SerializableConsumerExpressionBytecodeAnalyzerTest {
 
 	private final LambdaExpressionAnalyzer analyzer = LambdaExpressionAnalyzer.getInstance();
 
 	private static final Logger LOGGER = LoggerFactory
-			.getLogger(SerializableFunctionExpressionBytecodeAnalyzerTest.class);
+			.getLogger(SerializableConsumerExpressionBytecodeAnalyzerTest.class);
 
 	@Rule
 	public TestWatcher watcher = new TestWatcher();
@@ -58,35 +58,35 @@ public class SerializableFunctionExpressionBytecodeAnalyzerTest {
 
 		return new Object[][] {
 				new Object[] {
-						(SerializableFunction<TestPojo, Object[]>) ((TestPojo t) -> ArrayUtil.toArray(t.stringValue,
+						(SerializableConsumer<TestPojo>) ((TestPojo t) -> ArrayUtil.toArray(t.stringValue,
 								t.dateValue)),
 				new MethodInvocation(new ClassLiteral(ArrayUtil.class), ArrayUtil_toArray,
 						new ArrayVariable(Object[].class, new FieldAccess(testPojo, "stringValue"),
 								new FieldAccess(testPojo, "dateValue"))) },
-				new Object[] { (SerializableFunction<TestPojo, Object[]>) ((TestPojo t) -> ArrayUtil.toArray(t.field)),
+				new Object[] { (SerializableConsumer<TestPojo>) ((TestPojo t) -> ArrayUtil.toArray(t.field)),
 						new MethodInvocation(new ClassLiteral(ArrayUtil.class), ArrayUtil_toArray,
 								new ArrayVariable(Object[].class, testPojo_dot_field)) },
 				new Object[] {
-						(SerializableFunction<TestPojo, Object[]>) ((TestPojo t) -> ArrayUtil.toArray(t.field,
+						(SerializableConsumer<TestPojo>) ((TestPojo t) -> ArrayUtil.toArray(t.field,
 								t.dateValue, t.elementList)),
 						new MethodInvocation(new ClassLiteral(ArrayUtil.class), ArrayUtil_toArray,
 								new ArrayVariable(Object[].class, testPojo_dot_field, testPojo_dot_dateValue,
 										testPojo_dot_elementList)) },
 				// Verify nested Lambda expression
 				new Object[] {
-						(SerializableFunction<TestPojo, Boolean>) ((TestPojo t) -> t
+						(SerializableConsumer<TestPojo>) ((TestPojo t) -> t
 								.elementMatch(e -> e.field.equals("foo"))),
 						new MethodInvocation(testPojo, TestPojo_elementMatch, e_dot_field_equals_foo) },
 				new Object[] {
-						(SerializableFunction<TestPojo, Boolean>) ((TestPojo t) -> t
+						(SerializableConsumer<TestPojo>) ((TestPojo t) -> t
 								.elementMatch(e -> e.field.equals(foo))),
 						new MethodInvocation(testPojo, TestPojo_elementMatch, e_dot_field_equals_foo) },
 				new Object[] {
-						(SerializableFunction<TestPojo, Boolean>) ((TestPojo t) -> t
+						(SerializableConsumer<TestPojo>) ((TestPojo t) -> t
 								.elementMatch(e -> e.field.equals(anotherPojo.getStringValue()))),
 						new MethodInvocation(testPojo, TestPojo_elementMatch, e_dot_field_equals_foo) },
 				new Object[] {
-						(SerializableFunction<TestPojo, Boolean>) ((TestPojo t) -> t
+						(SerializableConsumer<TestPojo>) ((TestPojo t) -> t
 								.elementMatch(e -> e.field.equals(anotherPojo.stringValue))),
 						new MethodInvocation(testPojo, TestPojo_elementMatch, e_dot_field_equals_foo) },
 
@@ -94,7 +94,7 @@ public class SerializableFunctionExpressionBytecodeAnalyzerTest {
 	}
 
 	@Parameter(value = 0)
-	public SerializableFunction<TestPojo, Object[]> expression;
+	public SerializableConsumer<TestPojo> expression;
 
 	@Parameter(value = 1)
 	public Expression expectation;

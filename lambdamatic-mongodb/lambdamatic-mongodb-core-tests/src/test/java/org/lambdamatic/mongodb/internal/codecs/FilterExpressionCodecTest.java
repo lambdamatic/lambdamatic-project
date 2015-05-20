@@ -182,8 +182,12 @@ public class FilterExpressionCodecTest {
 				},
 				// element match on array
 				new Object[]{
-						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringArray.elementMatch(e -> e.equals("foo"))),
-						"{location: { $geoWithin: { $geometry: {type: 'Polygon', coordinates: [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]] } } } }"
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.stringList.elementMatch(s -> s.greaterThan("bar") && s.lessThan("foo"))),
+						"{stringList: { $elemMatch: {$gt: 'bar', $lt: 'foo' }}}"
+				},
+				new Object[]{
+						(SerializablePredicate<QFoo>)((QFoo foo) -> foo.barList.elementMatch(b -> b.stringField.equals("foo"))),
+						"{barList: { $elemMatch: {stringField: 'foo' }}}"
 				},
 		};
 	}
@@ -205,7 +209,7 @@ public class FilterExpressionCodecTest {
 
 	private static Logger getCodecLogger() {
 		final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-		return lc.getLogger(FilterExpressionCodec.LOGGER_NAME);
+		return lc.getLogger(BaseQueryExpressionCodec.LOGGER_NAME);
 	}
 
 	@BeforeClass

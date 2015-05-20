@@ -8,7 +8,7 @@ import static org.lambdamatic.testutils.JavaMethods.TestPojo_elementMatch;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-import org.lambdamatic.SerializableFunction;
+import org.lambdamatic.SerializableConsumer;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
@@ -22,7 +22,7 @@ import com.sample.model.TestPojo;
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
  */
-public class SerializableFunctionBytecodeAnalyzeCacheTest {
+public class SerializableConsumerBytecodeAnalyzeCacheTest {
 
 	@Test
 	public void shouldNotAnalyzeTwice() throws NoSuchMethodException, SecurityException {
@@ -90,7 +90,7 @@ public class SerializableFunctionBytecodeAnalyzeCacheTest {
 	
 	private LambdaExpression getLambdaExpression() {
 		// given
-		final SerializableFunction<TestPojo, Boolean> expr = (SerializableFunction<TestPojo, Boolean>) ((
+		final SerializableConsumer<TestPojo> expr = (SerializableConsumer<TestPojo>) ((
 				TestPojo t) -> t.elementMatch(e -> e.field.equals("john") || e.field.equals("jack")));
 		// when
 		return LambdaExpressionAnalyzer.getInstance().analyzeExpression(expr);
@@ -98,7 +98,7 @@ public class SerializableFunctionBytecodeAnalyzeCacheTest {
 
 	private LambdaExpression getLambdaExpression(final String stringField1, final String stringField2) {
 		// given
-		final SerializableFunction<TestPojo, Boolean> expr = (SerializableFunction<TestPojo, Boolean>) ((
+		final SerializableConsumer<TestPojo> expr = (SerializableConsumer<TestPojo>) ((
 				TestPojo t) -> t.elementMatch(e -> e.field.equals(stringField1) || e.field.equals(stringField2)));
 		// when
 		return LambdaExpressionAnalyzer.getInstance().analyzeExpression(expr);

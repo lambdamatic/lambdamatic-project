@@ -13,7 +13,8 @@ import java.util.Arrays;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.lambdamatic.SerializableFunction;
+import org.lambdamatic.SerializableConsumer;
+import org.lambdamatic.mongodb.ProjectionExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class ProjectionExpressionCodecProvider implements CodecProvider {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProjectionExpressionCodecProvider.class);
 	
 	/**
-	 * Returns whether the given clazz implements the {@link SerializableFunction} interface, in which case it can return an
+	 * Returns whether the given clazz implements the {@link SerializableBiFunction} interface, in which case it can return an
 	 * instance of {@link ProjectionExpressionCodec}. 
 	 * 
 	 * @see org.bson.codecs.configuration.CodecProvider#get(java.lang.Class,
@@ -37,11 +38,11 @@ public class ProjectionExpressionCodecProvider implements CodecProvider {
 	@Override
 	public <PM> Codec<PM> get(final Class<PM> clazz, final CodecRegistry registry) {
 		try {
-			if(Arrays.stream(clazz.getInterfaces()).anyMatch(i -> i.equals(SerializableFunction.class))) {
+			if(Arrays.stream(clazz.getInterfaces()).anyMatch(i -> i.equals(ProjectionExpression.class))) {
 				return (Codec<PM>) new ProjectionExpressionCodec();
 			}
 		} catch (SecurityException | IllegalArgumentException e) {
-			LOGGER.error("Failed to check if class '{}' is an instance of ''", e, clazz.getName(), SerializableFunction.class.getName());
+			LOGGER.error("Failed to check if class '{}' is an instance of ''", e, clazz.getName(), SerializableConsumer.class.getName());
 		}
 		return null;
 	}

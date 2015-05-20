@@ -16,6 +16,6 @@ package org.lambdamatic.mongodb.metadata;
  *
  */
 public interface ProjectionMetadata<T> {
-
+	
 }
 

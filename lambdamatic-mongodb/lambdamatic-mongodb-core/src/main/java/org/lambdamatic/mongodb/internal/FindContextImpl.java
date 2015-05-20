@@ -10,8 +10,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonDocumentWrapper;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.lambdamatic.SerializableFunction;
-import org.lambdamatic.mongodb.metadata.Projection;
+import org.lambdamatic.mongodb.ProjectionExpression;
 import org.lambdamatic.mongodb.query.context.FindContext;
 import org.lambdamatic.mongodb.query.context.FindTerminalContext;
 
@@ -42,7 +41,7 @@ public class FindContextImpl<T, PM> implements FindContext<T, PM> {
 	}
 
 	@Override
-	public FindTerminalContext<T> projection(final SerializableFunction<PM, Projection> projectionExpression) {
+	public FindTerminalContext<T> projection(final ProjectionExpression<PM> projectionExpression) {
 		final BsonDocument projectionDocument = BsonDocumentWrapper.asBsonDocument(projectionExpression, codecRegistry);
 		find.projection(projectionDocument);
 		return this;

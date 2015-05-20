@@ -7,7 +7,7 @@ import static org.lambdamatic.testutils.JavaMethods.TestPojo_elementMatch;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.lambdamatic.SerializableFunction;
+import org.lambdamatic.SerializableConsumer;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
@@ -35,7 +35,7 @@ public class IsolatedLambdaBytecodeAnalyzerTest {
 	public void shouldParseExpression() throws IOException, NoSuchMethodException, SecurityException {
 		// given
 		final OtherTestPojo otherPojo = new OtherTestPojo();
-		final SerializableFunction<TestPojo, Boolean> expression = (SerializableFunction<TestPojo, Boolean>) ((
+		final SerializableConsumer<TestPojo> expression = (SerializableConsumer<TestPojo>) ((
 				TestPojo t) -> t.elementMatch(e -> e.field.equals(otherPojo.getStringValue())));
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeExpression(expression);
