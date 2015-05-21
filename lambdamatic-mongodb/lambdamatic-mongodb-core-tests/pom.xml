@@ -19,10 +19,9 @@
 			<groupId>org.lambdamatic</groupId>
 			<artifactId>lambdamatic-mongodb-metadata-generator</artifactId>
 			<version>${project.version}</version>
-      <optional>true</optional>
+			<optional>true</optional>
 		</dependency>
 		<!-- Test dependencies -->
-
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -64,13 +63,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
+				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-					<!-- see http://jira.codehaus.org/browse/MCOMPILER-236 
-        	<useIncrementalCompilation>false</useIncrementalCompilation>
-        -->
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<!-- Prevent build failures on Trqvis CI - see http://jira.codehaus.org/browse/MCOMPILER-236 -->
+					<useIncrementalCompilation>false</useIncrementalCompilation>
+
 				</configuration>
 				<!-- see http://jira.codehaus.org/browse/MCOMPILER-97 <executions> <execution> 
 					<id>default-compile</id> <configuration> <compilerArgument>-proc:none</compilerArgument> 

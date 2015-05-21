@@ -9,10 +9,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -65,12 +66,8 @@ public class LambdaExpressionAnalyzer {
 	/** {@link Expression} indexed by their functional implementation className.methodName. */
 	private final Map<String, LambdaExpression> cache = new HashMap<>();
 
-	/** Number of times when the cache was hit. */
-	private AtomicInteger cacheHits = new AtomicInteger();
-
-	/** Number of times when the cache was missed. */
-	private AtomicInteger cacheMisses = new AtomicInteger();
-
+	private final Set<LambdaExpressionAnalyzerListener> listeners = new HashSet<LambdaExpressionAnalyzerListener>();
+	
 	/**
 	 * Private constructor of the singleton
 	 */
@@ -78,23 +75,32 @@ public class LambdaExpressionAnalyzer {
 	}
 
 	/**
+	 * Adds the given {@link LambdaExpressionAnalyzerListener} to the list of listeners to be notified when a Lambda
+	 * Expression is analyzed. Has no effect if the same instance is already registered.
+	 * 
+	 * @param listener
+	 *            the listener to add.
+	 */
+	public void addListener(final LambdaExpressionAnalyzerListener listener) {
+		this.listeners.add(listener);
+	}
+	
+	/**
+	 * Removes the given {@link LambdaExpressionAnalyzerListener} from the list of listeners to be notified when a Lambda
+	 * Expression is analyzed. Has no effect if the same instance ss not registered.
+	 * 
+	 * @param listener
+	 *            the listener to remove.
+	 */
+	public void removeListener(final LambdaExpressionAnalyzerListener listener) {
+		this.listeners.remove(listener);
+	}
+	
+	/**
 	 * @return the singleton instance
 	 */
 	public static LambdaExpressionAnalyzer getInstance() {
 		return instance;
-	}
-
-	public void resetHitCounters() {
-		this.cacheHits.set(0);
-		this.cacheMisses.set(0);
-	}
-
-	public int getCacheHits() {
-		return cacheHits.get();
-	}
-
-	public int getCacheMisses() {
-		return cacheMisses.get();
 	}
 
 	/**
@@ -184,9 +190,9 @@ public class LambdaExpressionAnalyzer {
 			final String methodImplementationId = serializedLambdaInfo.getImplMethodId();
 			synchronized (methodImplementationId) {
 				if (cache.containsKey(methodImplementationId)) {
-					this.cacheHits.incrementAndGet();
+					this.listeners.stream().forEach(l -> l.cacheHit(methodImplementationId));
 				} else {
-					this.cacheMisses.incrementAndGet();
+					this.listeners.stream().forEach(l -> l.cacheMissed(methodImplementationId));
 					final LambdaExpression rawExpression = analyzeByteCode(serializedLambdaInfo);
 					cache.put(methodImplementationId, rawExpression);
 				}

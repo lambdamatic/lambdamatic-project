@@ -33,6 +33,10 @@ public class ExpressionStatement extends Statement {
 		return expression;
 	}
 
+	@Override
+	public String toString() {
+		return expression.toString();
+	}
 	/**
 	 * {@inheritDoc}
 	 * @see java.lang.Object#hashCode()

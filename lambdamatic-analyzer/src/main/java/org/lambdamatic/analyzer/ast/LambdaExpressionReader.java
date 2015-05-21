@@ -267,12 +267,11 @@ public class LambdaExpressionReader {
 				final LambdaExpression lambdaExpression = LambdaExpressionAnalyzer.getInstance()
 						.analyzeExpression(lambdaInfo);
 				expressionStack.add(lambdaExpression);
-				// throw new AnalyzeException("Nested InvokeDynamic instruction is not supported yet. Should analyze " +
-				// handle.getOwner() + "." + handle.getName() + " (desc=" + handle.getDesc() + ")");
 				break;
 			case AbstractInsnNode.JUMP_INSN:
 				statements.addAll(readJumpInstruction(insnCursor, expressionStack, capturedArguments, localVariables));
-				break;
+				//break;
+				return statements;
 			case AbstractInsnNode.INT_INSN:
 				readIntInstruction((IntInsnNode) currentInstruction, expressionStack, localVariables);
 				break;
@@ -388,13 +387,13 @@ public class LambdaExpressionReader {
 		case Opcodes.ARETURN:
 		case Opcodes.IRETURN:
 			statements.add(new ReturnStatement(expressionStack.pop()));
-			break;
+			return statements;
 		case Opcodes.RETURN:
 			// any previous expression in the stack should be wrapped into statements, but the 
 			// empty 'return' statement can be ignored because it does not carry any semantic
 			expressionStack.stream().forEach(e -> statements.add(new ExpressionStatement(e)));
 			//statements.add(new ReturnStatement(null));
-			break;
+			return statements;
 		case Opcodes.ACONST_NULL:
 			expressionStack.add(new NullLiteral());
 			break;
@@ -697,11 +696,11 @@ public class LambdaExpressionReader {
 		final LabelNode jumpLabel = jumpInsnNode.label;
 		final InsnCursor jumpInstructionCursor = insnCursor.duplicate().move(jumpLabel.getLabel());
 		final Expression comparisonExpression = getComparisonExpression(jumpInsnNode, expressionStack);
-		final List<Statement> thenStatement = (List<Statement>) readStatements(jumpInstructionCursor, expressionStack,
+		final List<Statement> thenStatements = (List<Statement>) readStatements(jumpInstructionCursor, expressionStack,
 				capturedArguments, localVariables);
-		final List<Statement> elseStatement = (List<Statement>) readStatements(insnCursor.next(), expressionStack,
+		final List<Statement> elseStatements = (List<Statement>) readStatements(insnCursor.next(), expressionStack,
 				capturedArguments, localVariables);
-		return new IfStatement(comparisonExpression, thenStatement, elseStatement);
+		return new IfStatement(comparisonExpression, thenStatements, elseStatements);
 	}
 
 	/**

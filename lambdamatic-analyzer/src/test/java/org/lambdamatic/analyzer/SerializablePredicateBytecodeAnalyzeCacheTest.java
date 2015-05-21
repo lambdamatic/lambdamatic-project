@@ -7,6 +7,8 @@ import static org.lambdamatic.testutils.JavaMethods.Object_equals;
 import static org.lambdamatic.testutils.JavaMethods.TestPojo_getStringValue;
 
 import org.assertj.core.api.Assertions;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
@@ -18,16 +20,32 @@ import org.lambdamatic.analyzer.ast.node.StringLiteral;
 
 import com.sample.model.TestPojo;
 
+import net.jcip.annotations.NotThreadSafe;
+
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
  */
+@NotThreadSafe
 public class SerializablePredicateBytecodeAnalyzeCacheTest {
 
+	private LambdaExpressionAnalyzerListenerImpl listener;
+	private LambdaExpressionAnalyzer lambdaAnalyzer;
+
+	@Before
+	public void registerListener() {
+		listener = new LambdaExpressionAnalyzerListenerImpl();
+		lambdaAnalyzer = LambdaExpressionAnalyzer.getInstance();
+		lambdaAnalyzer.addListener(listener);
+	}
+	
+	@After
+	public void unregisterListener() {
+		lambdaAnalyzer.removeListener(listener);
+	}
+	
 	@Test
 	public void shouldNotAnalyzeTwice() throws NoSuchMethodException, SecurityException {
 		// given
-		final LambdaExpressionAnalyzer lambdaAnalyzer = LambdaExpressionAnalyzer.getInstance();
-		lambdaAnalyzer.resetHitCounters();
 		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation getStringValue = new MethodInvocation(testPojo, TestPojo_getStringValue);
 		// when (first call) 
@@ -37,10 +55,10 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack"))
 				));
-		Assertions.assertThat(LambdaExpressionAnalyzer.getInstance().getCacheMisses()).isEqualTo(1);
-		Assertions.assertThat(LambdaExpressionAnalyzer.getInstance().getCacheHits()).isEqualTo(0);
+		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(1);
+		Assertions.assertThat(listener.getCacheHits()).isEqualTo(0);
 		// given
-		lambdaAnalyzer.resetHitCounters();
+		listener.resetHitCounters();
 		// when (second call)
 		final LambdaExpression lambdaExpression2 = getLambdaExpression();
 		// then 
@@ -48,15 +66,13 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack"))
 				));
-		Assertions.assertThat(LambdaExpressionAnalyzer.getInstance().getCacheMisses()).isEqualTo(0);
-		Assertions.assertThat(LambdaExpressionAnalyzer.getInstance().getCacheHits()).isEqualTo(1);
+		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(0);
+		Assertions.assertThat(listener.getCacheHits()).isEqualTo(1);
 	}
 
 	@Test
 	public void shouldNotAnalyzeTwiceWithCapturedArguments() throws NoSuchMethodException, SecurityException {
 		// given
-		final LambdaExpressionAnalyzer lambdaAnalyzer = LambdaExpressionAnalyzer.getInstance();
-		lambdaAnalyzer.resetHitCounters();
 		final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation getStringValue = new MethodInvocation(testPojo, TestPojo_getStringValue);
 		// when (first call) 
@@ -66,10 +82,10 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john1")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack1"))
 				));
-		Assertions.assertThat(LambdaExpressionAnalyzer.getInstance().getCacheMisses()).isEqualTo(1);
-		Assertions.assertThat(LambdaExpressionAnalyzer.getInstance().getCacheHits()).isEqualTo(0);
+		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(1);
+		Assertions.assertThat(listener.getCacheHits()).isEqualTo(0);
 		// given
-		lambdaAnalyzer.resetHitCounters();
+		listener.resetHitCounters();
 		// when (second call)
 		final LambdaExpression lambdaExpression2 = getLambdaExpression("john2", "jack2");
 		// then 
@@ -77,8 +93,8 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john2")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack2"))
 				));
-		Assertions.assertThat(LambdaExpressionAnalyzer.getInstance().getCacheMisses()).isEqualTo(0);
-		Assertions.assertThat(LambdaExpressionAnalyzer.getInstance().getCacheHits()).isEqualTo(1);
+		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(0);
+		Assertions.assertThat(listener.getCacheHits()).isEqualTo(1);
 		
 	}
 	

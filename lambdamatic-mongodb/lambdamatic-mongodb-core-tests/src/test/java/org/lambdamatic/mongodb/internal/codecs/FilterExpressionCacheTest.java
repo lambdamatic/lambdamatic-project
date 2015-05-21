@@ -14,9 +14,12 @@ import org.bson.BsonWriter;
 import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonWriter;
 import org.json.JSONException;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.lambdamatic.SerializablePredicate;
 import org.lambdamatic.analyzer.LambdaExpressionAnalyzer;
+import org.lambdamatic.analyzer.LambdaExpressionAnalyzerListenerImpl;
 import org.lambdamatic.mongodb.internal.codecs.FilterExpressionCodec;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.LoggerFactory;
@@ -34,17 +37,30 @@ public class FilterExpressionCacheTest {
 
 	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FilterExpressionCodecTest.class);
 
+	private LambdaExpressionAnalyzerListenerImpl listener;
+	private LambdaExpressionAnalyzer lambdaAnalyzer;
+
+	@Before
+	public void registerListener() {
+		listener = new LambdaExpressionAnalyzerListenerImpl();
+		lambdaAnalyzer = LambdaExpressionAnalyzer.getInstance();
+		lambdaAnalyzer.addListener(listener);
+	}
+	
+	@After
+	public void unregisterListener() {
+		lambdaAnalyzer.removeListener(listener);
+	}
+	
 	@Test
 	public void shouldAnalyzeOnceAndInjectValueTwice() throws UnsupportedEncodingException, IOException, JSONException {
 		// given
-		final LambdaExpressionAnalyzer analyzer = LambdaExpressionAnalyzer.getInstance();
-		analyzer.resetHitCounters();
 		// when
 		performAndAssertConvertion("John", 42, EnumFoo.FOO);
 		performAndAssertConvertion("Jack", 43, EnumFoo.BAR);
 		// then
-		Assertions.assertThat(analyzer.getCacheMisses()).isEqualTo(1);
-		Assertions.assertThat(analyzer.getCacheHits()).isEqualTo(1);
+		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(1);
+		Assertions.assertThat(listener.getCacheHits()).isEqualTo(1);
 	}
 
 	private void performAndAssertConvertion(final String stringField, final int primitiveIntField, final EnumFoo enumFoo)
