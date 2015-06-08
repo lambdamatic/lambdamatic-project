@@ -56,7 +56,7 @@ public class ReturnTruePathFilter extends StatementVisitor {
 	}
 
 	@Override
-	public boolean visitExpressionStatement(ExpressionStatement expression) {
+	public boolean visitExpressionStatement(final ExpressionStatement expression) {
 		// no need to visit child nodes of an Expression here.
 		return false;
 	}

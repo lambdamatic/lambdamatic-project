@@ -211,11 +211,12 @@ public class LambdamaticAnnotationProcessorTest {
 	public void shouldProcessSingleDomainClassAndGenerateCollectionAndCollectionProducer()
 			throws URISyntaxException, ClassNotFoundException, NoSuchFieldException, SecurityException, IOException {
 		// verification
+		final Class<?> fooCollectionClass = Class.forName("com.sample.FooCollection");
 		final Class<?> queryFooClass = Class.forName("com.sample.QFoo");
 		final Class<?> projectionFooClass = Class.forName("com.sample.PFoo");
-		final Class<?> fooCollectionClass = Class.forName("com.sample.FooCollection");
+		final Class<?> updateFooClass = Class.forName("com.sample.UFoo");
 		ClassAssertion.assertThat(fooCollectionClass).isExtending(LambdamaticMongoCollectionImpl.class, Foo.class,
-				queryFooClass, projectionFooClass);
+				queryFooClass, projectionFooClass, updateFooClass);
 		// should it rather provide a 'users' public field instead of a
 		// getUsers() method ?
 		final Class<?> fooCollectionProducerClass = Class.forName("com.sample.FooCollectionProducer");
@@ -231,19 +232,21 @@ public class LambdamaticAnnotationProcessorTest {
 	public void shouldProcessAllDomainClassesAndGenerateCollectionAndCollectionProducer()
 			throws URISyntaxException, ClassNotFoundException, NoSuchFieldException, SecurityException, IOException {
 		// verification
+		final Class<?> fooCollectionClass = Class.forName("com.sample.FooCollection");
 		final Class<?> queryFooClass = Class.forName("com.sample.QFoo");
 		final Class<?> projectionFooClass = Class.forName("com.sample.PFoo");
-		final Class<?> fooCollectionClass = Class.forName("com.sample.FooCollection");
+		final Class<?> updateFooClass = Class.forName("com.sample.UFoo");
 		ClassAssertion.assertThat(fooCollectionClass).isExtending(LambdamaticMongoCollectionImpl.class, Foo.class,
-				queryFooClass, projectionFooClass);
+				queryFooClass, projectionFooClass, updateFooClass);
 		final Class<?> fooCollectionProducerClass = Class.forName("com.sample.FooCollectionProducer");
 		ClassAssertion.assertThat(fooCollectionProducerClass).hasMethod("getFooCollection", MongoClient.class,
 				MongoClientConfiguration.class);
+		final Class<?> bazCollectionClass = Class.forName("com.sample.BazCollection");
 		final Class<?> queryBazClass = Class.forName("com.sample.QBaz");
 		final Class<?> projectionBazClass = Class.forName("com.sample.PBaz");
-		final Class<?> bazCollectionClass = Class.forName("com.sample.BazCollection");
+		final Class<?> updateBazClass = Class.forName("com.sample.UBaz");
 		ClassAssertion.assertThat(bazCollectionClass).isExtending(LambdamaticMongoCollectionImpl.class, Baz.class,
-				queryBazClass, projectionBazClass);
+				queryBazClass, projectionBazClass, updateBazClass);
 		final Class<?> bazCollectionProducerClass = Class.forName("com.sample.BazCollectionProducer");
 		ClassAssertion.assertThat(bazCollectionProducerClass).hasMethod("getBazCollection", MongoClient.class,
 				MongoClientConfiguration.class);

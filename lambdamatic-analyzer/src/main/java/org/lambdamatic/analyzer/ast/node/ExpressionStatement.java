@@ -8,17 +8,19 @@ package org.lambdamatic.analyzer.ast.node;
  * @author xcoulon
  *
  */
-public class ExpressionStatement extends Statement {
+public class ExpressionStatement extends SimpleStatement {
 	
-	/** The actual Expression.*/
-	private final Expression expression;
-
 	/**
 	 * Full constructor
 	 * @param expression The actual Expression.
 	 */
 	public ExpressionStatement(final Expression expression) {
-		this.expression = expression;
+		super(expression);
+	}
+	
+	@Override
+	public ExpressionStatement duplicate() {
+		return new ExpressionStatement(getExpression().duplicate());
 	}
 
 	@Override
@@ -26,16 +28,9 @@ public class ExpressionStatement extends Statement {
 		return StatementType.EXPRESSION_STMT;
 	}
 
-	/**
-	 * @return the actuall expression
-	 */
-	public Expression getExpression() {
-		return expression;
-	}
-
 	@Override
 	public String toString() {
-		return expression.toString();
+		return expression.toString() + ';';
 	}
 	/**
 	 * {@inheritDoc}

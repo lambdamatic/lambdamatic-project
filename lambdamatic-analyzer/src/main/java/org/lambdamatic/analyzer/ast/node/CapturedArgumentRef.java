@@ -118,16 +118,6 @@ public class CapturedArgumentRef extends Expression {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#inverse()
-	 */
-	@Override
-	public Expression inverse() {
-		throw new UnsupportedOperationException(this.getClass().getName() + " does not support inversion.");
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#canBeInverted()
 	 */
 	@Override

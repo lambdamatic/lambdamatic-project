@@ -4,15 +4,15 @@
 package org.lambdamatic.analyzer.ast.node;
 
 /**
- * Abstract base class of AST nodes that represent (bytecode) statements.
+ * Abstract base class of AST nodes that represent the bytecode statements.
  *
- * @author xcoulon
+ * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public abstract class Statement extends ASTNode {
 
 	public enum StatementType {
-		EXPRESSION_STMT, IF_STMT, RETURN_STMT; 
+		EXPRESSION_STMT, CONTROL_FLOW_STMT, RETURN_STMT; 
 	}
 
 	/** The parent statement in the AST, or null if this statement is the root of the AST.*/
@@ -43,6 +43,11 @@ public abstract class Statement extends ASTNode {
 	public void accept(final StatementVisitor visitor) {
 		visitor.visit(this);
 	}
+
+	/**
+	 * @return a copy of this {@link Statement}
+	 */
+	public abstract Statement duplicate();
 
 	
 }

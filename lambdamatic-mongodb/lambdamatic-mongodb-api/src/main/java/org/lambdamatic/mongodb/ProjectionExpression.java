@@ -14,6 +14,6 @@ import org.lambdamatic.mongodb.metadata.ProjectionField;
  *
  */
 @FunctionalInterface
-public interface ProjectionExpression<T> extends SerializableConsumer<T> {
+public interface ProjectionExpression<DomainType> extends SerializableConsumer<DomainType> {
 	
 }

@@ -15,7 +15,7 @@ package org.lambdamatic.mongodb.metadata;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public interface QueryMetadata<T> {
+public interface QueryMetadata<DomainType> {
 
 }
 

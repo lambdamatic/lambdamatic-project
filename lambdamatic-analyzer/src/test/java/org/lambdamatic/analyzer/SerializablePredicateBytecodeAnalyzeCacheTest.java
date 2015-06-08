@@ -16,6 +16,7 @@ import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
+import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
 
 import com.sample.model.TestPojo;
@@ -51,10 +52,10 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 		// when (first call) 
 		final LambdaExpression lambdaExpression1 = getLambdaExpression();
 		// then 
-		Assertions.assertThat(lambdaExpression1.getExpression()).isEqualTo(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
+		Assertions.assertThat(lambdaExpression1.getBody()).containsExactly(new ReturnStatement(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack"))
-				));
+				)));
 		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(1);
 		Assertions.assertThat(listener.getCacheHits()).isEqualTo(0);
 		// given
@@ -62,10 +63,10 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 		// when (second call)
 		final LambdaExpression lambdaExpression2 = getLambdaExpression();
 		// then 
-		Assertions.assertThat(lambdaExpression2.getExpression()).isEqualTo(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
+		Assertions.assertThat(lambdaExpression2.getBody()).containsExactly(new ReturnStatement(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack"))
-				));
+				)));
 		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(0);
 		Assertions.assertThat(listener.getCacheHits()).isEqualTo(1);
 	}
@@ -78,10 +79,10 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 		// when (first call) 
 		final LambdaExpression lambdaExpression1 = getLambdaExpression("john1", "jack1");
 		// then 
-		Assertions.assertThat(lambdaExpression1.getExpression()).isEqualTo(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
+		Assertions.assertThat(lambdaExpression1.getBody()).containsExactly(new ReturnStatement(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john1")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack1"))
-				));
+				)));
 		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(1);
 		Assertions.assertThat(listener.getCacheHits()).isEqualTo(0);
 		// given
@@ -89,10 +90,10 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 		// when (second call)
 		final LambdaExpression lambdaExpression2 = getLambdaExpression("john2", "jack2");
 		// then 
-		Assertions.assertThat(lambdaExpression2.getExpression()).isEqualTo(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
+		Assertions.assertThat(lambdaExpression2.getBody()).containsExactly(new ReturnStatement(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john2")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack2"))
-				));
+				)));
 		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(0);
 		Assertions.assertThat(listener.getCacheHits()).isEqualTo(1);
 		

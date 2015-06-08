@@ -22,14 +22,14 @@ import org.lambdamatic.analyzer.ast.ExpressionSanitizer;
 import org.lambdamatic.analyzer.ast.LambdaExpressionReader;
 import org.lambdamatic.analyzer.ast.ReturnTruePathFilter;
 import org.lambdamatic.analyzer.ast.SerializedLambdaInfo;
+import org.lambdamatic.analyzer.ast.StatementExpressionsDelegateVisitor;
 import org.lambdamatic.analyzer.ast.node.ASTNodeUtils;
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
+import org.lambdamatic.analyzer.ast.node.ControlFlowStatement;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
-import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitorUtil;
-import org.lambdamatic.analyzer.ast.node.IfStatement;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
@@ -67,7 +67,7 @@ public class LambdaExpressionAnalyzer {
 	private final Map<String, LambdaExpression> cache = new HashMap<>();
 
 	private final Set<LambdaExpressionAnalyzerListener> listeners = new HashSet<LambdaExpressionAnalyzerListener>();
-	
+
 	/**
 	 * Private constructor of the singleton
 	 */
@@ -84,10 +84,10 @@ public class LambdaExpressionAnalyzer {
 	public void addListener(final LambdaExpressionAnalyzerListener listener) {
 		this.listeners.add(listener);
 	}
-	
+
 	/**
-	 * Removes the given {@link LambdaExpressionAnalyzerListener} from the list of listeners to be notified when a Lambda
-	 * Expression is analyzed. Has no effect if the same instance ss not registered.
+	 * Removes the given {@link LambdaExpressionAnalyzerListener} from the list of listeners to be notified when a
+	 * Lambda Expression is analyzed. Has no effect if the same instance ss not registered.
 	 * 
 	 * @param listener
 	 *            the listener to remove.
@@ -95,7 +95,7 @@ public class LambdaExpressionAnalyzer {
 	public void removeListener(final LambdaExpressionAnalyzerListener listener) {
 		this.listeners.remove(listener);
 	}
-	
+
 	/**
 	 * @return the singleton instance
 	 */
@@ -171,9 +171,9 @@ public class LambdaExpressionAnalyzer {
 	public LambdaExpression analyzeExpression(final Object lambdaExpression) throws AnalyzeException {
 		final SerializedLambdaInfo lambdaInfo = getSerializedLambdaInfo(lambdaExpression);
 		final LambdaExpression rawExpression = analyzeExpression(lambdaInfo);
-		final Expression resultExpression = evaluateCapturedArguments(rawExpression.getExpression(),
+		final List<Statement> result = evaluateCapturedArguments(rawExpression.getBody(),
 				lambdaInfo.getCapturedArguments());
-		return new LambdaExpression(resultExpression, rawExpression.getArgumentType(), rawExpression.getArgumentName());
+		return new LambdaExpression(result, rawExpression.getArgumentType(), rawExpression.getArgumentName());
 	}
 
 	/**
@@ -220,38 +220,47 @@ public class LambdaExpressionAnalyzer {
 		final LambdaExpressionReader lambdaExpressionReader = new LambdaExpressionReader();
 		final Pair<List<Statement>, List<LocalVariable>> bytecode = lambdaExpressionReader.readBytecodeStatement(lambdaInfo);
 		final List<LocalVariable> lambdaExpressionArguments = bytecode.getRight();
-		final List<Statement> lambdaStatements = bytecode.getLeft();
-		// FIXME: support multiple statements, iterate on each one to thinOut/simplify
-		final Expression thinedOutExpression = thinOut(lambdaStatements.get(0));
-		final Expression simplifiedExpression = simplifyExpression(thinedOutExpression);
-		final Expression processedExpression = processMethodCalls(simplifiedExpression);
+		final List<Statement> lambdaExpressionStatements = bytecode.getLeft();
+		final List<Statement> processedBlock = lambdaExpressionStatements.stream().map(s -> thinOut(s))
+				.map(s -> simplify(s)).collect(Collectors.toList());
 		final LocalVariable lambdaExpressionArgument = lambdaExpressionArguments.get(0);
-		return new LambdaExpression(processedExpression, lambdaExpressionArgument.getJavaType(), lambdaExpressionArgument.getName());
+		return new LambdaExpression(processedBlock, lambdaExpressionArgument.getJavaType(),
+				lambdaExpressionArgument.getName());
 	}
 
-	/**
-	 * @param processedExpression
-	 * @return
-	 */
-	private Expression simplifyExpression(final Expression processedExpression) {
-		if (processedExpression.getExpressionType() == ExpressionType.INFIX) {
-			final InfixExpression infixExpression = (InfixExpression) processedExpression;
-			final Expression simplifiedExpression = infixExpression.simplify();
-			return simplifiedExpression;
+	private Statement simplify(final Statement statement) {
+		switch (statement.getStatementType()) {
+		case CONTROL_FLOW_STMT:
+			final ControlFlowStatement controlFlowStmt = (ControlFlowStatement) statement;
+			final Expression simplifiedControlFlowExpression = simplify(controlFlowStmt.getControlFlowExpression());
+			final List<Statement> simplifiedThenStmts = controlFlowStmt.getThenStatements().stream().map(s -> simplify(s)).collect(Collectors.toList());
+			final List<Statement> simplifiedElseStmts = controlFlowStmt.getElseStatements().stream().map(s -> simplify(s)).collect(Collectors.toList());
+			return new ControlFlowStatement(simplifiedControlFlowExpression, simplifiedThenStmts, simplifiedElseStmts);
+		case EXPRESSION_STMT:
+			final ExpressionStatement expressionStmt = (ExpressionStatement) statement;
+			final Expression simplifiedExpression = simplify(expressionStmt.getExpression());
+			return new ExpressionStatement(simplifiedExpression);
+		case RETURN_STMT:
+			final ReturnStatement returnStmt = (ReturnStatement) statement;
+			final Expression simplifiedReturnExpression = simplify(returnStmt.getExpression());
+			return new ReturnStatement(simplifiedReturnExpression);
+		default:
+			throw new AnalyzeException("Unexpected statement type to simplify: " + statement.getStatementType());
 		}
-		return processedExpression;
 	}
 
 	/**
-	 * Performs the method calls on the {@link CapturedArgument}s wherever they would appear in the given
-	 * {@link Expression}.
-	 * 
 	 * @param expression
-	 *            the original {@link Expression}
-	 * @return the equivalent expression, where method calls on {@link CapturedArgument}s have been replaced with their
-	 *         actual values.
+	 *            the {@link Expression} to simplify
+	 * @return a simplified {@link Expression} if the given one is an {@link ExpressionType#INFIX}, otherwise returns
+	 *         the given {@link Expression}.
 	 */
-	private Expression processMethodCalls(final Expression expression) {
+	private Expression simplify(final Expression expression) {
+		if (expression.getExpressionType() == ExpressionType.INFIX) {
+			final InfixExpression infixExpression = (InfixExpression) expression;
+			final Expression simplifiedExpression = infixExpression.simplify();
+			return ExpressionVisitorUtil.visit(simplifiedExpression, new ExpressionSanitizer());
+		}
 		return ExpressionVisitorUtil.visit(expression, new ExpressionSanitizer());
 	}
 
@@ -266,17 +275,19 @@ public class LambdaExpressionAnalyzer {
 	 * @return the equivalent expression, where method calls on {@link CapturedArgument}s have been replaced with their
 	 *         actual values.
 	 */
-	public static Expression evaluateCapturedArguments(final Expression sourceExpression,
+	public static List<Statement> evaluateCapturedArguments(final List<Statement> statements,
 			final List<CapturedArgument> capturedArguments) {
 		// nothing to process
 		if (capturedArguments.isEmpty()) {
-			return sourceExpression;
+			return statements;
 		} else {
 			// retrieve the captured arguments from the given serializedLambda
 			final List<Object> capturedArgValues = capturedArguments.stream().map(a -> a.getValue())
 					.collect(Collectors.toList());
-			final ExpressionVisitor visitor = new CapturedArgumentsEvaluator(capturedArgValues);
-			return ExpressionVisitorUtil.visit(sourceExpression, visitor);
+			statements.stream().forEach(s ->s.accept(new StatementExpressionsDelegateVisitor(new CapturedArgumentsEvaluator(capturedArgValues))));
+			// final StatementVisitor visitor = new CapturedArgumentsEvaluator(capturedArgValues);
+			// return ExpressionVisitorUtil.visit(sourceExpression, visitor);
+			return statements;
 		}
 	}
 
@@ -286,12 +297,12 @@ public class LambdaExpressionAnalyzer {
 	 * 
 	 * @param statement
 	 *            the statement to thin out
-	 * @return the resulting expression
+	 * @return the resulting "thined out" {@link Statement}
 	 */
-	private Expression thinOut(final Statement statement) {
+	private Statement thinOut(final Statement statement) {
 		LOGGER.debug("About to simplify \n\t{}", ASTNodeUtils.prettyPrint(statement));
 		if (statement.getStatementType() == StatementType.EXPRESSION_STMT) {
-			return ((ExpressionStatement) statement).getExpression();
+			return statement;
 		} else {
 			// find branches that end with 'return 1'
 			final ReturnTruePathFilter filter = new ReturnTruePathFilter();
@@ -307,15 +318,15 @@ public class LambdaExpressionAnalyzer {
 				Statement previousStmt = null;
 				while (currentStmt != null) {
 					switch (currentStmt.getStatementType()) {
-					case IF_STMT:
-						final IfStatement ifStatement = (IfStatement) currentStmt;
-						final Expression ifExpression = ifStatement.getIfExpression();
+					case CONTROL_FLOW_STMT:
+						final ControlFlowStatement controlFlowStatement = (ControlFlowStatement) currentStmt;
+						final Expression controlFlowExpression = controlFlowStatement.getControlFlowExpression();
 						// if we come from the "eval true" path on this
 						// condition
-						if (ifStatement.getThenStatements().contains(previousStmt)) {
-							relevantExpressions.add(0, ifExpression);
+						if (controlFlowStatement.getThenStatements().contains(previousStmt)) {
+							relevantExpressions.add(0, controlFlowExpression);
 						} else {
-							relevantExpressions.add(0, ifExpression.inverse());
+							relevantExpressions.add(0, controlFlowExpression.inverse());
 						}
 						break;
 					case RETURN_STMT:
@@ -325,7 +336,7 @@ public class LambdaExpressionAnalyzer {
 						}
 						break;
 					default:
-						LOGGER.debug("Ignoring node '{}'", currentStmt);
+						LOGGER.trace("Ignoring node '{}'", currentStmt);
 						break;
 					}
 					previousStmt = currentStmt;
@@ -333,14 +344,18 @@ public class LambdaExpressionAnalyzer {
 				}
 				if (relevantExpressions.size() > 1) {
 					expressions.add(new InfixExpression(InfixOperator.CONDITIONAL_AND, relevantExpressions));
-				} else {
+				} else if(!relevantExpressions.isEmpty()){
 					expressions.add(relevantExpressions.getFirst());
 				}
 
 			}
-			final Expression result = (expressions.size() > 1)
-					? new InfixExpression(InfixOperator.CONDITIONAL_OR, expressions) : expressions.get(0);
-			LOGGER.debug("Thinned out expression: #{}: {}", result.getId(), result.toString());
+			if (expressions.isEmpty()) {
+				return statement;
+			}
+			final Statement result = (expressions.size() > 1)
+					? new ReturnStatement(new InfixExpression(InfixOperator.CONDITIONAL_OR, expressions))
+					: new ReturnStatement(expressions.get(0));
+			LOGGER.debug("Thinned out expression: {}", result.toString());
 			return result;
 		}
 	}

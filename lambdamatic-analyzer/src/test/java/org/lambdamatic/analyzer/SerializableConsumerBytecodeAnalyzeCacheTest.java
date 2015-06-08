@@ -11,12 +11,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.lambdamatic.SerializableConsumer;
+import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.InfixExpression;
 import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
+import org.lambdamatic.analyzer.ast.node.ReturnStatement;
+import org.lambdamatic.analyzer.ast.node.Statement;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
 
 import com.sample.model.TestPojo;
@@ -55,9 +58,11 @@ public class SerializableConsumerBytecodeAnalyzeCacheTest {
 		// then 
 		final MethodInvocation fieldEqualsJohnMethod = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("john"));
 		final MethodInvocation fieldEqualsJackMethod = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("jack"));
-		final LambdaExpression nestedExpression = new LambdaExpression(new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsJohnMethod, fieldEqualsJackMethod), TestPojo.class, "e");
+		final InfixExpression infixExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsJohnMethod, fieldEqualsJackMethod);
+		final LambdaExpression nestedExpression = new LambdaExpression(new ReturnStatement(infixExpression), TestPojo.class, "e");
 		final MethodInvocation elementMatchMethod = new MethodInvocation(t, TestPojo_elementMatch, nestedExpression);
-		Assertions.assertThat(lambdaExpression1.getExpression()).isEqualTo(elementMatchMethod);
+		final Statement expectedStmt = new ExpressionStatement(elementMatchMethod);
+		Assertions.assertThat(lambdaExpression1.getBody()).containsExactly(expectedStmt);
 		// 2 cache misses: one per lambda expression in: t -> t.elementMatch(e -> e.field.equals("john") || e.field.equals("jack"))
 		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(2); 
 		Assertions.assertThat(listener.getCacheHits()).isEqualTo(0);
@@ -66,7 +71,7 @@ public class SerializableConsumerBytecodeAnalyzeCacheTest {
 		// when (second call)
 		final LambdaExpression lambdaExpression2 = getLambdaExpression();
 		// then 
-		Assertions.assertThat(lambdaExpression2.getExpression()).isEqualTo(elementMatchMethod);
+		Assertions.assertThat(lambdaExpression2.getBody()).containsExactly(expectedStmt);
 		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(0);
 		// one cache hit for the whole Lambda expression (ie, including nested lambda)
 		Assertions.assertThat(listener.getCacheHits()).isEqualTo(1);
@@ -83,9 +88,11 @@ public class SerializableConsumerBytecodeAnalyzeCacheTest {
 		// then 
 		final MethodInvocation fieldEqualsJohn1Method = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("john1"));
 		final MethodInvocation fieldEqualsJack1Method = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("jack1"));
-		final LambdaExpression nestedExpression1 = new LambdaExpression(new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsJohn1Method, fieldEqualsJack1Method), TestPojo.class, "e");
+		final InfixExpression infixExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsJohn1Method, fieldEqualsJack1Method);
+		final LambdaExpression nestedExpression1 = new LambdaExpression(new ReturnStatement(infixExpression), TestPojo.class, "e");
 		final MethodInvocation elementMatchMethod1 = new MethodInvocation(t, TestPojo_elementMatch, nestedExpression1);
-		Assertions.assertThat(lambdaExpression1.getExpression()).isEqualTo(elementMatchMethod1);
+		final Statement expectedStmt1 = new ExpressionStatement(elementMatchMethod1);
+		Assertions.assertThat(lambdaExpression1.getBody()).containsExactly(expectedStmt1);
 		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(2);
 		Assertions.assertThat(listener.getCacheHits()).isEqualTo(0);
 		// given
@@ -95,9 +102,11 @@ public class SerializableConsumerBytecodeAnalyzeCacheTest {
 		// then 
 		final MethodInvocation fieldEqualsJohn2Method = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("john2"));
 		final MethodInvocation fieldEqualsJack2Method = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("jack2"));
-		final LambdaExpression nestedExpression2 = new LambdaExpression(new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsJohn2Method, fieldEqualsJack2Method), TestPojo.class, "e");
+		final InfixExpression infixExpression2 = new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsJohn2Method, fieldEqualsJack2Method);
+		final LambdaExpression nestedExpression2 = new LambdaExpression(new ReturnStatement(infixExpression2), TestPojo.class, "e");
 		final MethodInvocation elementMatchMethod2 = new MethodInvocation(t, TestPojo_elementMatch, nestedExpression2);
-		Assertions.assertThat(lambdaExpression2.getExpression()).isEqualTo(elementMatchMethod2);
+		final Statement expectedStmt2 = new ExpressionStatement(elementMatchMethod2);
+		Assertions.assertThat(lambdaExpression2.getBody()).containsExactly(expectedStmt2);
 		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(0);
 		// one cache hit for the whole Lambda expression (ie, including nested lambda)
 		Assertions.assertThat(listener.getCacheHits()).isEqualTo(1);

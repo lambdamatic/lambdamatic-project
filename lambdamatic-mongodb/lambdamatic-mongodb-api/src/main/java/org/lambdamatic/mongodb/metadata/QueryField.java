@@ -11,7 +11,7 @@ import java.util.Collection;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public interface QueryField<T> {
+public interface QueryField<DomainType> {
 
 	/**
 	 * Specifies equality condition. The {@link QueryField#eq(Object)} ({@code $eq}) operator matches documents where the value of a field equals the specified value.

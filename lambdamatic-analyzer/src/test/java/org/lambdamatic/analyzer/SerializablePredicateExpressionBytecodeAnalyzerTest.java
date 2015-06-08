@@ -51,6 +51,7 @@ import org.lambdamatic.analyzer.ast.node.NullLiteral;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.ObjectInstance;
 import org.lambdamatic.analyzer.ast.node.ObjectVariable;
+import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.lambdamatic.testutils.TestWatcher;
 
@@ -603,7 +604,7 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeExpression(expression);
 		// then
-		assertThat(resultExpression.getExpression()).isEqualTo(expectation);
+		assertThat(resultExpression.getBody()).containsExactly(new ReturnStatement(expectation));
 	}
 
 }

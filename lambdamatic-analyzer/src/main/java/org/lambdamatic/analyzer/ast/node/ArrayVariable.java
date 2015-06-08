@@ -143,16 +143,6 @@ public class ArrayVariable extends ComplexExpression {
 	}
 
 	/**
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#inverse()
-	 */
-	@Override
-	public Expression inverse() {
-		throw new UnsupportedOperationException(this.getClass().getName() + " does not support inversion.");
-	}
-
-	/*
-	 * $
-	 * 
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#canBeInverted()
 	 */
 	@Override

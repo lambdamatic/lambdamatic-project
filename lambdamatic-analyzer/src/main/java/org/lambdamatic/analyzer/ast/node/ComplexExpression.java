@@ -10,6 +10,9 @@ package org.lambdamatic.analyzer.ast.node;
 
 
 /**
+ * {@link Expression} based on other {@link Expression} that can be replaced with simplified/sanitized versions during
+ * the byte-code analysis.
+ * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */

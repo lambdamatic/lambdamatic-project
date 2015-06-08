@@ -26,6 +26,8 @@ public abstract class ExpressionVisitor {
 	public boolean visit(final Expression expr) {
 		if (expr != null) {
 			switch (expr.getExpressionType()) {
+			case ASSIGNMENT:
+				return visitAssignment((Assignment) expr);
 			case BOOLEAN_LITERAL:
 				return visitBooleanLiteralExpression((BooleanLiteral) expr);
 			case CHARACTER_LITERAL:
@@ -35,7 +37,7 @@ public abstract class ExpressionVisitor {
 			case INFIX:
 				return visitInfixExpression((InfixExpression) expr);
 			case INSTANCE_OF:
-				return visitInstanceOfExpression((InstanceOfExpression) expr);
+				return visitInstanceOfExpression((InstanceOf) expr);
 			case OBJECT_VARIABLE:
 				return visitObjectVariableExpression((ObjectVariable) expr);
 			case ARRAY_VARIABLE:
@@ -69,7 +71,11 @@ public abstract class ExpressionVisitor {
 		return true;
 	}
 
-	public boolean visitLambdaExpression(LambdaExpression expr) {
+	public boolean visitAssignment(final Assignment expr) {
+		return true;
+	}
+
+	public boolean visitLambdaExpression(final LambdaExpression expr) {
 		return true;
 	}
 
@@ -105,7 +111,7 @@ public abstract class ExpressionVisitor {
 		return true;
 	}
 
-	public boolean visitInstanceOfExpression(final InstanceOfExpression expr) {
+	public boolean visitInstanceOfExpression(final InstanceOf expr) {
 		return true;
 	}
 

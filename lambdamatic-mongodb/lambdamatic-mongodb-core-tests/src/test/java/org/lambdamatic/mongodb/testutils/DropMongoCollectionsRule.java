@@ -18,6 +18,7 @@ import com.mongodb.client.MongoCollection;
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
  */
+@Deprecated
 public class DropMongoCollectionsRule implements MethodRule {
 
 	private final MongoCollection<?> collection;

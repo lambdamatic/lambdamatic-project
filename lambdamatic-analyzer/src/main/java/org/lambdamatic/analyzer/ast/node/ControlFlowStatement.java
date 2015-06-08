@@ -4,6 +4,7 @@
 package org.lambdamatic.analyzer.ast.node;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * An If Statement:
@@ -12,25 +13,25 @@ import java.util.List;
  * @author xcoulon
  *
  */
-public class IfStatement extends Statement {
+public class ControlFlowStatement extends Statement {
 
 	/** The Expression in the "if()".*/
-	private final Expression ifExpression;
+	private final Expression controlFlowExpression;
 
-	/** The Statements to execution when the expression is true.*/
+	/** The {@link List} of {@link Statement} of {@link Statement}s to execution when the expression is true.*/
 	private final List<Statement> thenStatements;
 
-	/** The Statements to execution when the expression is false.*/
+	/** The The {@link List} of {@link Statement} of {@link Statement}s to execution when the expression is false.*/
 	private final List<Statement> elseStatements;
 	
 	/**
 	 * The full constructor
-	 * @param ifExpression The Expression in the "if()"
+	 * @param controlFlowExpression The Expression in the "if()"
 	 * @param thenStatements The Statement to execution when the expression is true.
 	 * @param elseStatements The Statement to execution when the expression is false.
 	 */
-	public IfStatement(final Expression ifExpression, final List<Statement> thenStatements, final List<Statement> elseStatements) {
-		this.ifExpression = ifExpression;
+	public ControlFlowStatement(final Expression controlFlowExpression, final List<Statement> thenStatements, final List<Statement> elseStatements) {
+		this.controlFlowExpression = controlFlowExpression;
 		this.thenStatements = thenStatements;
 		this.thenStatements.stream().forEach(s -> s.setParent(this));
 		this.elseStatements = elseStatements;
@@ -38,8 +39,15 @@ public class IfStatement extends Statement {
 	}
 
 	@Override
+	public ControlFlowStatement duplicate() {
+		final List<Statement> duplicateThenStatements = this.thenStatements.stream().map(s -> s.duplicate()).collect(Collectors.toList());
+		final List<Statement> duplicateElseStatements = this.elseStatements.stream().map(s -> s.duplicate()).collect(Collectors.toList());
+		return new ControlFlowStatement(this.controlFlowExpression.duplicate(), duplicateThenStatements, duplicateElseStatements);
+	}
+	
+	@Override
 	public StatementType getStatementType() {
-		return StatementType.IF_STMT;
+		return StatementType.CONTROL_FLOW_STMT;
 	}
 	
 	@Override
@@ -51,21 +59,21 @@ public class IfStatement extends Statement {
 	}
 
 	/**
-	 * @return the ifExpression
+	 * @return the controlFlowExpression
 	 */
-	public Expression getIfExpression() {
-		return ifExpression;
+	public Expression getControlFlowExpression() {
+		return controlFlowExpression;
 	}
 
 	/**
-	 * @return the thenStatements
+	 * @return the then-branch Statements
 	 */
 	public List<Statement> getThenStatements() {
 		return thenStatements;
 	}
 
 	/**
-	 * @return the elseStatements
+	 * @return the else-branch Statements
 	 */
 	public List<Statement> getElseStatements() {
 		return elseStatements;
@@ -75,7 +83,7 @@ public class IfStatement extends Statement {
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("if(");
-		builder.append(this.ifExpression.toString()).append(") {");
+		builder.append(this.controlFlowExpression.toString()).append(") {");
 		builder.append(this.thenStatements.toString());
 		builder.append("} else {");
 		builder.append(this.elseStatements.toString()).append('}');
@@ -91,7 +99,7 @@ public class IfStatement extends Statement {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((elseStatements == null) ? 0 : elseStatements.hashCode());
-		result = prime * result + ((ifExpression == null) ? 0 : ifExpression.hashCode());
+		result = prime * result + ((controlFlowExpression == null) ? 0 : controlFlowExpression.hashCode());
 		result = prime * result + ((thenStatements == null) ? 0 : thenStatements.hashCode());
 		return result;
 	}
@@ -108,16 +116,16 @@ public class IfStatement extends Statement {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		IfStatement other = (IfStatement) obj;
+		ControlFlowStatement other = (ControlFlowStatement) obj;
 		if (elseStatements == null) {
 			if (other.elseStatements != null)
 				return false;
 		} else if (!elseStatements.equals(other.elseStatements))
 			return false;
-		if (ifExpression == null) {
-			if (other.ifExpression != null)
+		if (controlFlowExpression == null) {
+			if (other.controlFlowExpression != null)
 				return false;
-		} else if (!ifExpression.equals(other.ifExpression))
+		} else if (!controlFlowExpression.equals(other.controlFlowExpression))
 			return false;
 		if (thenStatements == null) {
 			if (other.thenStatements != null)

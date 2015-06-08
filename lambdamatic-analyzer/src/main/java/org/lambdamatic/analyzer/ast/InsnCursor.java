@@ -166,7 +166,7 @@ class InsnCursor {
 		}
 		return this;
 	}
-
+	
 	/**
 	 * Returns {@code true} if the current instruction exists, {@code false}
 	 * otherwise. A {@code false} result means that either the cursor did not
@@ -195,7 +195,7 @@ class InsnCursor {
 	 */
 	public InsnCursor duplicate() {
 		final InsnCursor duplicateCursor = new InsnCursor(this.instructions, this.labels);
-		for(int i = 0; i < currentPosition; i++) {
+		while(duplicateCursor.currentPosition < this.currentPosition && duplicateCursor.hasNext()) {
 			duplicateCursor.next();
 		}
 		return duplicateCursor;

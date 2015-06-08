@@ -7,14 +7,14 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 
 /**
- * A field access: {@code sourceExpression.fieldName}
+ * A field access: {@code source.fieldName}
  * @author xcoulon
  *
  */
 public class FieldAccess extends ComplexExpression {
 
 	/** the Expression on containing the field to access (may change if it is evaluated).*/
-	private Expression sourceExpression;
+	private Expression source;
 	
 	/** the name of the accessed field. */
 	private final String fieldName;
@@ -24,7 +24,7 @@ public class FieldAccess extends ComplexExpression {
 	 * <p>
 	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
 	 * </p>
-	 * @param sourceExpression the sourceExpression containing the field to access
+	 * @param source the source containing the field to access
 	 * @param fieldName the name of the accessed field
 	 */
 	public FieldAccess(final Expression sourceExpression, final String fieldName) {
@@ -48,8 +48,8 @@ public class FieldAccess extends ComplexExpression {
 	}
 
 	private void setSourceExpression(final Expression expression) {
-		this.sourceExpression = expression;
-		this.sourceExpression.setParent(this);
+		this.source = expression;
+		this.source.setParent(this);
 	}
 	
 	@Override
@@ -62,27 +62,27 @@ public class FieldAccess extends ComplexExpression {
 	 */
 	@Override
 	public void accept(final ExpressionVisitor visitor) {
-		sourceExpression.accept(visitor);
+		source.accept(visitor);
 		visitor.visit(this);
 	}
 	
 	@Override
 	public void replaceElement(final Expression oldSourceExpression, final Expression newSourceExpression) {
-		if(oldSourceExpression == this.sourceExpression) {
+		if(oldSourceExpression == this.source) {
 			setSourceExpression(newSourceExpression);
 		}
 	}
 
 	@Override
 	public boolean anyElementMatches(ExpressionType type) {
-		return sourceExpression.anyElementMatches(type);
+		return source.anyElementMatches(type);
 	}
 	
 	/**
-	 * @return the sourceExpression on containing the field to access.
+	 * @return the source on containing the field to access.
 	 */
-	public Expression getSourceExpression() {
-		return sourceExpression;
+	public Expression getSource() {
+		return source;
 	}
 
 	/**
@@ -91,7 +91,7 @@ public class FieldAccess extends ComplexExpression {
 	 */
 	@Override
 	public FieldAccess duplicate(int id) {
-		return new FieldAccess(id, getSourceExpression().duplicate(), getFieldName(), isInverted());
+		return new FieldAccess(id, getSource().duplicate(), getFieldName(), isInverted());
 	}
 
 	/**
@@ -119,9 +119,9 @@ public class FieldAccess extends ComplexExpression {
 	@Override
 	public Class<?> getJavaType() {
 		try {
-			return sourceExpression.getJavaType().getField(fieldName).getType();
+			return source.getJavaType().getField(fieldName).getType();
 		} catch (NoSuchFieldException | SecurityException e) {
-			throw new AnalyzeException("Failed to retrieve field '" + fieldName + "' in " + sourceExpression, e);
+			throw new AnalyzeException("Failed to retrieve field '" + fieldName + "' in " + source, e);
 		}
 	}
 
@@ -138,17 +138,12 @@ public class FieldAccess extends ComplexExpression {
 	@Override
 	public Object getValue() {
 		try {
-			return FieldUtils.getField(sourceExpression.getJavaType(), getFieldName());
+			return FieldUtils.getField(source.getJavaType(), getFieldName());
 		} catch (IllegalArgumentException e) {
-			throw new AnalyzeException("Cannot retrieve field named '" + fieldName + "' on class " + sourceExpression.getJavaType(), e);
+			throw new AnalyzeException("Cannot retrieve field named '" + fieldName + "' on class " + source.getJavaType(), e);
 		}
 	}
 
-	@Override
-	public Expression inverse() {
-		throw new UnsupportedOperationException(this.getClass().getName() + " does not support inversion.");
-	}
-	
 	/**
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#canBeInverted()
@@ -160,7 +155,7 @@ public class FieldAccess extends ComplexExpression {
 
 	@Override
 	public String toString() {
-		return this.sourceExpression.toString() + "." + this.fieldName;
+		return this.source.toString() + "." + this.fieldName;
 	}
 
 	/**
@@ -172,7 +167,7 @@ public class FieldAccess extends ComplexExpression {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((getExpressionType() == null) ? 0 : getExpressionType().hashCode());
-		result = prime * result + ((sourceExpression == null) ? 0 : sourceExpression.hashCode());
+		result = prime * result + ((source == null) ? 0 : source.hashCode());
 		result = prime * result + ((fieldName == null) ? 0 : fieldName.hashCode());
 		return result;
 	}
@@ -189,10 +184,10 @@ public class FieldAccess extends ComplexExpression {
 		if (getClass() != obj.getClass())
 			return false;
 		FieldAccess other = (FieldAccess) obj;
-		if (sourceExpression == null) {
-			if (other.sourceExpression != null)
+		if (source == null) {
+			if (other.source != null)
 				return false;
-		} else if (!sourceExpression.equals(other.sourceExpression))
+		} else if (!source.equals(other.source))
 			return false;
 		if (fieldName == null) {
 			if (other.fieldName != null)

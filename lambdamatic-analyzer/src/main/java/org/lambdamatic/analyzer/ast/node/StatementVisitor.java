@@ -20,21 +20,20 @@ public abstract class StatementVisitor {
 			switch(stmt.getStatementType()) {
 			case EXPRESSION_STMT:
 				return visitExpressionStatement((ExpressionStatement) stmt);
-			case IF_STMT:
-				return visitIfStatement((IfStatement) stmt);
+			case CONTROL_FLOW_STMT:
+				return visitControlFlowStatement((ControlFlowStatement) stmt);
 			case RETURN_STMT:
 				return visitReturnStatement((ReturnStatement) stmt);
-			default:
 			}
 		}
 		return false;
 	}
 
-	public boolean visitExpressionStatement(final ExpressionStatement expressionNode) {
+	public boolean visitExpressionStatement(final ExpressionStatement expressionStatement) {
 		return true;
 	}
 
-	public boolean visitIfStatement(final IfStatement logicalOperatorNode) {
+	public boolean visitControlFlowStatement(final ControlFlowStatement controlFlowStatement) {
 		return true;
 	}
 	

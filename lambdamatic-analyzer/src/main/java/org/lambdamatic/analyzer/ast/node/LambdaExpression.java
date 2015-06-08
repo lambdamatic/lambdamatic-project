@@ -3,6 +3,12 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.lambdamatic.analyzer.ast.StatementExpressionsDelegateVisitor;
+
 /**
  * The AST form of the user-defined Lambda Expression and its relevant data in a form that can be further manipulated.
  * 
@@ -11,27 +17,76 @@ package org.lambdamatic.analyzer.ast.node;
  */
 public class LambdaExpression extends Expression {
 
-	/** The AST form of the user-defined Lambda Expression AST with captured arguments. */
-	private final Expression expression;
-	
+	/** The AST form of the {@link List} of {@link Statement} defined in the Lambda Expression (with captured arguments). */
+	private final List<Statement> body;
+
 	/** The type of the element being evaluated in the AST form of the user-defined Lambda Expression. */
 	private final Class<?> argumentType;
-	
+
 	/** The name of the element being evaluated in the AST form of the user-defined Lambda Expression. */
 	private final String argumentName;
-	
+
+	/**
+	 * Constructor with a single Statement (that will be wrapped into a {@link List} of {@link Statement})
+	 * 
+	 * @param statementBlock
+	 *            The AST form of the {@link Statement} or {@link List} of {@link Statement} defined in the Lambda Expression (with captured
+	 *            arguments).
+	 * @param argumentType
+	 *            The type of the element being evaluated in the AST form of the user-defined Lambda Expression.
+	 */
+	public LambdaExpression(final Statement statement, final Class<?> argumentType, final String argumentName) {
+		this(generateId(), statement, argumentType, argumentName);
+	}
+
 	/**
 	 * Constructor
-	 * @param expression The AST form of the user-defined Lambda Expression with its captured arguments.
-	 * @param argumentType The type of the element being evaluated in the AST form of the user-defined Lambda Expression.
+	 * 
+	 * @param statementBlock
+	 *            The AST form of the {@link Statement} or {@link List} of {@link Statement} defined in the Lambda Expression (with captured
+	 *            arguments).
+	 * @param argumentType
+	 *            The type of the element being evaluated in the AST form of the user-defined Lambda Expression.
 	 */
-	public LambdaExpression(final Expression expression, final Class<?> argumentType, final String argumentName) {
+	public LambdaExpression(final int id, final Statement statement, final Class<?> argumentType,
+			final String argumentName) {
+		this(id, Arrays.asList(statement), argumentType, argumentName);
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param statementBlock
+	 *            The AST form of the {@link Statement} or {@link List} of {@link Statement} defined in the Lambda Expression (with captured
+	 *            arguments).
+	 * @param argumentType
+	 *            The type of the element being evaluated in the AST form of the user-defined Lambda Expression.
+	 */
+	public LambdaExpression(final List<Statement> statements, final Class<?> argumentType,
+			final String argumentName) {
 		super(generateId(), false);
-		this.expression = expression;
+		this.body = statements;
 		this.argumentType = argumentType;
 		this.argumentName = argumentName;
 	}
-	
+
+	/**
+	 * Constructor
+	 * 
+	 * @param statementBlock
+	 *            The AST form of the {@link Statement} or {@link List} of {@link Statement} defined in the Lambda Expression (with captured
+	 *            arguments).
+	 * @param argumentType
+	 *            The type of the element being evaluated in the AST form of the user-defined Lambda Expression.
+	 */
+	public LambdaExpression(final int id, final List<Statement> statements, final Class<?> argumentType,
+			final String argumentName) {
+		super(id, false);
+		this.body = statements;
+		this.argumentType = argumentType;
+		this.argumentName = argumentName;
+	}
+
 	@Override
 	public ExpressionType getExpressionType() {
 		return ExpressionType.LAMBDA_EXPRESSION;
@@ -41,25 +96,21 @@ public class LambdaExpression extends Expression {
 	public ComplexExpression getParent() {
 		return (ComplexExpression) super.getParent();
 	}
-	
+
 	@Override
 	public Class<?> getJavaType() {
 		return argumentType;
 	}
-	
-	@Override
-	public Expression inverse() {
-		return new LambdaExpression(expression.inverse(), argumentType, argumentName);
-	}
 
 	@Override
 	public boolean canBeInverted() {
-		return expression.canBeInverted();
+		return false;
 	}
 
 	@Override
 	public LambdaExpression duplicate(int id) {
-		return new LambdaExpression(expression.duplicate(id), argumentType, argumentName);
+		final List<Statement> duplicateStatements = this.body.stream().map(s -> s.duplicate()).collect(Collectors.toList());
+		return new LambdaExpression(id, duplicateStatements, argumentType, argumentName);
 	}
 
 	@Override
@@ -68,10 +119,10 @@ public class LambdaExpression extends Expression {
 	}
 
 	/**
-	 * @return The AST form of the user-defined Lambda Expression AST with captured arguments.
+	 * @return The AST form of the {@link List} of {@link Statement} defined in the Lambda Expression (with captured arguments).
 	 */
-	public Expression getExpression() {
-		return expression;
+	public List<Statement> getBody() {
+		return this.body;
 	}
 
 	/**
@@ -80,7 +131,7 @@ public class LambdaExpression extends Expression {
 	public Class<?> getArgumentType() {
 		return argumentType;
 	}
-	
+
 	/**
 	 * @return The name of the element being evaluated in the AST form of the user-defined Lambda Expression.
 	 */
@@ -90,7 +141,16 @@ public class LambdaExpression extends Expression {
 
 	@Override
 	public String toString() {
-		return this.expression.toString();
+		return this.argumentName + " -> {"
+				+ String.join(" ", this.body.stream().map(s -> s.toString()).collect(Collectors.toList())) + "}";
+	}
+
+	@Override
+	public boolean anyElementMatches(final ExpressionType type) {
+		final ExpressionTypeMatcher matcher = new ExpressionTypeMatcher(type);
+		this.body.stream().forEach(s -> s.accept(new StatementExpressionsDelegateVisitor(matcher)));
+		return matcher.isMatchFound();
+		
 	}
 
 	@Override
@@ -98,7 +158,7 @@ public class LambdaExpression extends Expression {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((argumentType == null) ? 0 : argumentType.hashCode());
-		result = prime * result + ((expression == null) ? 0 : expression.hashCode());
+		result = prime * result + ((body == null) ? 0 : body.hashCode());
 		return result;
 	}
 
@@ -121,10 +181,10 @@ public class LambdaExpression extends Expression {
 				return false;
 		} else if (!argumentName.equals(other.argumentName))
 			return false;
-		if (expression == null) {
-			if (other.expression != null)
+		if (body == null) {
+			if (other.body != null)
 				return false;
-		} else if (!expression.equals(other.expression))
+		} else if (!body.equals(other.body))
 			return false;
 		return true;
 	}

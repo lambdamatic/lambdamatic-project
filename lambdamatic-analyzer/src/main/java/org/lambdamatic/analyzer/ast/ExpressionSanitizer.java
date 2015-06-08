@@ -79,6 +79,16 @@ public class ExpressionSanitizer extends ExpressionVisitor {
 			methodInvocation.delete();
 		} else if(new MethodMatcher(Boolean.class, "valueOf", boolean.class).matches(methodInvocation)) {
 			methodInvocation.getParent().replaceElement(methodInvocation, methodInvocation.getArguments().get(0));
+		} else if(new MethodMatcher(Integer.class, "valueOf", int.class).matches(methodInvocation)) {
+			methodInvocation.getParent().replaceElement(methodInvocation, methodInvocation.getArguments().get(0));
+		} else if(new MethodMatcher(Short.class, "valueOf", short.class).matches(methodInvocation)) {
+			methodInvocation.getParent().replaceElement(methodInvocation, methodInvocation.getArguments().get(0));
+		} else if(new MethodMatcher(Long.class, "valueOf", long.class).matches(methodInvocation)) {
+			methodInvocation.getParent().replaceElement(methodInvocation, methodInvocation.getArguments().get(0));
+		} else if(new MethodMatcher(Float.class, "valueOf", float.class).matches(methodInvocation)) {
+			methodInvocation.getParent().replaceElement(methodInvocation, methodInvocation.getArguments().get(0));
+		} else if(new MethodMatcher(Double.class, "valueOf", double.class).matches(methodInvocation)) {
+			methodInvocation.getParent().replaceElement(methodInvocation, methodInvocation.getArguments().get(0));
 		}
 		return true;
 	}
@@ -88,8 +98,8 @@ public class ExpressionSanitizer extends ExpressionVisitor {
 	 */ 
 	@Override
 	public boolean visitFieldAccessExpression(final FieldAccess fieldAccess) {
-		if (fieldAccess.getSourceExpression().getExpressionType() == ExpressionType.CLASS_LITERAL) {
-			final ClassLiteral sourceClass = (ClassLiteral) fieldAccess.getSourceExpression();
+		if (fieldAccess.getSource().getExpressionType() == ExpressionType.CLASS_LITERAL) {
+			final ClassLiteral sourceClass = (ClassLiteral) fieldAccess.getSource();
 			final String fieldName = fieldAccess.getFieldName();
 			try {
 				final Class<?> source = sourceClass.getValue();

@@ -23,7 +23,7 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	private Expression parent;
 
 	public enum ExpressionType {
-		OBJECT_VALUE, BOOLEAN_LITERAL, CHARACTER_LITERAL, CLASS_LITERAL, NUMBER_LITERAL, NULL_LITERAL, STRING_LITERAL, OBJECT_VARIABLE, ARRAY_VARIABLE, METHOD_INVOCATION, FIELD_ACCESS, INFIX, INSTANCE_OF, LOCAL_VARIABLE, CAPTURED_ARGUMENT, CAPTURED_ARGUMENT_REF, ENUM_LITERAL, LAMBDA_EXPRESSION;
+		OBJECT_VALUE, BOOLEAN_LITERAL, CHARACTER_LITERAL, CLASS_LITERAL, NUMBER_LITERAL, NULL_LITERAL, STRING_LITERAL, OBJECT_VARIABLE, ARRAY_VARIABLE, METHOD_INVOCATION, FIELD_ACCESS, INFIX, INSTANCE_OF, LOCAL_VARIABLE, CAPTURED_ARGUMENT, CAPTURED_ARGUMENT_REF, ENUM_LITERAL, LAMBDA_EXPRESSION, ASSIGNMENT, OPERATION;
 	}
 
 	/** synthetic id generator based on {@link AtomicInteger}. */
@@ -113,8 +113,11 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	/**
 	 * @return an inverted instance of the current element.
 	 */
-	public abstract Expression inverse();
-
+	public Expression inverse() {
+		throw new UnsupportedOperationException(this.getClass().getName() + " does not support inversion.");
+	}
+	
+	
 	/**
 	 * @return {@code true} if this {@link Expression} can be inverted, {@code false} otherwise.
 	 *         <p>

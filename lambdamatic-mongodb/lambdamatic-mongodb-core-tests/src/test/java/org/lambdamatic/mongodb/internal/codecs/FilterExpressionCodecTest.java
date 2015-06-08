@@ -209,7 +209,7 @@ public class FilterExpressionCodecTest {
 
 	private static Logger getCodecLogger() {
 		final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-		return lc.getLogger(BaseQueryExpressionCodec.LOGGER_NAME);
+		return lc.getLogger(BaseLambdaExpressionCodec.LOGGER_NAME);
 	}
 
 	@BeforeClass

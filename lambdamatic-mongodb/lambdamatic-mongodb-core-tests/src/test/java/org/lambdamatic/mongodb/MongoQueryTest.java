@@ -18,6 +18,8 @@ import org.assertj.core.description.TextDescription;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import com.lordofthejars.nosqlunit.core.LoadStrategyEnum;
 import com.sample.Bar;
 import com.sample.EnumFoo;
 import com.sample.Foo;
@@ -33,23 +35,28 @@ import com.sample.FooCollection;
 public class MongoQueryTest extends MongoBaseTest {
 
 	private FooCollection fooCollection;
+	
+	public MongoQueryTest() {
+		super(Foo.class);
+	}
 
 	@Before
 	public void setup() throws UnknownHostException {
-		this.fooCollection = new FooCollection(mongoClient, DATABASE_NAME, COLLECTION_NAME);
+		this.fooCollection = new FooCollection(getMongoClient(), DATABASE_NAME, getCollectionName());
 		// insert test data
 		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO)
 				.withLocation(40, -70)
 				.withBar(new Bar.BarBuilder().withStringField("bar").build())
 				.withBarList(new Bar.BarBuilder().withStringField("bar1").build(), new Bar.BarBuilder().withStringField("bar2").build())
 				.build();
-		this.fooCollection.insert(foo);
+		this.fooCollection.add(foo);
 	}
 
 	@Test
+	@UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
 	public void shouldFindOneFoo() throws IOException {
 		// when
-		final Foo foo = fooCollection.find(f -> f.stringField.equals("jdoe")).first();
+		final Foo foo = fooCollection.filter(f -> f.stringField.equals("jdoe")).first();
 		// then
 		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override
@@ -62,9 +69,10 @@ public class MongoQueryTest extends MongoBaseTest {
 	}
 
 	@Test
+	@UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
 	public void shouldFindOneFooBar() throws IOException {
 		// when
-		final Foo foo = fooCollection.find(f -> f.barList.stringField.equals("bar1")).first();
+		final Foo foo = fooCollection.filter(f -> f.barList.stringField.equals("bar1")).first();
 		// then
 		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override
@@ -75,9 +83,10 @@ public class MongoQueryTest extends MongoBaseTest {
 	}
 
 	@Test
+	@UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
 	public void shouldFindOneFooWithElementMatchBar() throws IOException {
 		// when
-		final Foo foo = fooCollection.find(f -> f.barList.elementMatch(b -> b.stringField.equals("bar1"))).first();
+		final Foo foo = fooCollection.filter(f -> f.barList.elementMatch(b -> b.stringField.equals("bar1"))).first();
 		// then
 		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override
@@ -88,10 +97,11 @@ public class MongoQueryTest extends MongoBaseTest {
 	}
 
 	@Test
+	@UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
 	public void shouldFindOneFooWithFieldInclusionProjection() throws IOException {
 		// when
 		final Foo foo = fooCollection
-				.find(f -> f.stringField.equals("jdoe"))
+				.filter(f -> f.stringField.equals("jdoe"))
 				.projection(f -> Projection.include(f.stringField, f.barList.elementMatch(b -> b.stringField.equals("bar1"))))
 				.first();
 		// then

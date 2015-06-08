@@ -22,7 +22,7 @@ import org.lambdamatic.analyzer.exception.AnalyzeException;
 public class MethodInvocation extends ComplexExpression {
 
 	/** the expression on which the method call is applied (may change if evaluated). */
-	private Expression sourceExpression;
+	private Expression source;
 
 	/** the underlying Java method that is called. */
 	private final Method javaMethod;
@@ -37,7 +37,7 @@ public class MethodInvocation extends ComplexExpression {
 	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
 	 * </p>
 	 * 
-	 * @param sourceExpression
+	 * @param source
 	 *            the expression on which the method call is applied.
 	 * @param javaMethod
 	 *            the Java {@link Method} to be called.
@@ -54,7 +54,7 @@ public class MethodInvocation extends ComplexExpression {
 	/**
 	 * Full constructor.
 	 * 
-	 * @param sourceExpression
+	 * @param source
 	 *            the expression on which the method call is applied.
 	 * @param methodName
 	 *            the name of the called method.
@@ -73,7 +73,7 @@ public class MethodInvocation extends ComplexExpression {
 	 * 
 	 * @param id
 	 *            the synthetic id of this {@link Expression}.
-	 * @param sourceExpression
+	 * @param source
 	 *            the expression on which the method call is applied.
 	 * @param javaMethod
 	 *            the actual Java {@link Method} being called.
@@ -90,8 +90,8 @@ public class MethodInvocation extends ComplexExpression {
 	}
 
 	private void setSourceExpression(final Expression sourceExpression) {
-		this.sourceExpression = sourceExpression;
-		this.sourceExpression.setParent(this);
+		this.source = sourceExpression;
+		this.source.setParent(this);
 	}
 
 	/**
@@ -101,7 +101,7 @@ public class MethodInvocation extends ComplexExpression {
 	 */
 	@Override
 	public MethodInvocation duplicate(int id) {
-		return new MethodInvocation(id, getSourceExpression().duplicate(), this.javaMethod,
+		return new MethodInvocation(id, getSource().duplicate(), this.javaMethod,
 				Expression.duplicateExpressions(this.arguments), isInverted());
 	}
 	
@@ -125,7 +125,7 @@ public class MethodInvocation extends ComplexExpression {
 	
 	@Override
 	public boolean anyElementMatches(ExpressionType type) {
-		return sourceExpression.anyElementMatches(type)
+		return source.anyElementMatches(type)
 				|| this.arguments.stream().anyMatch(a -> a.anyElementMatches(type));
 	}
 
@@ -160,8 +160,8 @@ public class MethodInvocation extends ComplexExpression {
 	/**
 	 * @return the source expression, on which this method invocation is performed (ie, on which the method is called).
 	 */
-	public Expression getSourceExpression() {
-		return sourceExpression;
+	public Expression getSource() {
+		return source;
 	}
 
 	/**
@@ -188,7 +188,7 @@ public class MethodInvocation extends ComplexExpression {
 
 	@Override
 	public int getNumberOfBytecodeInstructions() {
-		int length = 1 + this.getSourceExpression().getNumberOfBytecodeInstructions();
+		int length = 1 + this.getSource().getNumberOfBytecodeInstructions();
 		for (Expression arg : arguments) {
 			length += arg.getNumberOfBytecodeInstructions();
 		}
@@ -206,7 +206,7 @@ public class MethodInvocation extends ComplexExpression {
 	public Object evaluate() {
 		final List<Object> args = new ArrayList<>();
 		final Class<?>[] argTypes = new Class<?>[this.arguments.size()];
-		final Object source = this.sourceExpression.getValue();
+		final Object source = this.source.getValue();
 		try {
 			for (int i = 0; i < this.arguments.size(); i++) {
 				final Object methodArgValue = arguments.get(i).getValue();
@@ -219,6 +219,18 @@ public class MethodInvocation extends ComplexExpression {
 			throw new AnalyzeException("Failed to invoke method '" + javaMethod.getName() + "' on '" + source + "'", e);
 		}
 	}
+	
+	/**
+	 * @return the value of {@code this} Expression
+	 */
+	public Object getValue() {
+		if(this.source.getExpressionType() == ExpressionType.CLASS_LITERAL) {
+			return evaluate();
+		} else {
+			return evaluate();
+		}
+	}
+
 
 	/**
 	 * {@inheritDoc}
@@ -228,13 +240,13 @@ public class MethodInvocation extends ComplexExpression {
 		for (Expression arg : this.arguments) {
 			arg.accept(visitor);
 		}
-		sourceExpression.accept(visitor);
+		source.accept(visitor);
 		visitor.visit(this);
 	}
 
 	/**
 	 * Replace the given {@code oldArgumoldExpressionent} with the given {@code newExpression} if it is part of this
-	 * {@link MethodInvocation} arguments or if it is the sourceExpression.
+	 * {@link MethodInvocation} arguments or if it is the source.
 	 * 
 	 * {@inheritDoc}
 	 */
@@ -243,7 +255,7 @@ public class MethodInvocation extends ComplexExpression {
 		if (oldExpressionIndex > -1) {
 			this.arguments.set(oldExpressionIndex, newExpression);
 			newExpression.setParent(this);
-		} else if(oldExpression == this.sourceExpression) {
+		} else if(oldExpression == this.source) {
 			setSourceExpression(newExpression);
 		}
 	}
@@ -253,7 +265,7 @@ public class MethodInvocation extends ComplexExpression {
 	 */
 	@Override
 	public MethodInvocation inverse() {
-		return new MethodInvocation(generateId(), sourceExpression, javaMethod,
+		return new MethodInvocation(generateId(), source, javaMethod,
 				Expression.duplicateExpressions(this.arguments), !isInverted());
 	};
 
@@ -272,7 +284,7 @@ public class MethodInvocation extends ComplexExpression {
 	@Override
 	public String toString() {
 		List<String> args = arguments.stream().map(Expression::toString).collect(Collectors.toList());
-		return (isInverted() ? "!" : "") + sourceExpression.toString() + '.' + javaMethod.getName() + "(" + String.join(", ", args) + ")";
+		return (isInverted() ? "!" : "") + source.toString() + '.' + javaMethod.getName() + "(" + String.join(", ", args) + ")";
 	}
 
 	/**
@@ -288,7 +300,7 @@ public class MethodInvocation extends ComplexExpression {
 		result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
 		result = prime * result + (isInverted() ? 1231 : 1237);
 		result = prime * result + ((javaMethod == null) ? 0 : javaMethod.hashCode());
-		result = prime * result + ((sourceExpression == null) ? 0 : sourceExpression.hashCode());
+		result = prime * result + ((source == null) ? 0 : source.hashCode());
 		return result;
 	}
 
@@ -320,10 +332,10 @@ public class MethodInvocation extends ComplexExpression {
 			return false;
 		else if (!Arrays.deepEquals(javaMethod.getParameterTypes(), other.javaMethod.getParameterTypes()))
 			return false;
-		if (sourceExpression == null) {
-			if (other.sourceExpression != null)
+		if (source == null) {
+			if (other.source != null)
 				return false;
-		} else if (!sourceExpression.equals(other.sourceExpression))
+		} else if (!source.equals(other.source))
 			return false;
 		return true;
 	}
@@ -336,9 +348,9 @@ public class MethodInvocation extends ComplexExpression {
 		if(getParent() != null) {
 			// preserve the inversion
 			if(this.isInverted()) {
-				getParent().replaceElement(this, getSourceExpression().inverse());
+				getParent().replaceElement(this, getSource().inverse());
 			} else {
-				getParent().replaceElement(this, getSourceExpression());
+				getParent().replaceElement(this, getSource());
 			}
 		}
 	}

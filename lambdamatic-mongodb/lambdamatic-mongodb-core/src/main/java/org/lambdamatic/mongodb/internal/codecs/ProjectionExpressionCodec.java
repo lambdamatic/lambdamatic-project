@@ -16,9 +16,9 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.EncoderContext;
 import org.lambdamatic.SerializableConsumer;
 import org.lambdamatic.analyzer.ast.node.Expression;
+import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
-import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.mongodb.Projection;
 import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.lambdamatic.mongodb.internal.codecs.ProjectionExpressionEncoder.ProjectionType;
@@ -34,10 +34,10 @@ import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class ProjectionExpressionCodec extends BaseQueryExpressionCodec<SerializableConsumer<ProjectionMetadata<?>>> {
+public class ProjectionExpressionCodec extends BaseLambdaExpressionCodec<SerializableConsumer<ProjectionMetadata<?>>> {
 
 	void encodeExpression(final LambdaExpression lambdaExpression, final BsonWriter writer, final EncoderContext encoderContext) {
-		final Expression expression = lambdaExpression.getExpression();
+		final Expression expression = EncoderUtils.getSingleExpression(lambdaExpression);
 		if(expression.getExpressionType() != ExpressionType.METHOD_INVOCATION) {
 			throw new ConversionException("Invalid projection. See " + Projection.class.getName());
 		}

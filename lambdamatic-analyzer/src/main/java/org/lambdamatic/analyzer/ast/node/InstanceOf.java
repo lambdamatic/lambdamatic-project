@@ -9,7 +9,7 @@ package org.lambdamatic.analyzer.ast.node;
  * @author xcoulon
  *
  */
-public class InstanceOfExpression extends Expression {
+public class InstanceOf extends Expression {
 
 	/** The expression being evaluated. */
 	private final Expression expression;
@@ -28,7 +28,7 @@ public class InstanceOfExpression extends Expression {
 	 * @param type
 	 *            the expected expression type.
 	 */
-	public InstanceOfExpression(final Expression expression, final Type type) {
+	public InstanceOf(final Expression expression, final Type type) {
 		this(generateId(), expression, type, false);
 	}
 
@@ -42,7 +42,7 @@ public class InstanceOfExpression extends Expression {
 	 * @param inverted
 	 *            the inversion flag of this {@link Expression}.
 	 */
-	public InstanceOfExpression(final int id, final Expression expression, final Type type, final boolean inverted) {
+	public InstanceOf(final int id, final Expression expression, final Type type, final boolean inverted) {
 		super(id, inverted);
 		this.expression = expression;
 		this.type = type;
@@ -54,8 +54,8 @@ public class InstanceOfExpression extends Expression {
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)
 	 */
 	@Override
-	public InstanceOfExpression duplicate(int id) {
-		return new InstanceOfExpression(id, getExpression(), getType(), isInverted());
+	public InstanceOf duplicate(int id) {
+		return new InstanceOf(id, getExpression(), getType(), isInverted());
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class InstanceOfExpression extends Expression {
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
 	 */
 	@Override
-	public InstanceOfExpression duplicate() {
+	public InstanceOf duplicate() {
 		return duplicate(generateId());
 	}
 	
@@ -77,7 +77,7 @@ public class InstanceOfExpression extends Expression {
 	}
 	
 	/**
-	 * {@link InstanceOfExpression} return a {@link Boolean} type.
+	 * {@link InstanceOf} return a {@link Boolean} type.
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getJavaType()
 	 */
@@ -107,7 +107,7 @@ public class InstanceOfExpression extends Expression {
 	 */
 	@Override
 	public Expression inverse() {
-		return new InstanceOfExpression(generateId(), expression, type, !isInverted());
+		return new InstanceOf(generateId(), expression, type, !isInverted());
 	}
 	
 	/**
@@ -143,7 +143,7 @@ public class InstanceOfExpression extends Expression {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		InstanceOfExpression other = (InstanceOfExpression) obj;
+		InstanceOf other = (InstanceOf) obj;
 		if (expression == null) {
 			if (other.expression != null)
 				return false;

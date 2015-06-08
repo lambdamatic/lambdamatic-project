@@ -947,15 +947,15 @@ public class InfixExpression extends ComplexExpression {
 				matchOperands.add(operand);
 				if (this.operator == InfixOperator.CONDITIONAL_AND) {
 					final Expression resultExpression = new BooleanLiteral(getId(), EMPTY_SET_OPERATOR.getValue(), isInverted());
-					//LOGGER.trace("  Unary Operation Law: {} -> {}", this, resultExpression);
+					LOGGER.trace("  Unary Operation Law: {} -> {}", this, resultExpression);
 					resultExpressions.add(resultExpression);
 				} else if (operands.size() == 2) {
 					final Expression resultExpression = new BooleanLiteral(getId(), UNIVERSAL_OPERATOR.getValue(), isInverted());
-					//LOGGER.trace("  Unary Operation Law: #{} {} -> {}", this.getId(), this.toString(), resultExpression.toString());
+					LOGGER.trace("  Unary Operation Law: #{} {} -> {}", this.getId(), this.toString(), resultExpression.toString());
 					resultExpressions.add(resultExpression);
 				} else {
 					final Expression resultExpression = removeOperands(operand, operand.inverse());
-					//LOGGER.trace("  Unary Operation Law: #{} {} -> {}", this.getId(), this.toString(), resultExpression.toString());
+					LOGGER.trace("  Unary Operation Law: #{} {} -> {}", this.getId(), this.toString(), resultExpression.toString());
 					resultExpressions.add(resultExpression);
 				}
 			}

@@ -15,7 +15,7 @@ package org.lambdamatic.mongodb.metadata;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public interface ProjectionMetadata<T> {
+public interface ProjectionMetadata<DomainType> {
 	
 }
 

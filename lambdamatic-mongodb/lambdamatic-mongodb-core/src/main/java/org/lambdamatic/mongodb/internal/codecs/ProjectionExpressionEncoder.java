@@ -150,7 +150,7 @@ public class ProjectionExpressionEncoder extends ExpressionVisitor {
 		// embedded Lambda Expression on Array field
 		if (methodInvocation.getParent().getExpressionType() == ExpressionType.ARRAY_VARIABLE) {
 			final List<Expression> arguments = methodInvocation.getArguments();
-			final Expression sourceExpression = methodInvocation.getSourceExpression();
+			final Expression sourceExpression = methodInvocation.getSource();
 			if (sourceExpression.getExpressionType() != ExpressionType.FIELD_ACCESS) {
 				throw new ConversionException(
 						"Did not expect something else than a field access as the source expression in the following method invocation: "
@@ -170,7 +170,8 @@ public class ProjectionExpressionEncoder extends ExpressionVisitor {
 			// use a dedicated Encoder
 			final FilterExpressionEncoder lambdaExpressionEncoder = new FilterExpressionEncoder(
 					lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName(), this.writer, this.encoderContext, true);
-			lambdaExpression.getExpression().accept(lambdaExpressionEncoder);
+			final Expression expression = EncoderUtils.getSingleExpression(lambdaExpression);
+			expression.accept(lambdaExpressionEncoder);
 			writer.writeEndDocument();
 			writer.writeEndDocument();
 		}

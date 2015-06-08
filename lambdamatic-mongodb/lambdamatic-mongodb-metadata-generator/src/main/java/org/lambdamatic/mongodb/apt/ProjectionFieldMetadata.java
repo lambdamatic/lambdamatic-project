@@ -24,9 +24,6 @@ import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
  */
 public class ProjectionFieldMetadata extends BaseFieldMetadata {
 
-	/** Suffix to use for the generated {@link ProjectionMetadata} classes. */
-	public static String PROJECTION_METADATA_CLASSNAME_PREFIX = "P";
-
 	/**
 	 * Creates a {@link ProjectionFieldMetadata} from a field annotated with {@link DocumentId}.
 	 * 
@@ -100,7 +97,7 @@ public class ProjectionFieldMetadata extends BaseFieldMetadata {
 	 */
 	public static String getProjectionMetadataType(final Element variableTypeElement) {
 		final String packageName = ClassUtils.getPackageCanonicalName(variableTypeElement.toString());
-		final String shortClassName = PROJECTION_METADATA_CLASSNAME_PREFIX
+		final String shortClassName = Constants.PROJECTION_METADATA_CLASSNAME_PREFIX
 				+ ClassUtils.getShortClassName(variableTypeElement.toString());
 		return packageName + '.' + shortClassName;
 	}

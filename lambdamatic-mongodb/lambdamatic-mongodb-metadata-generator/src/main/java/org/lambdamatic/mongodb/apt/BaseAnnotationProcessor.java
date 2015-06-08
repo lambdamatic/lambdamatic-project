@@ -27,8 +27,10 @@ import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 import org.lambdamatic.mongodb.annotations.TransientField;
+import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
+import org.lambdamatic.mongodb.metadata.UpdateMetadata;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -49,42 +51,69 @@ public abstract class BaseAnnotationProcessor extends AbstractProcessor {
 	}
 	
 	/**
+	 * Builds the simple name of the {@link QueryArray} class associated with the given {@code element} if it is annotated with {@link EmbeddedDocument} only.
+	 * 
+	 * @param element
+	 *            the type element from which the name will be generated
+	 * @return the simple name of the given type element, prefixed by
+	 *         {@link Constants#QUERY_METADATA_CLASSNAME_PREFIX}, or <code>null</code> if the given element is not annotated with {@link EmbeddedDocument}.
+	 */
+	static String generateQueryArrayMetadataSimpleClassName(final Element element) {
+		if(element.getAnnotation(EmbeddedDocument.class) != null) {
+			return Constants.QUERY_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString() + Constants.QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX;
+		}
+		return null;
+	}
+
+	/**
 	 * Builds the simple name of the {@link QueryMetadata} class associated with the given {@code element}
 	 * 
 	 * @param element
 	 *            the type element from which the name will be generated
 	 * @return the simple name of the given type element, prefixed by
-	 *         {@link DocumentAnnotationProcessor#QUERY_METADATA_CLASSNAME_PREFIX}.
+	 *         {@link Constants#QUERY_METADATA_CLASSNAME_PREFIX}.
 	 */
-	public static String generateQueryMetadataSimpleClassName(final Element element) {
-		return QueryFieldMetadata.QUERY_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString();
+	static String generateQueryMetadataSimpleClassName(final Element element) {
+		return Constants.QUERY_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString();
 	}
 
+	/**
+	 * Builds the simple name of the {@link ProjectionMetadata} class associated with the given {@code element}
+	 * 
+	 * @param element
+	 *            the type element from which the name will be generated
+	 * @return the simple name of the given type element, prefixed by
+	 *         {@link Constants#PROJECTION_METADATA_CLASSNAME_PREFIX}.
+	 */
+	static String generateProjectionSimpleClassName(final Element element) {
+		return Constants.PROJECTION_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString();
+	}
+	
+	/**
+	 * Builds the simple name of the {@link UpdateMetadata} class associated with the given {@code element}
+	 * 
+	 * @param element
+	 *            the type element from which the name will be generated
+	 * @return the simple name of the given type element, prefixed by
+	 *         {@link DocumentAnnotationProcessor#UPDATE_METADATA_CLASSNAME_PREFIX}.
+	 */
+	static String generateUpdateSimpleClassName(final Element element) {
+		return UpdateFieldMetadata.UPDATE_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString();
+	}
+	
 	/**
 	 * Builds the simple name of the {@link QueryArray} class associated with the given {@code element} if it is annotated with {@link EmbeddedDocument} only.
 	 * 
 	 * @param element
 	 *            the type element from which the name will be generated
 	 * @return the simple name of the given type element, prefixed by
-	 *         {@link DocumentAnnotationProcessor#QUERY_METADATA_CLASSNAME_PREFIX}, or <code>null</code> if the given element is not annotated with {@link EmbeddedDocument}.
+	 *         {@link Constants#QUERY_METADATA_CLASSNAME_PREFIX}, or <code>null</code> if the given element is not annotated with {@link EmbeddedDocument}.
 	 */
-	public static String generateQueryArrayMetadataSimpleClassName(final Element element) {
+	static String generateUpdateArrayMetadataSimpleClassName(final Element element) {
 		if(element.getAnnotation(EmbeddedDocument.class) != null) {
-			return QueryFieldMetadata.QUERY_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString() + QueryFieldMetadata.QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX;
+			return Constants.UPDATE_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString() + Constants.UPDATE_ARRAY_METADATA_CLASSNAME_SUFFIX;
 		}
 		return null;
-	}
-	
-	/**
-	 * Builds the simple name of the {@link QueryMetadata} class associated with the given {@code element}
-	 * 
-	 * @param element
-	 *            the type element from which the name will be generated
-	 * @return the simple name of the given type element, prefixed by
-	 *         {@link DocumentAnnotationProcessor#QUERY_METADATA_CLASSNAME_PREFIX}.
-	 */
-	public static String generateProjectionSimpleClassName(final Element element) {
-		return ProjectionFieldMetadata.PROJECTION_METADATA_CLASSNAME_PREFIX + element.getSimpleName().toString();
 	}
 
 	@Override
@@ -178,6 +207,49 @@ public abstract class BaseAnnotationProcessor extends AbstractProcessor {
 	}
 	
 	/**
+	 * Generates the {@code UpdateMetadata} implementation source code for the annotated class currently being
+	 * processed.
+	 * 
+	 * @param allContextProperties
+	 *            all properties to use when running the engine to generate the source code.
+	 * 
+	 * @throws IOException
+	 */
+	void generateUpdateMetadataSourceCode(final Mustache template, final Map<String, Object> templateContextProperties)
+			throws IOException {
+		final String targetClassName = templateContextProperties.get(Constants.PACKAGE_NAME) + "."
+				+ templateContextProperties.get(Constants.UPDATE_METADATA_CLASS_NAME);
+		final String targetPackageName = (String) templateContextProperties.get(Constants.PACKAGE_NAME);
+		@SuppressWarnings("unchecked")
+		final List<UpdateFieldMetadata> updateFields = (List<UpdateFieldMetadata>) templateContextProperties
+		.get(Constants.UPDATE_FIELDS);
+		templateContextProperties.put(Constants.IMPORT_STATEMENTS, findRequiredImportStatements(targetPackageName, updateFields));
+		generateSourceCode(targetClassName, template, templateContextProperties);
+	}
+	
+	/**
+	 * Generates the {@code UpdateArray} implementation source code for the annotated class currently being processed.
+	 * 
+	 * @param allContextProperties
+	 *            all properties to use when running the engine to generate the source code.
+	 * 
+	 * @throws IOException
+	 */
+	void generateUpdateArrayMetadataSourceCode(final Mustache template, final Map<String, Object> templateContextProperties)
+			throws IOException {
+		// skip this step if UpdateArray metadata class is not needed.
+		if(templateContextProperties.get(Constants.UPDATE_ARRAY_METADATA_CLASS_NAME) == null) {
+			return;
+		}
+		final String targetPackageName = (String) templateContextProperties.get(Constants.PACKAGE_NAME);
+		final String targetClassName = targetPackageName + "."
+				+ templateContextProperties.get(Constants.UPDATE_ARRAY_METADATA_CLASS_NAME);
+		generateSourceCode(targetClassName, template, templateContextProperties);
+	}
+
+	
+	
+	/**
 	 * Finds all required import statements that need to be included in the target template
 	 * 
 	 * @param targetPackageName
@@ -236,14 +308,22 @@ public abstract class BaseAnnotationProcessor extends AbstractProcessor {
 	}
 
 	/**
-	 * Returns a {@link Map} of the type of the fields of the given classElement, indexed by their name.
+	 * Returns a {@link Map} of all the type of the fields of the given {@code classElement}, indexed by their usage,
+	 * i.e, {@link QueryMetadata}, {@link ProjectionMetadata} or {@link UpdateMetadata}.
 	 * 
 	 * @param classElement
 	 *            the element to scan
 	 * @return the map of fields
 	 */
-	List<ProjectionFieldMetadata> getProjectionFields(final TypeElement classElement) {
-		final List<ProjectionFieldMetadata> fields = new ArrayList<>();
+	Map<Class<?>, List<? extends BaseFieldMetadata>> getMetadataFields(final TypeElement classElement) {
+		final Map<Class<?>, List<? extends BaseFieldMetadata>> allFields = new HashMap<>();
+		final List<QueryFieldMetadata> queryFields = new ArrayList<>();
+		allFields.put(QueryMetadata.class, queryFields);
+		final List<ProjectionFieldMetadata> projectionFields = new ArrayList<>();
+		allFields.put(ProjectionMetadata.class, projectionFields);
+		final List<UpdateFieldMetadata> updateFields = new ArrayList<>();
+		allFields.put(UpdateMetadata.class, updateFields);
+		
 		for (Element childElement : classElement.getEnclosedElements()) {
 			if (childElement.getKind() == ElementKind.FIELD) {
 				final TransientField transientFieldAnnotation = childElement.getAnnotation(TransientField.class);
@@ -255,43 +335,14 @@ public abstract class BaseAnnotationProcessor extends AbstractProcessor {
 				final DocumentId documentIdAnnotation = childElement.getAnnotation(DocumentId.class);
 				try {
 					if (documentIdAnnotation != null) {
-						fields.add(new ProjectionFieldMetadata(variableElement, documentIdAnnotation));
+						queryFields.add(new QueryFieldMetadata(variableElement, documentIdAnnotation));
+						projectionFields.add(new ProjectionFieldMetadata(variableElement, documentIdAnnotation));
+						updateFields.add(new UpdateFieldMetadata(variableElement, documentIdAnnotation));
 					} else {
 						final DocumentField documentFieldAnnotation = childElement.getAnnotation(DocumentField.class);
-						fields.add(new ProjectionFieldMetadata(variableElement, documentFieldAnnotation));
-					}
-				} catch (MetadataGenerationException e) {
-					processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());
-				}
-			}
-		}
-		return fields;
-	}
-
-	/**
-	 * Returns a {@link Map} of the type of the fields of the given classElement, indexed by their name.
-	 * 
-	 * @param classElement
-	 *            the element to scan
-	 * @return the map of fields
-	 */
-	List<QueryFieldMetadata> getQueryFields(final TypeElement classElement) {
-		final List<QueryFieldMetadata> fields = new ArrayList<>();
-		for (Element childElement : classElement.getEnclosedElements()) {
-			if (childElement.getKind() == ElementKind.FIELD) {
-				final TransientField transientFieldAnnotation = childElement.getAnnotation(TransientField.class);
-				// skip field if it is annotated with @TransientField
-				if (transientFieldAnnotation != null) {
-					continue;
-				}
-				final VariableElement variableElement = (VariableElement) childElement;
-				final DocumentId documentIdAnnotation = childElement.getAnnotation(DocumentId.class);
-				try {
-					if (documentIdAnnotation != null) {
-						fields.add(new QueryFieldMetadata(variableElement, documentIdAnnotation));
-					} else {
-						final DocumentField documentFieldAnnotation = childElement.getAnnotation(DocumentField.class);
-						fields.add(new QueryFieldMetadata(variableElement, documentFieldAnnotation));
+						queryFields.add(new QueryFieldMetadata(variableElement, documentFieldAnnotation));
+						projectionFields.add(new ProjectionFieldMetadata(variableElement, documentFieldAnnotation));
+						updateFields.add(new UpdateFieldMetadata(variableElement, documentFieldAnnotation));
 					}
 				} catch (MetadataGenerationException e) {
 					processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());
@@ -299,7 +350,7 @@ public abstract class BaseAnnotationProcessor extends AbstractProcessor {
 	
 			}
 		}
-		return fields;
+		return allFields;
 	}
 
 }

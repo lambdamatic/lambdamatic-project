@@ -1,0 +1,6 @@
+{ "blog": [
+
+	{ "_id": "1", "_targetClass" : "com.sample.BlogEntry",  
+	  "authorName" : "John Doe", content: "Updating documents...", "publishDate" : {$date:"2015-06-07T14:40:00Z"}, "tags" : ["doc", "update"] }
+	]
+}

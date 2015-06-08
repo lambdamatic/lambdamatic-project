@@ -8,7 +8,11 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.lambdamatic" level="INFO" />
+	<logger name="org.lambdamatic" level="TRACE" />
+
+	<logger name="com.lordofthejars" level="INFO" />
+
+	<logger name="com.mongodb" level="TRACE" />
 
 	<root level="warn">
 		<appender-ref ref="STDOUT" />

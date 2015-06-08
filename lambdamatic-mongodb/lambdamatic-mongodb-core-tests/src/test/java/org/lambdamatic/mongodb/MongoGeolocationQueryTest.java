@@ -21,6 +21,8 @@ import org.junit.Test;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 import org.lambdamatic.mongodb.types.geospatial.Polygon;
 
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import com.lordofthejars.nosqlunit.core.LoadStrategyEnum;
 import com.sample.Foo;
 import com.sample.Foo.FooBuilder;
 import com.sample.FooCollection;
@@ -34,27 +36,32 @@ import com.sample.FooCollection;
 public class MongoGeolocationQueryTest extends MongoBaseTest{
 
 	private FooCollection fooCollection;
+	
+	public MongoGeolocationQueryTest() {
+		super(Foo.class);
+	}
 
 	@Before
 	public void setup() throws UnknownHostException {
-		this.fooCollection = new FooCollection(mongoClient, DATABASE_NAME, COLLECTION_NAME);
+		this.fooCollection = new FooCollection(getMongoClient(), DATABASE_NAME, getCollectionName());
 		// insert test data
 		final Foo foo1 = new FooBuilder().withStringField("Item1").withLocation(40.72, -73.92).build();
 		final Foo foo2 = new FooBuilder().withStringField("Item2").withLocation(40.73, -73.92).build();
 		final Foo foo3 = new FooBuilder().withStringField("Item3").withLocation(40.73, -73.92).build();
 		final Foo foo4 = new FooBuilder().withStringField("Item4").withLocation(40.72, -73.92).build();
 		final Foo foo5 = new FooBuilder().withStringField("Item5").withLocation(40.0, -73.0).build();
-		this.fooCollection.insert(foo1, foo2, foo3, foo4, foo5);
-		// mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME).createIndex("location",
+		this.fooCollection.add(foo1, foo2, foo3, foo4, foo5);
+		// mongoClient.getDatabase(DATABASE_NAME).getCollection(FOO_COLLECTION_NAME).createIndex("location",
 		// new CreateIndexOptions().twoDSphereIndexVersion(2));
 	}
 
 	@Test
+	@UsingDataSet(loadStrategy=LoadStrategyEnum.DELETE_ALL)
 	public void shouldFindGeoWithinPolygon() throws IOException {
 		// when
 		final Polygon corners = new Polygon(new Location(40.70, -73.90), new Location(40.75, -73.90), new Location(
 				40.75, -73.95), new Location(40.70, -73.95));
-		final List<Foo> matches = fooCollection.find(f -> f.location.geoWithin(corners)).toList();
+		final List<Foo> matches = fooCollection.filter(f -> f.location.geoWithin(corners)).toList();
 		// then
 		assertThat(matches).isNotNull().hasSize(4).are(new Condition<Foo>("Checking location is set") {
 			@Override
@@ -66,16 +73,18 @@ public class MongoGeolocationQueryTest extends MongoBaseTest{
 	}
 
 	@Test
+	@UsingDataSet(loadStrategy=LoadStrategyEnum.DELETE_ALL)
 	public void shouldFindGeoWithinArrayOfLocations() throws IOException {
 		// when
 		final Location[] corners = new Location[] { new Location(40.70, -73.90), new Location(40.75, -73.90),
 				new Location(40.75, -73.95), new Location(40.70, -73.95) };
-		final List<Foo> matches = fooCollection.find(f -> f.location.geoWithin(corners)).toList();
+		final List<Foo> matches = fooCollection.filter(f -> f.location.geoWithin(corners)).toList();
 		// then
 		assertThat(matches).isNotNull().hasSize(4);
 	}
 
 	@Test
+	@UsingDataSet(loadStrategy=LoadStrategyEnum.DELETE_ALL)
 	public void shouldFindGeoWithinListOfLocations() throws IOException {
 		// when
 		final List<Location> corners = new ArrayList<>();
@@ -83,7 +92,7 @@ public class MongoGeolocationQueryTest extends MongoBaseTest{
 		corners.add(new Location(40.75, -73.90));
 		corners.add(new Location(40.75, -73.95));
 		corners.add(new Location(40.70, -73.95));
-		final List<Foo> matches = fooCollection.find(f -> f.location.geoWithin(corners)).toList();
+		final List<Foo> matches = fooCollection.filter(f -> f.location.geoWithin(corners)).toList();
 		// then
 		assertThat(matches).isNotNull().hasSize(4);
 	}

@@ -3,11 +3,17 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public class ExpressionVisitorUtil {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(ExpressionVisitorUtil.class);
 
 	/**
 	 * Uses the given {@link ExpressionVisitor} to visit the given {@link Expression}. The {@link Expression} is wrapped
@@ -27,6 +33,7 @@ public class ExpressionVisitorUtil {
 		// now, detach and return the resulting wrapped expression
 		final Expression resultExpression = wrapper.getExpression();
 		resultExpression.setParent(null);
+		LOGGER.debug("Result after : " + visitor.getClass().getName() + " visit: " +  resultExpression);
 		return resultExpression;
 	}
 

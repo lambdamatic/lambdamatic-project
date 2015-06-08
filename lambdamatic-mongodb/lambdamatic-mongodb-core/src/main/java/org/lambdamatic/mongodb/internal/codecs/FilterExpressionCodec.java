@@ -12,6 +12,7 @@ import org.bson.BsonWriter;
 import org.bson.codecs.Codec;
 import org.bson.codecs.EncoderContext;
 import org.lambdamatic.SerializablePredicate;
+import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 
 /**
@@ -19,14 +20,15 @@ import org.lambdamatic.analyzer.ast.node.LambdaExpression;
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  */
-public class FilterExpressionCodec extends BaseQueryExpressionCodec<SerializablePredicate<?>> {
+public class FilterExpressionCodec extends BaseLambdaExpressionCodec<SerializablePredicate<?>> {
 
 	@Override
 	void encodeExpression(final LambdaExpression lambdaExpression, final BsonWriter writer,
 			final EncoderContext encoderContext) {
 		final FilterExpressionEncoder expressionEncoder = new FilterExpressionEncoder(
 				lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName(), writer, encoderContext);
-		lambdaExpression.getExpression().accept(expressionEncoder);
+		final Expression expression = EncoderUtils.getSingleExpression(lambdaExpression);
+		expression.accept(expressionEncoder);
 		writer.flush();
 	}
 

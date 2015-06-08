@@ -4,6 +4,7 @@
 package org.lambdamatic.mongodb.apt;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -13,6 +14,9 @@ import javax.lang.model.element.TypeElement;
 
 import org.lambdamatic.mongodb.annotations.BaseDocument;
 import org.lambdamatic.mongodb.annotations.Document;
+import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
+import org.lambdamatic.mongodb.metadata.QueryMetadata;
+import org.lambdamatic.mongodb.metadata.UpdateMetadata;
 
 import com.github.mustachejava.Mustache;
 
@@ -43,6 +47,8 @@ public class DocumentAnnotationProcessor extends BaseAnnotationProcessor {
 		generateQueryMetadataSourceCode(getTemplate(Constants.QUERY_METADATA_TEMPLATE), templateContextProperties);
 		generateQueryArrayMetadataSourceCode(getTemplate(Constants.QUERY_ARRAY_METADATA_TEMPLATE), templateContextProperties);
 		generateProjectionMetadataSourceCode(getTemplate(Constants.PROJECTION_METADATA_TEMPLATE), templateContextProperties);
+		generateUpdateMetadataSourceCode(getTemplate(Constants.UPDATE_METADATA_TEMPLATE), templateContextProperties);
+		generateUpdateArrayMetadataSourceCode(getTemplate(Constants.UPDATE_ARRAY_METADATA_TEMPLATE), templateContextProperties);
 		generateMongoCollectionSourceCode(getTemplate(Constants.MONGO_COLLECTION_TEMPLATE), templateContextProperties);
 		generateMongoCollectionProducerSourceCode(getTemplate(Constants.MONGO_COLLECTION_PRODUCER_TEMPLATE), templateContextProperties);
 	}
@@ -50,11 +56,15 @@ public class DocumentAnnotationProcessor extends BaseAnnotationProcessor {
 	@Override
 	protected Map<String, Object> initializeTemplateContextProperties(final TypeElement domainElement) {
 		final Map<String, Object> templateContextProperties = super.initializeTemplateContextProperties(domainElement);
-		templateContextProperties.put(Constants.QUERY_FIELDS, getQueryFields(domainElement));
-		templateContextProperties.put(Constants.PROJECTION_FIELDS, getProjectionFields(domainElement));
+		final Map<Class<?>, List<? extends BaseFieldMetadata>> allFields = getMetadataFields(domainElement);
+		templateContextProperties.put(Constants.QUERY_FIELDS, allFields.get(QueryMetadata.class));
 		templateContextProperties.put(Constants.QUERY_METADATA_CLASS_NAME, generateQueryMetadataSimpleClassName(domainElement));
 		templateContextProperties.put(Constants.QUERY_ARRAY_METADATA_CLASS_NAME, generateQueryArrayMetadataSimpleClassName(domainElement));
+		templateContextProperties.put(Constants.PROJECTION_FIELDS, allFields.get(ProjectionMetadata.class));
 		templateContextProperties.put(Constants.PROJECTION_METADATA_CLASS_NAME, generateProjectionSimpleClassName(domainElement));
+		templateContextProperties.put(Constants.UPDATE_FIELDS, allFields.get(UpdateMetadata.class));
+		templateContextProperties.put(Constants.UPDATE_METADATA_CLASS_NAME, generateUpdateSimpleClassName(domainElement));
+		templateContextProperties.put(Constants.UPDATE_ARRAY_METADATA_CLASS_NAME, generateUpdateArrayMetadataSimpleClassName(domainElement));
 		final Document documentAnnotation = domainElement.getAnnotation(Document.class);
 		templateContextProperties.put(Constants.MONGO_COLLECTION_NAME, documentAnnotation.collection());
 		templateContextProperties.put(Constants.MONGO_COLLECTION_CLASS_NAME, generateMongoCollectionSimpleClassName(domainElement));

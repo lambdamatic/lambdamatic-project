@@ -3,8 +3,8 @@
  */
 package org.lambdamatic.analyzer.ast;
 
-import static org.lambdamatic.analyzer.ast.node.Expression.ExpressionType.LOCAL_VARIABLE;
 import static org.lambdamatic.analyzer.ast.node.Expression.ExpressionType.CAPTURED_ARGUMENT_REF;
+import static org.lambdamatic.analyzer.ast.node.Expression.ExpressionType.LOCAL_VARIABLE;
 
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
@@ -17,7 +17,6 @@ import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
-import org.lambdamatic.analyzer.ast.node.ExpressionVisitorUtil;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
@@ -27,8 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Visitor that will replace the given {@link CapturedArgument} with their actual
- * values.
+ * A {@link ExpressionVisitor} that will replace the given {@link CapturedArgument} with their actual
+ * values in the visited {@link Expression}.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
@@ -62,7 +61,6 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
 	
 	@Override
 	public boolean visitObjectValue(ObjectInstance expr) {
-		// TODO Auto-generated method stub
 		return super.visitObjectValue(expr);
 	}
 	
@@ -82,10 +80,10 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
 
 	@Override
 	public boolean visitFieldAccessExpression(final FieldAccess fieldAccess) {
-		if (fieldAccess.getSourceExpression().getExpressionType() == ExpressionType.OBJECT_VALUE) {
+		if (fieldAccess.getSource().getExpressionType() == ExpressionType.OBJECT_VALUE) {
 			final String fieldName = fieldAccess.getFieldName();
 			try {
-				final Object source = fieldAccess.getSourceExpression().getValue();
+				final Object source = fieldAccess.getSource().getValue();
 				final Field f = ReflectionUtils.getFieldToInvoke(source, fieldName);
 				f.setAccessible(true);
 				final Object replacement = f.get(source);
@@ -98,7 +96,7 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
 				// no further visiting on this (obsolete) branch of the expression tree.
 				return false;
 			} catch (NoSuchFieldException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
-				throw new AnalyzeException("Failed to execute method '" + fieldName + "' on captured argument '" + fieldAccess.getSourceExpression().getValue() + "'", e);
+				throw new AnalyzeException("Failed to execute method '" + fieldName + "' on captured argument '" + fieldAccess.getSource().getValue() + "'", e);
 			}
 		} 
 		return super.visitFieldAccessExpression(fieldAccess);
@@ -107,9 +105,9 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
 	@Override
 	public boolean visitLambdaExpression(final LambdaExpression lambdaExpression) {
 		// run another CapturedArgumentsEvaluator on the given lambdaExpression
-		final Expression evaluatedExpression = ExpressionVisitorUtil.visit(lambdaExpression.getExpression(), new CapturedArgumentsEvaluator(this.capturedArgs));
-		final ComplexExpression parentExpression = lambdaExpression.getParent();
-		parentExpression.replaceElement(lambdaExpression, new LambdaExpression(evaluatedExpression, lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName()));
+		lambdaExpression.getBody().stream().forEach(s -> s.accept(new StatementExpressionsDelegateVisitor(new CapturedArgumentsEvaluator(this.capturedArgs))));
+		//final ComplexExpression parentExpression = lambdaExpression.getParent();
+		//parentExpression.replaceElement(lambdaExpression, new LambdaExpression(evaluatedExpression, lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName()));
 		// no need to further visit this expression.
 		return false;
 	}

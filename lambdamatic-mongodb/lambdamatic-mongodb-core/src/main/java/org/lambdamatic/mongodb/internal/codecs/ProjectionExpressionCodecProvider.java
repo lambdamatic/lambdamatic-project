@@ -28,7 +28,7 @@ public class ProjectionExpressionCodecProvider implements CodecProvider {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProjectionExpressionCodecProvider.class);
 	
 	/**
-	 * Returns whether the given clazz implements the {@link SerializableBiFunction} interface, in which case it can return an
+	 * Returns whether the given clazz implements the {@link SerializableConsumer} interface, in which case it can return an
 	 * instance of {@link ProjectionExpressionCodec}. 
 	 * 
 	 * @see org.bson.codecs.configuration.CodecProvider#get(java.lang.Class,

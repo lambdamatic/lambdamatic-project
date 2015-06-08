@@ -9,12 +9,10 @@ package org.lambdamatic.analyzer.ast.node;
  * @author xcoulon
  *
  */
-public class ReturnStatement extends Statement {
+public class ReturnStatement extends SimpleStatement {
 
-	private final Expression value; 
-	
-	public ReturnStatement(final Expression value) {
-		this.value = value;
+	public ReturnStatement(final Expression expression) {
+		super(expression);
 	}
 	
 	@Override
@@ -22,10 +20,10 @@ public class ReturnStatement extends Statement {
 		return StatementType.RETURN_STMT;
 	}
 
-	public Expression getExpression() {
-		return value;
-	}
-	
+	@Override
+	public ReturnStatement duplicate() {
+		return new ReturnStatement(expression.duplicate());
+	} 
 	@Override
 	public void accept(final StatementVisitor visitor) {
 		visitor.visit(this);
@@ -35,11 +33,12 @@ public class ReturnStatement extends Statement {
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("return");
-		if(value != null) {
-			builder.append(' ').append(value.toString());
+		if(expression != null) {
+			builder.append(' ').append(expression.toString());
 		}
+		builder.append(';');
 		return builder.toString();
 	}
-	
+
 }
 

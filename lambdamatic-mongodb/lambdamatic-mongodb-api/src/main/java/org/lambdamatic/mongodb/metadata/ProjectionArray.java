@@ -16,14 +16,14 @@ import org.lambdamatic.mongodb.LambdamaticMongoCollection;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public interface ProjectionArray<T> extends ProjectionField {
+public interface ProjectionArray<DomainType> extends ProjectionField {
 
 	/**
 	 * The positional {@link MongoOperator#FIRST} operator limits the contents of an array from the query results to
 	 * contain only the first element matching the query document.
 	 * 
 	 * Use {@link ProjectionArray#first()} in the projection document of the
-	 * {@link LambdamaticMongoCollection#find(SerializablePredicate)} method when you only need one particular array
+	 * {@link LambdamaticMongoCollection#filter(SerializablePredicate)} method when you only need one particular array
 	 * element in selected documents.
 	 * 
 	 * @see http://docs.mongodb.org/manual/reference/operator/projection/positional/#proj._S_
@@ -41,6 +41,6 @@ public interface ProjectionArray<T> extends ProjectionField {
 	 * @see http://docs.mongodb.org/manual/reference/operator/projection/elemMatch/#proj._S_elemMatch
 	 */
 	@MongoOperation(MongoOperator.ELEMEMT_MATCH)
-	public ProjectionField elementMatch(final SerializablePredicate<T> expression);
+	public ProjectionField elementMatch(final SerializablePredicate<DomainType> expression);
 
 }

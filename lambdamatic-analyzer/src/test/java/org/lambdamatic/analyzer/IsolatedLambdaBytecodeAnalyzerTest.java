@@ -1,22 +1,23 @@
 package org.lambdamatic.analyzer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.lambdamatic.testutils.JavaMethods.Object_equals;
-import static org.lambdamatic.testutils.JavaMethods.TestPojo_elementMatch;
 
 import java.io.IOException;
 
 import org.junit.Test;
 import org.lambdamatic.SerializableConsumer;
+import org.lambdamatic.analyzer.ast.node.Assignment;
+import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
-import org.lambdamatic.analyzer.ast.node.MethodInvocation;
+import org.lambdamatic.analyzer.ast.node.NumberLiteral;
+import org.lambdamatic.analyzer.ast.node.Operation;
+import org.lambdamatic.analyzer.ast.node.Operation.Operator;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sample.model.OtherTestPojo;
 import com.sample.model.TestPojo;
 
 /**
@@ -34,21 +35,23 @@ public class IsolatedLambdaBytecodeAnalyzerTest {
 	@Test
 	public void shouldParseExpression() throws IOException, NoSuchMethodException, SecurityException {
 		// given
-		final OtherTestPojo otherPojo = new OtherTestPojo();
 		final SerializableConsumer<TestPojo> expression = (SerializableConsumer<TestPojo>) ((
-				TestPojo t) -> t.elementMatch(e -> e.field.equals(otherPojo.getStringValue())));
+				TestPojo t) -> {t.stringValue = "foo"; t.field = "bar"; t.primitiveIntValue++;});
 		// when
 		final LambdaExpression resultExpression = analyzer.analyzeExpression(expression);
 		// then
-		final LocalVariable e = new LocalVariable(0, "e", TestPojo.class);
-		final MethodInvocation fieldEqualsFooMethod = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("foo"));
 		final LocalVariable t = new LocalVariable(1, "t", TestPojo.class);
-		final MethodInvocation elementMatchMethod = new MethodInvocation(t, TestPojo_elementMatch, new LambdaExpression(fieldEqualsFooMethod, TestPojo.class, "e"));
-		final LambdaExpression expectedExpression = new LambdaExpression(elementMatchMethod, TestPojo.class, "t");
+		final FieldAccess t_dot_stringValue = new FieldAccess(t, "stringValue");
+		final ExpressionStatement set_t_dot_stringValue = new ExpressionStatement(new Assignment(t_dot_stringValue, new StringLiteral("foo")));
+		final FieldAccess t_dot_field = new FieldAccess(t, "field");
+		final ExpressionStatement set_t_dot_field = new ExpressionStatement(new Assignment(t_dot_field, new StringLiteral("bar")));
+		final FieldAccess t_dot_primitiveIntValue = new FieldAccess(t, "primitiveIntValue");
+		final ExpressionStatement inc_primitiveInt = new ExpressionStatement(new Assignment(t_dot_primitiveIntValue, new Operation(Operator.ADD, t_dot_primitiveIntValue, new NumberLiteral(1))));
 		// verification
 		LOGGER.info("Result: {}", resultExpression);
-		assertThat(resultExpression).isEqualTo(expectedExpression);
 		assertThat(resultExpression.getArgumentName()).isEqualTo("t");
+		assertThat(resultExpression.getArgumentType()).isEqualTo(TestPojo.class);
+		assertThat(resultExpression.getBody()).containsExactly(set_t_dot_stringValue, set_t_dot_field, inc_primitiveInt);
 	}
 }
 

@@ -18,14 +18,14 @@ import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseQueryExpressionCodec<T> implements Codec<T> {
+public abstract class BaseLambdaExpressionCodec<T> implements Codec<T> {
 
 	/** The Logger name to use when logging conversion results. */
-	protected static final String LOGGER_NAME = BaseQueryExpressionCodec.class.getName();
+	protected static final String LOGGER_NAME = BaseLambdaExpressionCodec.class.getName();
 	/** The usual Logger */
 	private static final Logger LOGGER = LoggerFactory.getLogger(LOGGER_NAME);
 
-	public BaseQueryExpressionCodec() {
+	public BaseLambdaExpressionCodec() {
 		super();
 	}
 
@@ -62,11 +62,11 @@ public abstract class BaseQueryExpressionCodec<T> implements Codec<T> {
 	}
 
 	/**
-	 * Encodes the given {@link LambdaExpression} into the given {@link BsonWriter}, using the {@link EncoderContext} if
+	 * Encodes the given {@link LambdaExpressionBlock} into the given {@link BsonWriter}, using the {@link EncoderContext} if
 	 * necessary.
 	 * 
 	 * @param lambdaExpression
-	 *            the {@link LambdaExpression} to encode
+	 *            the {@link LambdaExpressionBlock} to encode
 	 * @param writer
 	 *            the output writer
 	 * @param encoderContext

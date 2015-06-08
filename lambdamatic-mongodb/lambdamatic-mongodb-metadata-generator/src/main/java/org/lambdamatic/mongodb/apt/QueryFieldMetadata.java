@@ -15,26 +15,19 @@ import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.lambdamatic.mongodb.metadata.LocationField;
-import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryField;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.lambdamatic.mongodb.metadata.ext.QStringArray;
 
 /**
- * Information about a given field that should be generated in a {@link ProjectionMetadata} class.
+ * Information about a given field that should be generated in a {@link QueryMetadata} class.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
 public class QueryFieldMetadata extends BaseFieldMetadata {
 
-	/** Prefix to use for the generated {@link QueryMetadata} classes. */
-	public static String QUERY_METADATA_CLASSNAME_PREFIX = "Q";
-
-	/** Suffix to use for the generated {@link QueryArray} classes. */
-	public static String QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX = "Array";
-	
 	/**
 	 * Creates a {@link QueryFieldMetadata} from a field annotated with {@link DocumentId}.
 	 * 
@@ -115,7 +108,7 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 	 */
 	public static String getQueryMetadataType(final String elementTypeName) {
 		final String packageName = ClassUtils.getPackageCanonicalName(elementTypeName.toString());
-		final String shortClassName = QUERY_METADATA_CLASSNAME_PREFIX
+		final String shortClassName = Constants.QUERY_METADATA_CLASSNAME_PREFIX
 				+ ClassUtils.getShortClassName(elementTypeName.toString());
 		return packageName + '.' + shortClassName;
 	}
@@ -131,8 +124,8 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 			return QStringArray.class.getName();
 		default:
 			final String packageName = ClassUtils.getPackageCanonicalName(elementTypeName.toString());
-			final String shortClassName = QUERY_METADATA_CLASSNAME_PREFIX
-					+ ClassUtils.getShortClassName(elementTypeName.toString()) + QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX;
+			final String shortClassName = Constants.QUERY_METADATA_CLASSNAME_PREFIX
+					+ ClassUtils.getShortClassName(elementTypeName.toString()) + Constants.QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX;
 			return packageName + '.' + shortClassName;
 		}
 	}
