@@ -26,7 +26,7 @@ public class {{mongoCollectionProducerClassName}}  {
      */
     @Produces
     public {{mongoCollectionClassName}} get{{mongoCollectionClassName}}(final MongoClient mongoClient, final MongoClientConfiguration mongoClientConfiguration) {
-    	return new {{mongoCollectionClassName}}(mongoClient, mongoClientConfiguration.getDatabaseName(), "{{mongoCollectionName}}");
+    	return new {{mongoCollectionClassName}}(mongoClient, mongoClientConfiguration.getDatabaseName());
     }
 
 }

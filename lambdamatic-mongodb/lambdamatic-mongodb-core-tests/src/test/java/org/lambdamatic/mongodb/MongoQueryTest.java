@@ -43,7 +43,7 @@ public class MongoQueryTest extends MongoBaseTest {
 
 	@Before
 	public void setup() throws UnknownHostException {
-		this.fooCollection = new FooCollection(getMongoClient(), DATABASE_NAME, getCollectionName());
+		this.fooCollection = new FooCollection(getMongoClient(), DATABASE_NAME);
 		// insert test data
 		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO)
 				.withLocation(40, -70).withBar(new Bar.BarBuilder().withStringField("bar").build())

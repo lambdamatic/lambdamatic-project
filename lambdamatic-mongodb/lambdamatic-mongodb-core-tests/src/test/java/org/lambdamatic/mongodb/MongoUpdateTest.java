@@ -43,7 +43,7 @@ public class MongoUpdateTest extends MongoBaseTest {
 
 	@Before
 	public void setup() {
-		this.blogEntryCollection = new BlogEntryCollection(getMongoClient(), DATABASE_NAME, getCollectionName());
+		this.blogEntryCollection = new BlogEntryCollection(getMongoClient(), DATABASE_NAME);
 	}
 
 	@Test

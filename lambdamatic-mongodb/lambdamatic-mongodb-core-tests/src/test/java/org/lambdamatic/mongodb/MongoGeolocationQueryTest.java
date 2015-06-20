@@ -43,7 +43,7 @@ public class MongoGeolocationQueryTest extends MongoBaseTest {
 
 	@Before
 	public void setup() throws UnknownHostException {
-		this.fooCollection = new FooCollection(getMongoClient(), DATABASE_NAME, getCollectionName());
+		this.fooCollection = new FooCollection(getMongoClient(), DATABASE_NAME);
 		// insert test data
 		final Foo foo1 = new FooBuilder().withStringField("Item1").withLocation(40.72, -73.92).build();
 		final Foo foo2 = new FooBuilder().withStringField("Item2").withLocation(40.73, -73.92).build();

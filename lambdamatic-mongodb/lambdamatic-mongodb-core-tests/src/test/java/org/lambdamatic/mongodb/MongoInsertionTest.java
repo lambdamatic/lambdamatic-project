@@ -44,7 +44,7 @@ public class MongoInsertionTest extends MongoBaseTest {
 
 	@Before
 	public void setup() {
-		this.fooCollection = new FooCollection(getMongoClient(), DATABASE_NAME, getCollectionName());
+		this.fooCollection = new FooCollection(getMongoClient(), DATABASE_NAME);
 	}
 
 	@Test
