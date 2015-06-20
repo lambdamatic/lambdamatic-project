@@ -62,8 +62,8 @@ public abstract class BaseLambdaExpressionCodec<T> implements Codec<T> {
 	}
 
 	/**
-	 * Encodes the given {@link LambdaExpressionBlock} into the given {@link BsonWriter}, using the {@link EncoderContext} if
-	 * necessary.
+	 * Encodes the given {@link LambdaExpressionBlock} into the given {@link BsonWriter}, using the
+	 * {@link EncoderContext} if necessary.
 	 * 
 	 * @param lambdaExpression
 	 *            the {@link LambdaExpressionBlock} to encode

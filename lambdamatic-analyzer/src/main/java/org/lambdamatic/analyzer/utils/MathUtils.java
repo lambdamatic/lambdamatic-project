@@ -14,6 +14,8 @@ package org.lambdamatic.analyzer.utils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.lambdamatic.analyzer.exception.AnalyzeException;
+
 /**
  * @author xcoulon
  *
@@ -80,6 +82,27 @@ public class MathUtils {
 		} else {
 			return new BigInteger(left.toString()).divide(new BigInteger(right.toString()));
 		}
+	}
+	
+	/**
+	 * @param number the number convert
+	 * @return the opposite value of the given number, in the same class wrapper.
+	 */
+	public static Number opposite(final Number number) {
+		if(number instanceof Short) {
+			return new Short((short) (number.shortValue() * -1));
+		} else if(number instanceof Integer) {
+			return new Integer(number.intValue() * -1);
+		} else if(number instanceof Long) {
+			return new Long(number.longValue() * -1);
+		} else if(number instanceof Float) {
+			return new Float(number.floatValue() * -1);
+		} else if(number instanceof Double) {
+			return new Double(number.doubleValue() * -1);
+		} else {
+			throw new AnalyzeException("Unexpected type of number to negate: " + number.getClass().getName());
+		}
+		
 	}
 	
 	private static boolean isDecimal(final Number n) {

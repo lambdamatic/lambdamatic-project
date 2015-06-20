@@ -25,4 +25,3 @@ public @interface DocumentField {
 	public String name() default "";
 
 }
-

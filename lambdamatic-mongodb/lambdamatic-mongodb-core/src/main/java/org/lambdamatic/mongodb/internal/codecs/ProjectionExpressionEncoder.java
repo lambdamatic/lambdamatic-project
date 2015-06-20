@@ -117,8 +117,9 @@ public class ProjectionExpressionEncoder extends ExpressionVisitor {
 		for (Expression element : arrayVariable.getElements()) {
 			element.accept(this);
 		}
-		if(this.projectionType == ProjectionType.INCLUDE && !projectedFieldNames.contains(DocumentCodec.MONGOBD_DOCUMENT_ID)) {
-			encode(DocumentCodec.MONGOBD_DOCUMENT_ID, ProjectionType.EXCLUDE);
+		if (this.projectionType == ProjectionType.INCLUDE
+				&& !projectedFieldNames.contains(DocumentEncoder.MONGOBD_DOCUMENT_ID)) {
+			encode(DocumentEncoder.MONGOBD_DOCUMENT_ID, ProjectionType.EXCLUDE);
 		}
 		if (!nestedExpression) {
 			writer.writeEndDocument();
@@ -157,7 +158,7 @@ public class ProjectionExpressionEncoder extends ExpressionVisitor {
 								+ methodInvocation.toString());
 			}
 			final String documentFieldName = EncoderUtils.getDocumentFieldName(projectionMetadataClass,
-					(FieldAccess) sourceExpression);
+					sourceExpression);
 			this.projectedFieldNames.add(documentFieldName);
 			if (arguments.size() != 1 && arguments.get(0).getExpressionType() != ExpressionType.LAMBDA_EXPRESSION) {
 				throw new ConversionException(
@@ -166,10 +167,10 @@ public class ProjectionExpressionEncoder extends ExpressionVisitor {
 			final LambdaExpression lambdaExpression = (LambdaExpression) arguments.get(0);
 			writer.writeStartDocument(documentFieldName);
 			writer.writeStartDocument(MongoOperator.ELEMEMT_MATCH.getLiteral());
-			
 			// use a dedicated Encoder
 			final FilterExpressionEncoder lambdaExpressionEncoder = new FilterExpressionEncoder(
-					lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName(), this.writer, this.encoderContext, true);
+					lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName(), this.writer,
+					this.encoderContext, true);
 			final Expression expression = EncoderUtils.getSingleExpression(lambdaExpression);
 			expression.accept(lambdaExpressionEncoder);
 			writer.writeEndDocument();

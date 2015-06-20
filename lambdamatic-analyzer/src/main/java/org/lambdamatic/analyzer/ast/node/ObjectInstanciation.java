@@ -3,8 +3,12 @@
  */
 package org.lambdamatic.analyzer.ast.node;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.lambdamatic.analyzer.exception.AnalyzeException;
 
 /**
  * Object created and used during the call to the Lambda Expression serialized method.
@@ -12,7 +16,7 @@ import java.util.List;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class ObjectVariable extends Expression {
+public class ObjectInstanciation extends Expression {
 
 	/** the expression on which the method call is applied. */
 	private final Class<?> instanceType;
@@ -27,7 +31,7 @@ public class ObjectVariable extends Expression {
 	 * </p>
 	 * @param instanceType the type of the instance to build
 	 */
-	public ObjectVariable(final Class<?> instanceType) {
+	public ObjectInstanciation(final Class<?> instanceType) {
 		this(generateId(), instanceType, false);
 	}
 
@@ -39,7 +43,7 @@ public class ObjectVariable extends Expression {
 	 * @param instanceType the type of the instance to build
 	 * @param inverted the inversion flag
 	 */
-	public ObjectVariable(final Class<?> instanceType, final boolean inverted) {
+	public ObjectInstanciation(final Class<?> instanceType, final boolean inverted) {
 		this(generateId(), instanceType, inverted);
 	}
 
@@ -51,7 +55,7 @@ public class ObjectVariable extends Expression {
 	 * @param id the id of this expression
 	 * @param instanceType the type of the instance to build
 	 */
-	public ObjectVariable(final int id, final Class<?> instanceType, boolean inverted) {
+	public ObjectInstanciation(final int id, final Class<?> instanceType, boolean inverted) {
 		super(id, inverted);
 		this.instanceType = instanceType;
 	}
@@ -70,7 +74,7 @@ public class ObjectVariable extends Expression {
 	 */
 	@Override
 	public ExpressionType getExpressionType() {
-		return ExpressionType.OBJECT_VARIABLE;
+		return ExpressionType.OBJECT_INSTANCIATION;
 	}
 
 	/**
@@ -89,6 +93,25 @@ public class ObjectVariable extends Expression {
 	}
 	
 	/**
+	 * Attempts to instanciate the Class with the arguments that were retrieved during bytecode analysis.
+	 * @return the value of {@code this} Expression
+	 */
+	public Object getValue() {
+		try {
+			final Class<?>[] parameterTypes = this.arguments.stream().map(arg -> arg.getJavaType())
+					.toArray(size -> new Class<?>[size]);
+			final Object[] initArgs = this.arguments.stream().map(arg -> arg.getValue()).toArray();
+			final Constructor<?> c = this.instanceType.getDeclaredConstructor(parameterTypes);
+			c.setAccessible(true);
+			return c.newInstance(initArgs);
+		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			throw new AnalyzeException("Failed to instanciate object of class '" + this.instanceType.getName()
+					+ "' with parameters " + this.arguments, e);
+		}
+	}
+	
+	/**
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#canBeInverted()
 	 */
 	@Override
@@ -101,7 +124,7 @@ public class ObjectVariable extends Expression {
 	 */
 	@Override
 	public Expression duplicate(int id) {
-		final ObjectVariable duplicateVariable = new ObjectVariable(id, instanceType, isInverted());
+		final ObjectInstanciation duplicateVariable = new ObjectInstanciation(id, instanceType, isInverted());
 		duplicateVariable.setInitArguments(this.arguments);
 		return duplicateVariable;
 	}
@@ -111,7 +134,7 @@ public class ObjectVariable extends Expression {
 	 */
 	@Override
 	public Expression duplicate() {
-		final ObjectVariable duplicateVariable = new ObjectVariable(instanceType, isInverted());
+		final ObjectInstanciation duplicateVariable = new ObjectInstanciation(instanceType, isInverted());
 		duplicateVariable.setInitArguments(this.arguments);
 		return duplicateVariable;
 	}
@@ -144,7 +167,7 @@ public class ObjectVariable extends Expression {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ObjectVariable other = (ObjectVariable) obj;
+		ObjectInstanciation other = (ObjectInstanciation) obj;
 		if (arguments == null) {
 			if (other.arguments != null)
 				return false;

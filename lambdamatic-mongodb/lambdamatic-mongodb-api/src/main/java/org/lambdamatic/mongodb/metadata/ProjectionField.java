@@ -3,7 +3,6 @@
  */
 package org.lambdamatic.mongodb.metadata;
 
-
 /**
  * Annotation for all types of singular (ie, not arrays) document fields when specifying a query projection.
  * 

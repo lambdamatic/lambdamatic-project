@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation used to inform that a given Class field is transient.
+ * 
  * @author Xavier Coulon
  *
  */
@@ -18,4 +19,3 @@ import java.lang.annotation.Target;
 public @interface TransientField {
 
 }
-

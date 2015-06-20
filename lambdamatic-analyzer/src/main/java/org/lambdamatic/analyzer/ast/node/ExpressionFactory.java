@@ -35,7 +35,7 @@ public class ExpressionFactory {
 		} else if (value instanceof Character) {
 			return new CharacterLiteral((Character) value);
 		} else if (value instanceof Number) {
-			return new NumberLiteral((Number) value);
+			return new NumberLiteral((Number) value, true);
 		} else if (value instanceof Enum<?>) {
 			return new EnumLiteral((Enum<?>) value);
 		} else if (value instanceof String) {
@@ -85,7 +85,7 @@ public class ExpressionFactory {
 				return new BooleanLiteral(true);
 			}
 		}
-		return new NumberLiteral(value);
+		return numberLiteral;
 	}
 
 }

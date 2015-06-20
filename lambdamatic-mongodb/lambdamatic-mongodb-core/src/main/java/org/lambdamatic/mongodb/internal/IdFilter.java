@@ -15,11 +15,11 @@ import org.lambdamatic.mongodb.annotations.DocumentId;
 public class IdFilter<T> {
 
 	private final T domainObject;
-	
+
 	public IdFilter(final T domainObject) {
 		this.domainObject = domainObject;
 	}
-	
+
 	public T getDomainObject() {
 		return domainObject;
 	}

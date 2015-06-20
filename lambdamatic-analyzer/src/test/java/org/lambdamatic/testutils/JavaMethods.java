@@ -43,6 +43,7 @@ public class JavaMethods {
 	public static Method TestPojo_matches_String;
 	public static Method TestPojo_matches_TestPojo;
 	public static Method List_size;
+	public static Method List_add;
 	public static Method Character_valueOf;
 	
 	static {
@@ -71,6 +72,7 @@ public class JavaMethods {
 			TestPojo_matches_String = TestPojo.class.getMethod("matches", String[].class);
 			TestPojo_matches_TestPojo = TestPojo.class.getMethod("matches", TestPojo[].class);
 			List_size = List.class.getMethod("size");
+			List_add = List.class.getMethod("add", Object.class);
 			Character_valueOf = Character.class.getMethod("valueOf", char.class);
 
 		} catch (NoSuchMethodException | SecurityException e) {

@@ -21,27 +21,30 @@ import org.lambdamatic.mongodb.annotations.DocumentId;
  * @author xcoulon
  *
  */
-@Document(collection="blog")
+@Document(collection = "blog")
 public class BlogEntry {
 
 	@DocumentId
 	private String id;
-	
-	/** Name of author of the blog entry. */ 
+
+	/** Name of author of the blog entry. */
 	private String authorName;
-	
+
+	/** Blog entry title. */
+	private String title;
+
 	/** date of publication. */
 	private Date publishDate;
-	
+
 	/** Content on the blog entry. */
 	private String content;
-	
+
 	/** set of tags for this content. */
 	private List<String> tags;
-	
+
 	/** Number of comments */
 	private int commentsNumber;
-	
+
 	/** list of comments. */
 	private List<BlogEntryComment> comments;
 
@@ -51,14 +54,15 @@ public class BlogEntry {
 	public String getId() {
 		return id;
 	}
-	
+
 	/**
-	 * @param id the entry Id
+	 * @param id
+	 *            the entry Id
 	 */
 	public void setId(String id) {
 		this.id = id;
 	}
-	
+
 	/**
 	 * @return the authorName
 	 */
@@ -67,7 +71,8 @@ public class BlogEntry {
 	}
 
 	/**
-	 * @param authorName the authorName to set
+	 * @param authorName
+	 *            the authorName to set
 	 */
 	public void setAuthorName(String authorName) {
 		this.authorName = authorName;
@@ -81,10 +86,19 @@ public class BlogEntry {
 	}
 
 	/**
-	 * @param publishDate the publishDate to set
+	 * @param publishDate
+	 *            the publishDate to set
 	 */
 	public void setPublishDate(Date publishDate) {
 		this.publishDate = publishDate;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	/**
@@ -95,7 +109,8 @@ public class BlogEntry {
 	}
 
 	/**
-	 * @param content the content to set
+	 * @param content
+	 *            the content to set
 	 */
 	public void setContent(String content) {
 		this.content = content;
@@ -109,7 +124,8 @@ public class BlogEntry {
 	}
 
 	/**
-	 * @param tags the tags to set
+	 * @param tags
+	 *            the tags to set
 	 */
 	public void setTags(List<String> tags) {
 		this.tags = tags;
@@ -123,7 +139,8 @@ public class BlogEntry {
 	}
 
 	/**
-	 * @param commentsNumber the commentsNumber to set
+	 * @param commentsNumber
+	 *            the commentsNumber to set
 	 */
 	public void setCommentsNumber(int commentsNumber) {
 		this.commentsNumber = commentsNumber;
@@ -137,10 +154,11 @@ public class BlogEntry {
 	}
 
 	/**
-	 * @param comments the comments to set
+	 * @param comments
+	 *            the comments to set
 	 */
 	public void setComments(List<BlogEntryComment> comments) {
 		this.comments = comments;
 	}
-	
+
 }

@@ -46,25 +46,25 @@ public class FilterExpressionCacheTest {
 		lambdaAnalyzer = LambdaExpressionAnalyzer.getInstance();
 		lambdaAnalyzer.addListener(listener);
 	}
-	
+
 	@After
 	public void unregisterListener() {
 		lambdaAnalyzer.removeListener(listener);
 	}
-	
+
 	@Test
 	public void shouldAnalyzeOnceAndInjectValueTwice() throws UnsupportedEncodingException, IOException, JSONException {
 		// given
 		// when
-		performAndAssertConvertion("John", 42, EnumFoo.FOO);
-		performAndAssertConvertion("Jack", 43, EnumFoo.BAR);
+		shouldEncodeFilterExpression("John", 42, EnumFoo.FOO);
+		shouldEncodeFilterExpression("Jack", 43, EnumFoo.BAR);
 		// then
 		Assertions.assertThat(listener.getCacheMisses()).isEqualTo(1);
 		Assertions.assertThat(listener.getCacheHits()).isEqualTo(1);
 	}
 
-	private void performAndAssertConvertion(final String stringField, final int primitiveIntField, final EnumFoo enumFoo)
-			throws UnsupportedEncodingException, IOException, JSONException {
+	private void shouldEncodeFilterExpression(final String stringField, final int primitiveIntField,
+			final EnumFoo enumFoo) throws UnsupportedEncodingException, IOException, JSONException {
 		// given
 		final SerializablePredicate<QFoo> expr = ((QFoo foo) -> foo.stringField.equals(stringField)
 				|| foo.primitiveIntField.equals(primitiveIntField) || foo.enumFoo.equals(enumFoo));

@@ -33,10 +33,10 @@ import com.sample.FooCollection;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class MongoGeolocationQueryTest extends MongoBaseTest{
+public class MongoGeolocationQueryTest extends MongoBaseTest {
 
 	private FooCollection fooCollection;
-	
+
 	public MongoGeolocationQueryTest() {
 		super(Foo.class);
 	}
@@ -56,11 +56,11 @@ public class MongoGeolocationQueryTest extends MongoBaseTest{
 	}
 
 	@Test
-	@UsingDataSet(loadStrategy=LoadStrategyEnum.DELETE_ALL)
+	@UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
 	public void shouldFindGeoWithinPolygon() throws IOException {
 		// when
-		final Polygon corners = new Polygon(new Location(40.70, -73.90), new Location(40.75, -73.90), new Location(
-				40.75, -73.95), new Location(40.70, -73.95));
+		final Polygon corners = new Polygon(new Location(40.70, -73.90), new Location(40.75, -73.90),
+				new Location(40.75, -73.95), new Location(40.70, -73.95));
 		final List<Foo> matches = fooCollection.filter(f -> f.location.geoWithin(corners)).toList();
 		// then
 		assertThat(matches).isNotNull().hasSize(4).are(new Condition<Foo>("Checking location is set") {
@@ -73,7 +73,7 @@ public class MongoGeolocationQueryTest extends MongoBaseTest{
 	}
 
 	@Test
-	@UsingDataSet(loadStrategy=LoadStrategyEnum.DELETE_ALL)
+	@UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
 	public void shouldFindGeoWithinArrayOfLocations() throws IOException {
 		// when
 		final Location[] corners = new Location[] { new Location(40.70, -73.90), new Location(40.75, -73.90),
@@ -84,7 +84,7 @@ public class MongoGeolocationQueryTest extends MongoBaseTest{
 	}
 
 	@Test
-	@UsingDataSet(loadStrategy=LoadStrategyEnum.DELETE_ALL)
+	@UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
 	public void shouldFindGeoWithinListOfLocations() throws IOException {
 		// when
 		final List<Location> corners = new ArrayList<>();
@@ -96,5 +96,5 @@ public class MongoGeolocationQueryTest extends MongoBaseTest{
 		// then
 		assertThat(matches).isNotNull().hasSize(4);
 	}
-	
+
 }

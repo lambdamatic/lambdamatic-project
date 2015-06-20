@@ -23,7 +23,8 @@ public class DropMongoCollectionsRule implements MethodRule {
 
 	private final MongoCollection<?> collection;
 
-	public DropMongoCollectionsRule(final MongoClient mongoClient, final String databaseName, final String collectionName) {
+	public DropMongoCollectionsRule(final MongoClient mongoClient, final String databaseName,
+			final String collectionName) {
 		this.collection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
 	}
 

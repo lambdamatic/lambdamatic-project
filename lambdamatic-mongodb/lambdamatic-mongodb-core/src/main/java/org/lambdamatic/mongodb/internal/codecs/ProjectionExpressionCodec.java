@@ -26,8 +26,6 @@ import org.lambdamatic.mongodb.metadata.ExcludeFields;
 import org.lambdamatic.mongodb.metadata.IncludeFields;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 
-
-
 /**
  * Standalone {@link Codec} for Lambda with {@link SerializableConsumer}s.
  * 
@@ -36,19 +34,22 @@ import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
  */
 public class ProjectionExpressionCodec extends BaseLambdaExpressionCodec<SerializableConsumer<ProjectionMetadata<?>>> {
 
-	void encodeExpression(final LambdaExpression lambdaExpression, final BsonWriter writer, final EncoderContext encoderContext) {
+	void encodeExpression(final LambdaExpression lambdaExpression, final BsonWriter writer,
+			final EncoderContext encoderContext) {
 		final Expression expression = EncoderUtils.getSingleExpression(lambdaExpression);
-		if(expression.getExpressionType() != ExpressionType.METHOD_INVOCATION) {
+		if (expression.getExpressionType() != ExpressionType.METHOD_INVOCATION) {
 			throw new ConversionException("Invalid projection. See " + Projection.class.getName());
 		}
 		final MethodInvocation methodInvocation = (MethodInvocation) expression;
 		final Method method = methodInvocation.getJavaMethod();
 		final ProjectionType projectionType = getProjectionType(method);
-		if(projectionType == null && methodInvocation.getParent().getExpressionType() == ExpressionType.LAMBDA_EXPRESSION && methodInvocation.getParent().getParent() == null) {
+		if (projectionType == null
+				&& methodInvocation.getParent().getExpressionType() == ExpressionType.LAMBDA_EXPRESSION
+				&& methodInvocation.getParent().getParent() == null) {
 			throw new ConversionException("Invalid projection. See " + Projection.class.getName());
 		}
 		final List<Expression> arguments = methodInvocation.getArguments();
-		if(arguments.size() != 1) {
+		if (arguments.size() != 1) {
 			throw new ConversionException("Invalid projection: missing fields or fields not wrapped in an array");
 		}
 		final Expression argument = arguments.get(0);
@@ -57,17 +58,22 @@ public class ProjectionExpressionCodec extends BaseLambdaExpressionCodec<Seriali
 		argument.accept(expressionEncoder);
 		writer.flush();
 	}
-	
+
 	/**
-	 * Finds the {@link ProjectionType} associated with the given Java {@link Method}, depending on whether it is annotated with {@link IncludeFields} ({@link ProjectionType#INCLUDE}) or with {@link ExcludeFields} ({@link ProjectionType#EXCLUDE}).
-	 * @param method the method to analyze
-	 * @return the corresponding {@link ProjectionType} or <code>null</code> if no relevant annotation was found on the given {@link Method}.
+	 * Finds the {@link ProjectionType} associated with the given Java {@link Method}, depending on whether it is
+	 * annotated with {@link IncludeFields} ({@link ProjectionType#INCLUDE}) or with {@link ExcludeFields} (
+	 * {@link ProjectionType#EXCLUDE}).
+	 * 
+	 * @param method
+	 *            the method to analyze
+	 * @return the corresponding {@link ProjectionType} or <code>null</code> if no relevant annotation was found on the
+	 *         given {@link Method}.
 	 */
 	private ProjectionType getProjectionType(final Method method) {
-		if(method.getAnnotation(IncludeFields.class) != null) {
+		if (method.getAnnotation(IncludeFields.class) != null) {
 			return ProjectionType.INCLUDE;
 		}
-		if(method.getAnnotation(ExcludeFields.class) != null) {
+		if (method.getAnnotation(ExcludeFields.class) != null) {
 			return ProjectionType.EXCLUDE;
 		}
 		return null;

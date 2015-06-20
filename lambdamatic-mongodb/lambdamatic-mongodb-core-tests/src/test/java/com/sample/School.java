@@ -11,11 +11,11 @@ import org.lambdamatic.mongodb.annotations.Document;
  * @author Xavier Coulon <xcoulon@redhat.com>
  * @see http://docs.mongodb.org/manual/reference/operator/projection/elemMatch/
  */
-@Document(collection="schools")
+@Document(collection = "schools")
 public class School {
 
 	private String zipcode;
-	
+
 	private List<Student> students;
 
 	/**
@@ -26,7 +26,8 @@ public class School {
 	}
 
 	/**
-	 * @param zipcode the zipcode to set
+	 * @param zipcode
+	 *            the zipcode to set
 	 */
 	public void setZipcode(String zipcode) {
 		this.zipcode = zipcode;
@@ -40,11 +41,11 @@ public class School {
 	}
 
 	/**
-	 * @param students the students to set
+	 * @param students
+	 *            the students to set
 	 */
 	public void setStudents(List<Student> students) {
 		this.students = students;
 	}
-	
-	
+
 }

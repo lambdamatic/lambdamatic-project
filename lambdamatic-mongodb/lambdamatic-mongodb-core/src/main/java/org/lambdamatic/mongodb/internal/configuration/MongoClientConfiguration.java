@@ -15,13 +15,12 @@ package org.lambdamatic.mongodb.internal.configuration;
 public class MongoClientConfiguration {
 
 	private final String databaseName;
-	
+
 	public String getDatabaseName() {
 		return databaseName;
 	}
-	
+
 	public MongoClientConfiguration(final String databaseName) {
 		this.databaseName = databaseName;
 	}
 }
-

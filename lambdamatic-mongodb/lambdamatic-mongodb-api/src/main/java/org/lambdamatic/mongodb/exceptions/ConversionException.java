@@ -8,7 +8,6 @@
 
 package org.lambdamatic.mongodb.exceptions;
 
-
 /**
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
@@ -19,19 +18,22 @@ public class ConversionException extends RuntimeException {
 
 	/**
 	 * Constructor without an underlying cause {@link Exception}.
-	 * @param message the exception message 
+	 * 
+	 * @param message
+	 *            the exception message
 	 */
 	public ConversionException(final String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Constructor with an underlying cause {@link Exception}.
-	 * @param message the contextual message
+	 * 
+	 * @param message
+	 *            the contextual message
 	 */
 	public ConversionException(final String message, final Exception cause) {
 		super(message, cause);
 	}
-	
-}
 
+}

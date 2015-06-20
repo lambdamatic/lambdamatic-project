@@ -21,6 +21,7 @@ import org.lambdamatic.mongodb.apt.testutil.FieldAssertion;
 import org.lambdamatic.mongodb.apt.testutil.WithDomainClass;
 import org.lambdamatic.mongodb.internal.LambdamaticMongoCollectionImpl;
 import org.lambdamatic.mongodb.internal.codecs.DocumentCodec;
+import org.lambdamatic.mongodb.internal.codecs.DocumentEncoder;
 import org.lambdamatic.mongodb.internal.configuration.MongoClientConfiguration;
 import org.lambdamatic.mongodb.metadata.LocationField;
 import org.lambdamatic.mongodb.metadata.ProjectionArray;
@@ -60,7 +61,7 @@ public class LambdamaticAnnotationProcessorTest {
 		// id
 		FieldAssertion.assertThat(fooQueryClass, "id").isParameterizedType(QueryField.class, ObjectId.class)
 				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
-				.hasAttributeValue("name", DocumentCodec.MONGOBD_DOCUMENT_ID);
+				.hasAttributeValue("name", DocumentEncoder.MONGOBD_DOCUMENT_ID);
 		// stringField: *custom name in the @DocumentField annotation*
 		FieldAssertion.assertThat(fooQueryClass, "stringField").isParameterizedType(QueryField.class, String.class)
 				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)

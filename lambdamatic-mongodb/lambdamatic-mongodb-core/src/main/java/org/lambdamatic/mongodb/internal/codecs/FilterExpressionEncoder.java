@@ -187,8 +187,8 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 						methodInvocation.isInverted());
 				break;
 			default:
-				writeOperation(annotation.value(), methodInvocation.getSource(),
-						methodInvocation.getArguments().get(0), methodInvocation.isInverted());
+				writeOperation(annotation.value(), methodInvocation.getSource(), methodInvocation.getArguments().get(0),
+						methodInvocation.isInverted());
 			}
 			if (!this.nestedExpression) {
 				writer.writeEndDocument();
@@ -241,7 +241,6 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		}
 	}
 
-	
 	/**
 	 * Writes the given named {@link LambdaExpressionBlock} in a compact form.
 	 * <p>
@@ -277,7 +276,8 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			break;
 		default:
 			final FilterExpressionEncoder expressionEncoder = new FilterExpressionEncoder(
-					lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName(), writer, encoderContext, true);
+					lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName(), writer, encoderContext,
+					true);
 			expression.accept(expressionEncoder);
 		}
 

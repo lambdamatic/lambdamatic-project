@@ -106,18 +106,18 @@ public class ProjectionExpressionCodecTest {
 	}
 
 	@Test
-	public void shouldEncodeProjectionWithLogging() throws IOException, JSONException {
+	public void shouldEncodeProjectionExpressionWithLogging() throws IOException, JSONException {
 		getCodecLogger().setLevel(Level.DEBUG);
-		shouldEncodeProjection();
+		shouldEncodeProjectionExpression();
 	}
 
 	@Test
-	public void shouldEncodeProjectionWithoutLogging() throws IOException, JSONException {
+	public void shouldEncodeProjectionExpressionWithoutLogging() throws IOException, JSONException {
 		getCodecLogger().setLevel(Level.ERROR);
-		shouldEncodeProjection();
+		shouldEncodeProjectionExpression();
 	}
 
-	private void shouldEncodeProjection() throws UnsupportedEncodingException, IOException, JSONException {
+	private void shouldEncodeProjectionExpression() throws UnsupportedEncodingException, IOException, JSONException {
 		// given
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8"));

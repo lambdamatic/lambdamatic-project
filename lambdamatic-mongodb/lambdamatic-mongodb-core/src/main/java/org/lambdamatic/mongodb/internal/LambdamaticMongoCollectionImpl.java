@@ -44,10 +44,14 @@ import com.mongodb.client.result.UpdateResult;
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
- * @param <DomainType> the Domain Type annotated with {@link Document}
- * @param <QueryType> the {@link QueryMetadata} associated with Domain Type
- * @param <ProjectionType> the {@link ProjectionMetadata} associated with Domain Type
- * @param <UpdateType> the {@link UpdateMetadata} associated with Domain Type
+ * @param <DomainType>
+ *            the Domain Type annotated with {@link Document}
+ * @param <QueryType>
+ *            the {@link QueryMetadata} associated with Domain Type
+ * @param <ProjectionType>
+ *            the {@link ProjectionMetadata} associated with Domain Type
+ * @param <UpdateType>
+ *            the {@link UpdateMetadata} associated with Domain Type
  * 
  */
 public class LambdamaticMongoCollectionImpl<DomainType, QueryType extends QueryMetadata<DomainType>, ProjectionType extends ProjectionMetadata<DomainType>, UpdateType extends UpdateMetadata<DomainType>>
@@ -91,10 +95,8 @@ public class LambdamaticMongoCollectionImpl<DomainType, QueryType extends QueryM
 			final String collectionName, final Class<DomainType> targetClass) {
 		this.bindingService = new BindingService();
 		this.codecRegistry = CodecRegistries.fromProviders(new DocumentCodecProvider(bindingService),
-				new FilterExpressionCodecProvider(),
-				new ProjectionExpressionCodecProvider(), 
-				new UpdateExpressionCodecProvider(), 
-				new IdFilterCodecProvider(bindingService), 
+				new FilterExpressionCodecProvider(), new ProjectionExpressionCodecProvider(),
+				new UpdateExpressionCodecProvider(bindingService), new IdFilterCodecProvider(bindingService),
 				new BsonValueCodecProvider());
 		this.mongoCollection = mongoClient.getDatabase(databaseName).withCodecRegistry(codecRegistry)
 				.getCollection(collectionName, targetClass);
@@ -103,8 +105,10 @@ public class LambdamaticMongoCollectionImpl<DomainType, QueryType extends QueryM
 	}
 
 	@Override
-	public FilterContext<DomainType, ProjectionType, UpdateType> filter(final FilterExpression<QueryType> filterExpression) {
-		return new FilterContextImpl<DomainType, QueryType, ProjectionType, UpdateType>(mongoCollection, filterExpression, this.codecRegistry);
+	public FilterContext<DomainType, ProjectionType, UpdateType> filter(
+			final FilterExpression<QueryType> filterExpression) {
+		return new FilterContextImpl<DomainType, QueryType, ProjectionType, UpdateType>(mongoCollection,
+				filterExpression, this.codecRegistry);
 	}
 
 	@Override
@@ -131,7 +135,7 @@ public class LambdamaticMongoCollectionImpl<DomainType, QueryType extends QueryM
 					"Invalid number of document match during the update operation: " + result.getMatchedCount());
 		}
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -140,6 +144,4 @@ public class LambdamaticMongoCollectionImpl<DomainType, QueryType extends QueryM
 		return "MongoDB Collection of " + this.targetClass.getName();
 	}
 
-
-	
 }

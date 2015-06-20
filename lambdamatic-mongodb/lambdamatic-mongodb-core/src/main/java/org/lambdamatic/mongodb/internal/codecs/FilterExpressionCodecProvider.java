@@ -26,12 +26,12 @@ import org.slf4j.LoggerFactory;
  */
 public class FilterExpressionCodecProvider implements CodecProvider {
 
-	/** The usual Logger.*/
+	/** The usual Logger. */
 	private static final Logger LOGGER = LoggerFactory.getLogger(FilterExpressionCodecProvider.class);
-	
+
 	/**
-	 * Returns whether the given clazz implements the {@link SerializablePredicate} interface, in which case it can return an
-	 * instance of {@link FilterExpressionCodec}. 
+	 * Returns whether the given clazz implements the {@link SerializablePredicate} interface, in which case it can
+	 * return an instance of {@link FilterExpressionCodec}.
 	 * 
 	 * @see org.bson.codecs.configuration.CodecProvider#get(java.lang.Class,
 	 *      org.bson.codecs.configuration.CodecRegistry)
@@ -40,11 +40,12 @@ public class FilterExpressionCodecProvider implements CodecProvider {
 	@Override
 	public <QM> Codec<QM> get(final Class<QM> clazz, final CodecRegistry registry) {
 		try {
-			if(Arrays.stream(clazz.getInterfaces()).anyMatch(i -> i.equals(FilterExpression.class))) {
+			if (Arrays.stream(clazz.getInterfaces()).anyMatch(i -> i.equals(FilterExpression.class))) {
 				return (Codec<QM>) new FilterExpressionCodec();
 			}
 		} catch (SecurityException | IllegalArgumentException e) {
-			LOGGER.error("Failed to check if class '{}' is an instance of ''", e, clazz.getName(), SerializablePredicate.class.getName());
+			LOGGER.error("Failed to check if class '{}' is an instance of ''", e, clazz.getName(),
+					SerializablePredicate.class.getName());
 		}
 		return null;
 	}

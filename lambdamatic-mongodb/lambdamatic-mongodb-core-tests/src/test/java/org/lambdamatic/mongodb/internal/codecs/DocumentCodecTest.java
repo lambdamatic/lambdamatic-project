@@ -55,7 +55,7 @@ import ch.qos.logback.classic.LoggerContext;
 @RunWith(Parameterized.class)
 public class DocumentCodecTest {
 
-	private static final CodecRegistry DEFAULT_CODEC_REGISTRY = CodecRegistries.fromProviders(new ValueCodecProvider(),
+	public static final CodecRegistry DEFAULT_CODEC_REGISTRY = CodecRegistries.fromProviders(new ValueCodecProvider(),
 			new DBRefCodecProvider(), new DBObjectCodecProvider(), new BsonValueCodecProvider());
 
 	/** The usual Logger. */
@@ -99,8 +99,10 @@ public class DocumentCodecTest {
 								+ "stringList:['bar', 'baz', 'foo']}" },
 				new Object[] { "Document with set of String",
 						new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
-								.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2)
-								.withDate(date).withStringSet("bar", "baz", "foo").build(),
+								.withPrimitiveIntField(42)
+								.withEnumFoo(
+										EnumFoo.FOO)
+								.withLocation(40.1, -70.2).withDate(date).withStringSet("bar", "baz", "foo").build(),
 						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
 								+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
 								+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
@@ -112,7 +114,7 @@ public class DocumentCodecTest {
 						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
 								+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
 								+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
-								+ "stringArray:['bar', 'baz', 'foo']}" }};
+								+ "stringArray:['bar', 'baz', 'foo']}" } };
 		return data;
 	}
 
@@ -144,7 +146,7 @@ public class DocumentCodecTest {
 		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8"));
 		final EncoderContext context = EncoderContext.builder().isEncodingCollectibleDocument(true).build();
 		// when
-		new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY, new BindingService()).encode(bsonWriter, (Foo)foo,
+		new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY, new BindingService()).encode(bsonWriter, (Foo) foo,
 				context);
 		// then
 		final String actualJson = IOUtils.toString(outputStream.toByteArray(), "UTF-8");

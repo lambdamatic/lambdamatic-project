@@ -24,8 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Custom {@link Codec} to encode and decode {@link Location} to/from
- * {@link BsonDocument} with the following format:
+ * Custom {@link Codec} to encode and decode {@link Location} to/from {@link BsonDocument} with the following format:
  * 
  * <pre>
  * {
@@ -46,15 +45,17 @@ public class LocationCodec extends DocumentCodec<Location> {
 
 	/**
 	 * Constructor
-	 * @param codecRegistry the {@link CodecRegistry} to use.
+	 * 
+	 * @param codecRegistry
+	 *            the {@link CodecRegistry} to use.
 	 */
 	public LocationCodec(final CodecRegistry codecRegistry, final BindingService bindingService) {
 		super(Location.class, codecRegistry, bindingService);
 	}
 
 	/**
-	 * Writes a custom {@link BsonDocument} in the given {@link BsonWriter} from
-	 * the given {@link Location} using the following format:
+	 * Writes a custom {@link BsonDocument} in the given {@link BsonWriter} from the given {@link Location} using the
+	 * following format:
 	 * 
 	 * <pre>
 	 * {
@@ -65,11 +66,14 @@ public class LocationCodec extends DocumentCodec<Location> {
 	 * 	 ]
 	 * }
 	 * </pre>
-	 * where &lt;latitude&gt; and &lt;longitude&gt; are provided by {@link Location#getLatitude()} and {@link Location#getLongitude()} respectively.
-	 * <p>This {@link Codec#encode(BsonWriter, Object, EncoderContext)} method assumes that the {@link BsonWriter#writeStartDocument(String)} method was called before.
 	 * 
-	 * @see org.bson.codecs.Encoder#encode(org.bson.BsonWriter,
-	 *      java.lang.Object, org.bson.codecs.EncoderContext)
+	 * where &lt;latitude&gt; and &lt;longitude&gt; are provided by {@link Location#getLatitude()} and
+	 * {@link Location#getLongitude()} respectively.
+	 * <p>
+	 * This {@link Codec#encode(BsonWriter, Object, EncoderContext)} method assumes that the
+	 * {@link BsonWriter#writeStartDocument(String)} method was called before.
+	 * 
+	 * @see org.bson.codecs.Encoder#encode(org.bson.BsonWriter, java.lang.Object, org.bson.codecs.EncoderContext)
 	 */
 	@Override
 	public void encode(final BsonWriter writer, final Location location, final EncoderContext encoderContext) {
@@ -89,17 +93,18 @@ public class LocationCodec extends DocumentCodec<Location> {
 	}
 
 	/**
-	 * @see org.bson.codecs.Decoder#decode(org.bson.BsonReader,
-	 *      org.bson.codecs.DecoderContext)
+	 * @see org.bson.codecs.Decoder#decode(org.bson.BsonReader, org.bson.codecs.DecoderContext)
 	 */
 	@Override
 	public Location decode(final BsonReader reader, final DecoderContext decoderContext) {
 		// code duplicated and adapted from "org.bson.codecs.BsonDocumentCodec"
+		final DocumentEncoder documentEncoder = new DocumentEncoder(Location.class, getBindingService(),
+				getCodecRegistry());
 		final Map<String, BsonElement> keyValuePairs = new HashMap<>();
 		reader.readStartDocument();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
 			String fieldName = reader.readName();
-			keyValuePairs.put(fieldName, new BsonElement(fieldName, readValue(reader, decoderContext)));
+			keyValuePairs.put(fieldName, new BsonElement(fieldName, documentEncoder.readValue(reader, decoderContext)));
 		}
 		reader.readEndDocument();
 		// now, convert the map key-pairs into an instance of the target
@@ -113,7 +118,7 @@ public class LocationCodec extends DocumentCodec<Location> {
 				LOGGER.debug("Field '{}' does not exist in class '{}'", key, LocationDocument.class);
 				continue;
 			}
-			final Object fieldValue = getValue(keyValuePairs.get(key), field.getType());
+			final Object fieldValue = documentEncoder.getValue(keyValuePairs.get(key), field.getType());
 			try {
 				field.setAccessible(true);
 				field.set(locationDocument, fieldValue);

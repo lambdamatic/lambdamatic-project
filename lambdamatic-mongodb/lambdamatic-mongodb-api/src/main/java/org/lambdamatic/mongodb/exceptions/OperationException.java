@@ -13,6 +13,7 @@ package org.lambdamatic.mongodb.exceptions;
 
 /**
  * {@link Exception} thrown when a Databse operation failed.
+ * 
  * @author xcoulon
  *
  */
@@ -22,7 +23,9 @@ public class OperationException extends RuntimeException {
 
 	/**
 	 * Constructor
-	 * @param message reason of the operation failure
+	 * 
+	 * @param message
+	 *            reason of the operation failure
 	 */
 	public OperationException(final String message) {
 		super(message);
@@ -30,8 +33,11 @@ public class OperationException extends RuntimeException {
 
 	/**
 	 * Full constructor
-	 * @param message the message explaining the operation that failed
-	 * @param cause underlying reason of the database operation failure
+	 * 
+	 * @param message
+	 *            the message explaining the operation that failed
+	 * @param cause
+	 *            underlying reason of the database operation failure
 	 */
 	public OperationException(final String message, final Throwable cause) {
 		super(message, cause);

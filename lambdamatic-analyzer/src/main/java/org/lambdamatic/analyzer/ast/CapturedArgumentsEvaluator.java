@@ -80,7 +80,7 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
 
 	@Override
 	public boolean visitFieldAccessExpression(final FieldAccess fieldAccess) {
-		if (fieldAccess.getSource().getExpressionType() == ExpressionType.OBJECT_VALUE) {
+		if (fieldAccess.getSource().getExpressionType() == ExpressionType.OBJECT_INSTANCE) {
 			final String fieldName = fieldAccess.getFieldName();
 			try {
 				final Object source = fieldAccess.getSource().getValue();

@@ -35,7 +35,7 @@ import com.sample.BlogEntryComment;
  */
 public class MongoUpdateTest extends MongoBaseTest {
 
-	private BlogEntryCollection blogEntries;
+	private BlogEntryCollection blogEntryCollection;
 
 	public MongoUpdateTest() {
 		super(BlogEntry.class);
@@ -43,15 +43,16 @@ public class MongoUpdateTest extends MongoBaseTest {
 
 	@Before
 	public void setup() {
-		this.blogEntries = new BlogEntryCollection(getMongoClient(), DATABASE_NAME, getCollectionName());
+		this.blogEntryCollection = new BlogEntryCollection(getMongoClient(), DATABASE_NAME, getCollectionName());
 	}
 
 	@Test
 	@UsingDataSet(loadStrategy = LoadStrategyEnum.CLEAN_INSERT)
 	@ShouldMatchDataSet()
 	public void shouldReplaceDocument() {
-		// given
-		final BlogEntry blogEntry = blogEntries.filter(e -> e.id.equals("1")).first();
+		// given 
+		final BlogEntry blogEntry = blogEntryCollection.filter(e -> e.id.equals("1") && e.authorName.equals("jdoe"))
+				.first();
 		Assertions.assertThat(blogEntry).isNotNull();
 		blogEntry.setAuthorName("John Doe");
 		blogEntry.setContent("Updating documents...");
@@ -60,7 +61,7 @@ public class MongoUpdateTest extends MongoBaseTest {
 		final List<String> tags = Arrays.asList("doc", "update");
 		blogEntry.setTags(tags);
 		// when
-		blogEntries.replace(blogEntry);
+		blogEntryCollection.replace(blogEntry);
 		// then... let NoSqlUnit perform post-update assertions using the file given in the @ShouldMatchDataSet
 		// annotation
 	}
@@ -70,15 +71,18 @@ public class MongoUpdateTest extends MongoBaseTest {
 	@ShouldMatchDataSet()
 	public void shouldUpdateDocument() {
 		// given
-		final BlogEntry blogEntry = blogEntries.filter(e -> e.id.equals("1")).first();
-		final BlogEntryComment comment = new BlogEntryComment("anonymous", new GregorianCalendar(2015, 05, 12, 21, 40, 0).getTime(), "lorem upsum! what else ?"); 
+		final BlogEntry blogEntry = blogEntryCollection.filter(e -> e.id.equals("1"))
+				.projection(e -> Projection.include(e.authorName, e.title, e.publishDate))
+				.first();
+		final BlogEntryComment comment = new BlogEntryComment("anonymous",
+				new GregorianCalendar(2015, 05, 12, 21, 40, 0).getTime(), "lorem ipsum! what else ?");
 		Assertions.assertThat(blogEntry).isNotNull();
 		// when
-		blogEntries.filter(e -> e.id.equals("1")).
-			forEach(e -> {
-				e.authorName = "Xavier";
-				e.commentsNumber++;
-				e.comments.push(comment);});
+		blogEntryCollection.filter(e -> e.id.equals("1")).forEach(e -> {
+			e.authorName = "Xavier";
+			e.commentsNumber++;
+			e.comments.push(comment);
+		});
 
 	}
 

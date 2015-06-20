@@ -18,21 +18,22 @@ import org.lambdamatic.mongodb.exceptions.ConversionException;
  */
 public class Location {
 
-	/** The latitude value.*/
+	/** The latitude value. */
 	private double latitude;
 
-	/** The longitude value.*/
+	/** The longitude value. */
 	private double longitude;
-	
+
 	/**
 	 * Default constructor
 	 */
 	public Location() {
 		super();
 	}
-	
+
 	/**
 	 * Full constructor
+	 * 
 	 * @param latitude
 	 * @param longitude
 	 */
@@ -43,10 +44,15 @@ public class Location {
 	}
 
 	/**
-	 * Converts the given {@link String} value to a {@link Location}, assuming the format is: {@code latitude,longitude}, where
-	 * {@code latitude} and {@code longitude} are (casted to) double values.
-	 * <p>Eg: {@code "40.782865,-73.965355"} (Central Park, NYC)</p> 
-	 * <p>This method can be used by JAX-RS 2.0 implementations to unmarshall incoming HTTP reauest parameters.</p>
+	 * Converts the given {@link String} value to a {@link Location}, assuming the format is: {@code latitude,longitude}
+	 * , where {@code latitude} and {@code longitude} are (casted to) double values.
+	 * <p>
+	 * Eg: {@code "40.782865,-73.965355"} (Central Park, NYC)
+	 * </p>
+	 * <p>
+	 * This method can be used by JAX-RS 2.0 implementations to unmarshall incoming HTTP reauest parameters.
+	 * </p>
+	 * 
 	 * @param value
 	 * @return a location
 	 */
@@ -62,10 +68,10 @@ public class Location {
 			throw new ConversionException("Failed to convert value '" + value
 					+ "' to a valid location. Format must be '<latitude>,<logitude>'.", e);
 		}
-		throw new ConversionException("Failed to convert value '" + value
-				+ "' to a valid location. Format must be '<latitude>,<logitude>'.");
+		throw new ConversionException(
+				"Failed to convert value '" + value + "' to a valid location. Format must be '<latitude>,<logitude>'.");
 	}
-	
+
 	/**
 	 * @return the latitude
 	 */
@@ -74,7 +80,8 @@ public class Location {
 	}
 
 	/**
-	 * @param latitude the latitude to set
+	 * @param latitude
+	 *            the latitude to set
 	 */
 	public void setLatitude(double latitude) {
 		this.latitude = latitude;
@@ -88,7 +95,8 @@ public class Location {
 	}
 
 	/**
-	 * @param longitude the longitude to set
+	 * @param longitude
+	 *            the longitude to set
 	 */
 	public void setLongitude(double longitude) {
 		this.longitude = longitude;
@@ -99,7 +107,9 @@ public class Location {
 		return "[" + this.latitude + ", " + this.longitude + "]";
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -114,7 +124,9 @@ public class Location {
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -132,6 +144,5 @@ public class Location {
 			return false;
 		return true;
 	}
-	
-}
 
+}

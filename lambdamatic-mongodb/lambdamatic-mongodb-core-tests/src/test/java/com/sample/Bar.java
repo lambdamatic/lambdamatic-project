@@ -39,47 +39,47 @@ public class Bar {
 			this.primitiveByteField = primitiveByteField;
 			return this;
 		}
-		
+
 		public BarBuilder withPrimitiveShortField(final short primitiveShortField) {
 			this.primitiveShortField = primitiveShortField;
 			return this;
 		}
-		
+
 		public BarBuilder withPrimitiveIntField(final int primitiveIntField) {
 			this.primitiveIntField = primitiveIntField;
 			return this;
 		}
-		
+
 		public BarBuilder withPrimitiveLongField(final long primitiveLongField) {
 			this.primitiveLongField = primitiveLongField;
 			return this;
 		}
-		
+
 		public BarBuilder withPrimitiveFloatField(final float primitiveFloatField) {
 			this.primitiveFloatField = primitiveFloatField;
 			return this;
 		}
-		
+
 		public BarBuilder withPrimitiveDoubleField(final double primitiveDoubleField) {
 			this.primitiveDoubleField = primitiveDoubleField;
 			return this;
 		}
-		
+
 		public BarBuilder withPrimitiveBooleanField(final boolean primitiveBooleanField) {
 			this.primitiveBooleanField = primitiveBooleanField;
 			return this;
 		}
-		
+
 		public BarBuilder withPrimitiveCharField(final char primitiveCharField) {
 			this.primitiveCharField = primitiveCharField;
 			return this;
 		}
-		
+
 		public BarBuilder withStringField(final String stringField) {
 			this.stringField = stringField;
 			return this;
 		}
-		
+
 		public BarBuilder withEnumBar(final EnumBar enumBar) {
 			this.enumBar = enumBar;
 			return this;
@@ -89,27 +89,27 @@ public class Bar {
 			this.location = new Location(latitude, longitude);
 			return this;
 		}
-		
+
 		public BarBuilder withDate(Date date) {
 			this.date = date;
 			return this;
 		}
-		
+
 		public Bar build() {
 			return new Bar(this);
 		}
 
 	}
-	
+
 	@DocumentField
 	private String stringField;
 
 	@DocumentField
 	private byte primitiveByteField;
-	
+
 	@DocumentField
 	private short primitiveShortField;
-	
+
 	@DocumentField
 	private int primitiveIntField;
 
@@ -121,24 +121,34 @@ public class Bar {
 
 	@DocumentField
 	private double primitiveDoubleField;
-	
+
 	@DocumentField
 	private boolean primitiveBooleanField;
-	
+
 	@DocumentField
 	private char primitiveCharField;
-	
+
 	@DocumentField
 	private EnumBar enumBar;
-	
+
 	@DocumentField
 	private Location location;
-	
+
 	@DocumentField
 	private Date date;
-	
+
 	public Bar() {
-		
+
+	}
+
+	/**
+	 * @param stringField
+	 * @param primitiveIntField
+	 */
+	public Bar(String stringField, int primitiveIntField) {
+		super();
+		this.stringField = stringField;
+		this.primitiveIntField = primitiveIntField;
 	}
 
 	public Bar(final BarBuilder barBuilder) {
@@ -165,7 +175,8 @@ public class Bar {
 	}
 
 	/**
-	 * @param stringField the stringField to set
+	 * @param stringField
+	 *            the stringField to set
 	 */
 	public void setStringField(String stringField) {
 		this.stringField = stringField;
@@ -179,7 +190,8 @@ public class Bar {
 	}
 
 	/**
-	 * @param primitiveByteField the primitiveByteField to set
+	 * @param primitiveByteField
+	 *            the primitiveByteField to set
 	 */
 	public void setPrimitiveByteField(byte primitiveByteField) {
 		this.primitiveByteField = primitiveByteField;
@@ -193,7 +205,8 @@ public class Bar {
 	}
 
 	/**
-	 * @param primitiveShortField the primitiveShortField to set
+	 * @param primitiveShortField
+	 *            the primitiveShortField to set
 	 */
 	public void setPrimitiveShortField(short primitiveShortField) {
 		this.primitiveShortField = primitiveShortField;
@@ -207,7 +220,8 @@ public class Bar {
 	}
 
 	/**
-	 * @param primitiveIntField the primitiveIntField to set
+	 * @param primitiveIntField
+	 *            the primitiveIntField to set
 	 */
 	public void setPrimitiveIntField(int primitiveIntField) {
 		this.primitiveIntField = primitiveIntField;
@@ -221,7 +235,8 @@ public class Bar {
 	}
 
 	/**
-	 * @param primitiveLongField the primitiveLongField to set
+	 * @param primitiveLongField
+	 *            the primitiveLongField to set
 	 */
 	public void setPrimitiveLongField(long primitiveLongField) {
 		this.primitiveLongField = primitiveLongField;
@@ -235,7 +250,8 @@ public class Bar {
 	}
 
 	/**
-	 * @param primitiveFloatField the primitiveFloatField to set
+	 * @param primitiveFloatField
+	 *            the primitiveFloatField to set
 	 */
 	public void setPrimitiveFloatField(float primitiveFloatField) {
 		this.primitiveFloatField = primitiveFloatField;
@@ -249,7 +265,8 @@ public class Bar {
 	}
 
 	/**
-	 * @param primitiveDoubleField the primitiveDoubleField to set
+	 * @param primitiveDoubleField
+	 *            the primitiveDoubleField to set
 	 */
 	public void setPrimitiveDoubleField(double primitiveDoubleField) {
 		this.primitiveDoubleField = primitiveDoubleField;
@@ -263,7 +280,8 @@ public class Bar {
 	}
 
 	/**
-	 * @param primitiveBooleanField the primitiveBooleanField to set
+	 * @param primitiveBooleanField
+	 *            the primitiveBooleanField to set
 	 */
 	public void setPrimitiveBooleanField(boolean primitiveBooleanField) {
 		this.primitiveBooleanField = primitiveBooleanField;
@@ -277,7 +295,8 @@ public class Bar {
 	}
 
 	/**
-	 * @param primitiveCharField the primitiveCharField to set
+	 * @param primitiveCharField
+	 *            the primitiveCharField to set
 	 */
 	public void setPrimitiveCharField(char primitiveCharField) {
 		this.primitiveCharField = primitiveCharField;
@@ -291,7 +310,8 @@ public class Bar {
 	}
 
 	/**
-	 * @param enumBar the enumBar to set
+	 * @param enumBar
+	 *            the enumBar to set
 	 */
 	public void setEnumBar(EnumBar enumBar) {
 		this.enumBar = enumBar;
@@ -305,13 +325,16 @@ public class Bar {
 	}
 
 	/**
-	 * @param location the location to set
+	 * @param location
+	 *            the location to set
 	 */
 	public void setLocation(Location location) {
 		this.location = location;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -334,7 +357,9 @@ public class Bar {
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -377,7 +402,9 @@ public class Bar {
 		return true;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -389,8 +416,5 @@ public class Bar {
 				+ ", primitiveCharField=" + primitiveCharField + ", enumBar=" + enumBar + ", location=" + location
 				+ ", date=" + date + "]";
 	}
-	
-	
-	
-	
+
 }

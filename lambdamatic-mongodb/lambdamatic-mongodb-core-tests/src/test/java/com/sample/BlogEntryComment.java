@@ -17,6 +17,7 @@ import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 
 /**
  * A comment on a {@link BlogEntry}
+ * 
  * @author xcoulon
  *
  */
@@ -25,10 +26,10 @@ public class BlogEntryComment {
 
 	/** comment author. */
 	private String author;
-	
+
 	/** comment date. */
 	private Date date;
-	
+
 	/** comment content. */
 	private String content;
 
@@ -43,9 +44,10 @@ public class BlogEntryComment {
 		this.date = date;
 		this.content = content;
 	}
-	
+
 	public BlogEntryComment() {
 	}
+
 	/**
 	 * @return the author
 	 */
@@ -54,7 +56,8 @@ public class BlogEntryComment {
 	}
 
 	/**
-	 * @param author the author to set
+	 * @param author
+	 *            the author to set
 	 */
 	public void setAuthor(String author) {
 		this.author = author;
@@ -68,7 +71,8 @@ public class BlogEntryComment {
 	}
 
 	/**
-	 * @param date the date to set
+	 * @param date
+	 *            the date to set
 	 */
 	public void setDate(Date date) {
 		this.date = date;
@@ -82,14 +86,11 @@ public class BlogEntryComment {
 	}
 
 	/**
-	 * @param content the content to set
+	 * @param content
+	 *            the content to set
 	 */
 	public void setContent(String content) {
 		this.content = content;
 	}
-	
-	
-	
-	
-	
+
 }

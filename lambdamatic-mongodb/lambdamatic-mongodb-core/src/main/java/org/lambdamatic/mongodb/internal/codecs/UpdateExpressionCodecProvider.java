@@ -24,12 +24,25 @@ import org.slf4j.LoggerFactory;
  */
 public class UpdateExpressionCodecProvider implements CodecProvider {
 
-	/** The usual Logger.*/
+	/** The usual Logger. */
 	private static final Logger LOGGER = LoggerFactory.getLogger(UpdateExpressionCodecProvider.class);
-	
+
+	/** The binding service. */
+	private final BindingService bindingService;
+
 	/**
-	 * Returns whether the given clazz implements the {@link SerializableConsumer} interface, in which case it can return an
-	 * instance of {@link UpdateExpressionCodec}. 
+	 * Constructor
+	 * 
+	 * @param bindingService
+	 *            the {@link BindingService}.
+	 */
+	public UpdateExpressionCodecProvider(final BindingService bindingService) {
+		this.bindingService = bindingService;
+	}
+
+	/**
+	 * Returns whether the given clazz implements the {@link SerializableConsumer} interface, in which case it can
+	 * return an instance of {@link UpdateExpressionCodec}.
 	 * 
 	 * @see org.bson.codecs.configuration.CodecProvider#get(java.lang.Class,
 	 *      org.bson.codecs.configuration.CodecRegistry)
@@ -38,11 +51,12 @@ public class UpdateExpressionCodecProvider implements CodecProvider {
 	@Override
 	public <PM> Codec<PM> get(final Class<PM> clazz, final CodecRegistry registry) {
 		try {
-			if(Arrays.stream(clazz.getInterfaces()).anyMatch(i -> i.equals(UpdateExpression.class))) {
-				return (Codec<PM>) new UpdateExpressionCodec();
+			if (Arrays.stream(clazz.getInterfaces()).anyMatch(i -> i.equals(UpdateExpression.class))) {
+				return (Codec<PM>) new UpdateExpressionCodec(registry, bindingService);
 			}
 		} catch (SecurityException | IllegalArgumentException e) {
-			LOGGER.error("Failed to check if class '{}' is an instance of ''", e, clazz.getName(), SerializableConsumer.class.getName());
+			LOGGER.error("Failed to check if class '{}' is an instance of ''", e, clazz.getName(),
+					SerializableConsumer.class.getName());
 		}
 		return null;
 	}

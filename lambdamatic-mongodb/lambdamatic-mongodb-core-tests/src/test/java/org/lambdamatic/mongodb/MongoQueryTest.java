@@ -25,6 +25,7 @@ import com.sample.EnumFoo;
 import com.sample.Foo;
 import com.sample.Foo.FooBuilder;
 import com.sample.FooCollection;
+import static org.lambdamatic.mongodb.Projection.include;
 
 /**
  * Testing the MongoDB Lambda-based Fluent API
@@ -35,7 +36,7 @@ import com.sample.FooCollection;
 public class MongoQueryTest extends MongoBaseTest {
 
 	private FooCollection fooCollection;
-	
+
 	public MongoQueryTest() {
 		super(Foo.class);
 	}
@@ -45,9 +46,9 @@ public class MongoQueryTest extends MongoBaseTest {
 		this.fooCollection = new FooCollection(getMongoClient(), DATABASE_NAME, getCollectionName());
 		// insert test data
 		final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO)
-				.withLocation(40, -70)
-				.withBar(new Bar.BarBuilder().withStringField("bar").build())
-				.withBarList(new Bar.BarBuilder().withStringField("bar1").build(), new Bar.BarBuilder().withStringField("bar2").build())
+				.withLocation(40, -70).withBar(new Bar.BarBuilder().withStringField("bar").build())
+				.withBarList(new Bar.BarBuilder().withStringField("bar1").build(),
+						new Bar.BarBuilder().withStringField("bar2").build())
 				.build();
 		this.fooCollection.add(foo);
 	}
@@ -62,8 +63,7 @@ public class MongoQueryTest extends MongoBaseTest {
 			@Override
 			public boolean matches(final Foo foo) {
 				return foo.getStringField().equals("jdoe") && foo.getPrimitiveIntField() == 42
-						&& foo.getEnumFoo() == EnumFoo.FOO
-						&& foo.getBar().getStringField().equals("bar");
+						&& foo.getEnumFoo() == EnumFoo.FOO && foo.getBar().getStringField().equals("bar");
 			}
 		});
 	}
@@ -100,16 +100,16 @@ public class MongoQueryTest extends MongoBaseTest {
 	@UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
 	public void shouldFindOneFooWithFieldInclusionProjection() throws IOException {
 		// when
-		final Foo foo = fooCollection
-				.filter(f -> f.stringField.equals("jdoe"))
-				.projection(f -> Projection.include(f.stringField, f.barList.elementMatch(b -> b.stringField.equals("bar1"))))
+		final Foo foo = fooCollection.filter(f -> f.stringField.equals("jdoe"))
+				.projection(f -> include(f.stringField, f.barList.elementMatch(b -> b.stringField.equals("bar1"))))
 				.first();
 		// then
 		assertThat(foo).isNotNull().has(new Condition<Foo>() {
 			@Override
 			public boolean matches(final Foo value) {
-				return value.getId() == null && value.getStringField().equals("jdoe") && value.getPrimitiveIntField() == 0
-						&& value.getEnumFoo() == null && value.getLocation() == null && value.getBarList().size() == 1;
+				return value.getId() == null && value.getStringField().equals("jdoe")
+						&& value.getPrimitiveIntField() == 0 && value.getEnumFoo() == null
+						&& value.getLocation() == null && value.getBarList().size() == 1;
 			}
 		}.as(new TextDescription("only a 'stringField' and 'location' fields initialized")));
 	}

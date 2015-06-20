@@ -1,17 +1,18 @@
-{ "blog": [
+{ blog: [
 
 	{ _id: "1", 
 	  _targetClass : "com.sample.BlogEntry",  
-	  "authorName : "Xavier", 
+	  authorName : "Xavier", 
 	  content: "Title...", 
 	  tags : ["foo", "bar", "baz"], 
 	  commentsNumber: 1,
 	  comments: [
-	  	{ author:"anonymous",
-	  	  date: {$date:"2015-06-12T21:40:00Z"},
-	  	  content: "lorem ipsum! what else?"
+	  	{ _targetClass : "com.sample.BlogEntryComment",
+	  	  author:"anonymous",
+	  	  content: "lorem ipsum! what else ?",
+	  	  date: {$date:"2015-06-12T19:40:00Z"}
 	  	 }
-	  	]
-	  }
+	  ]
+	 } 
 	]
 }

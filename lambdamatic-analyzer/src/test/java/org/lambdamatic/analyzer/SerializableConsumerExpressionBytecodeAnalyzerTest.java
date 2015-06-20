@@ -19,6 +19,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.lambdamatic.SerializableConsumer;
 import org.lambdamatic.analyzer.ast.node.ArrayVariable;
 import org.lambdamatic.analyzer.ast.node.Assignment;
+import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
@@ -28,14 +29,16 @@ import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.Operation;
+import org.lambdamatic.analyzer.ast.node.Operation.Operator;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.Statement;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
-import org.lambdamatic.analyzer.ast.node.Operation.Operator;
+import org.lambdamatic.testutils.JavaMethods;
 import org.lambdamatic.testutils.TestWatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sample.model.EmbeddedTestPojo;
 import com.sample.model.TestPojo;
 
 /**
@@ -68,7 +71,8 @@ public class SerializableConsumerExpressionBytecodeAnalyzerTest {
 		final LambdaExpression e_dot_field_equals_foo = new LambdaExpression(
 				new ReturnStatement(new MethodInvocation(e_dot_field, Object_equals, new StringLiteral("foo"))),
 				TestPojo.class, "e");
-
+		final EmbeddedTestPojo embeddedTestPojo = new EmbeddedTestPojo();
+		
 		return new Object[][] {
 				new Object[] {
 						(SerializableConsumer<TestPojo>) ((TestPojo t) -> ArrayUtil.toArray(t.stringValue,
@@ -142,6 +146,11 @@ public class SerializableConsumerExpressionBytecodeAnalyzerTest {
 				new Object[] {
 						(SerializableConsumer<TestPojo>) ((TestPojo t) -> { t.primitiveIntValue=t.primitiveIntValue/3; }),
 						new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.DIVIDE, testPojo_dot_primitiveIntValue, new NumberLiteral(3)))},
+				new Object[] {
+						(SerializableConsumer<TestPojo>) ((TestPojo t) -> { t.stringValue = "foo"; t.primitiveIntValue++; t.elementList.add(embeddedTestPojo); }),
+						Arrays.array(new Assignment(testPojo_dot_stringValue, new StringLiteral("foo")),
+								new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.ADD, testPojo_dot_primitiveIntValue, new NumberLiteral(1))),
+								new MethodInvocation(testPojo_dot_elementList, JavaMethods.List_add, new CapturedArgument(embeddedTestPojo)))},
 				
 
 		};

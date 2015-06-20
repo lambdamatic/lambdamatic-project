@@ -38,8 +38,8 @@ public abstract class ExpressionVisitor {
 				return visitInfixExpression((InfixExpression) expr);
 			case INSTANCE_OF:
 				return visitInstanceOfExpression((InstanceOf) expr);
-			case OBJECT_VARIABLE:
-				return visitObjectVariableExpression((ObjectVariable) expr);
+			case OBJECT_INSTANCIATION:
+				return visitObjectVariableExpression((ObjectInstanciation) expr);
 			case ARRAY_VARIABLE:
 				return visitArrayVariableExpression((ArrayVariable) expr);
 			case METHOD_INVOCATION:
@@ -54,7 +54,7 @@ public abstract class ExpressionVisitor {
 				return visitEnumLiteralExpression((EnumLiteral) expr);
 			case CLASS_LITERAL:
 				return visitClassLiteralExpression((ClassLiteral) expr);
-			case OBJECT_VALUE:
+			case OBJECT_INSTANCE:
 				return visitObjectValue((ObjectInstance) expr);
 			case CAPTURED_ARGUMENT:
 				return visitCapturedArgument((CapturedArgument) expr);
@@ -115,7 +115,7 @@ public abstract class ExpressionVisitor {
 		return true;
 	}
 
-	public boolean visitObjectVariableExpression(final ObjectVariable expr) {
+	public boolean visitObjectVariableExpression(final ObjectInstanciation expr) {
 		return true;
 	}
 

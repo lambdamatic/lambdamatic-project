@@ -24,7 +24,7 @@ import org.lambdamatic.mongodb.types.geospatial.Location;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-@Document(collection="foo")
+@Document(collection = "foo")
 public class Foo {
 
 	public static class FooBuilder {
@@ -57,47 +57,47 @@ public class Foo {
 			this.primitiveByteField = primitiveByteField;
 			return this;
 		}
-		
+
 		public FooBuilder withPrimitiveShortField(final short primitiveShortField) {
 			this.primitiveShortField = primitiveShortField;
 			return this;
 		}
-		
+
 		public FooBuilder withPrimitiveIntField(final int primitiveIntField) {
 			this.primitiveIntField = primitiveIntField;
 			return this;
 		}
-		
+
 		public FooBuilder withPrimitiveLongField(final long primitiveLongField) {
 			this.primitiveLongField = primitiveLongField;
 			return this;
 		}
-		
+
 		public FooBuilder withPrimitiveFloatField(final float primitiveFloatField) {
 			this.primitiveFloatField = primitiveFloatField;
 			return this;
 		}
-		
+
 		public FooBuilder withPrimitiveDoubleField(final double primitiveDoubleField) {
 			this.primitiveDoubleField = primitiveDoubleField;
 			return this;
 		}
-		
+
 		public FooBuilder withPrimitiveBooleanField(final boolean primitiveBooleanField) {
 			this.primitiveBooleanField = primitiveBooleanField;
 			return this;
 		}
-		
+
 		public FooBuilder withPrimitiveCharField(final char primitiveCharField) {
 			this.primitiveCharField = primitiveCharField;
 			return this;
 		}
-		
+
 		public FooBuilder withStringField(final String stringField) {
 			this.stringField = stringField;
 			return this;
 		}
-		
+
 		public FooBuilder withEnumFoo(final EnumFoo enumFoo) {
 			this.enumFoo = enumFoo;
 			return this;
@@ -107,60 +107,60 @@ public class Foo {
 			this.location = new Location(latitude, longitude);
 			return this;
 		}
-		
+
 		public FooBuilder withDate(Date date) {
 			this.date = date;
 			return this;
 		}
-		
+
 		public FooBuilder withBar(Bar bar) {
 			this.bar = bar;
 			return this;
 		}
-		
+
 		public FooBuilder withBarList(final Bar... values) {
 			this.barList = Arrays.asList(values);
 			return this;
 		}
-		
+
 		public FooBuilder withEnumBarArray(final EnumBar... values) {
 			this.enumBarArray = values;
 			return this;
 		}
-		
+
 		public FooBuilder withStringList(final String... values) {
 			this.stringList = Arrays.asList(values);
 			return this;
 		}
-		
+
 		public FooBuilder withStringSet(final String... values) {
 			this.stringSet = new TreeSet<String>(Arrays.asList(values));
 			return this;
 		}
-		
+
 		public FooBuilder withStringArray(final String... values) {
 			this.stringArray = values;
 			return this;
 		}
-		
+
 		public Foo build() {
 			return new Foo(this);
 		}
 
 	}
-	
-	@DocumentId 
+
+	@DocumentId
 	private ObjectId id;
-	
+
 	@DocumentField
 	private String stringField;
 
 	@DocumentField
 	private byte primitiveByteField;
-	
+
 	@DocumentField
 	private short primitiveShortField;
-	
+
 	@DocumentField
 	private int primitiveIntField;
 
@@ -172,27 +172,27 @@ public class Foo {
 
 	@DocumentField
 	private double primitiveDoubleField;
-	
+
 	@DocumentField
 	private boolean primitiveBooleanField;
-	
+
 	@DocumentField
 	private char primitiveCharField;
-	
+
 	@DocumentField
-	private EnumFoo enumFoo; 
-	
+	private EnumFoo enumFoo;
+
 	@DocumentField
 	private Location location;
-	
+
 	@DocumentField
 	private List<Bar> barList;
 
 	private Bar bar;
-	
+
 	@DocumentField
 	private Date date;
-	
+
 	private EnumBar[] enumBarArray;
 
 	private List<String> stringList;
@@ -202,7 +202,7 @@ public class Foo {
 	private String[] stringArray;
 
 	public Foo() {
-		
+
 	}
 
 	public Foo(final FooBuilder fooBuilder) {
@@ -236,7 +236,8 @@ public class Foo {
 	}
 
 	/**
-	 * @param id the id to set
+	 * @param id
+	 *            the id to set
 	 */
 	public void setId(ObjectId id) {
 		this.id = id;
@@ -250,7 +251,8 @@ public class Foo {
 	}
 
 	/**
-	 * @param stringField the stringField to set
+	 * @param stringField
+	 *            the stringField to set
 	 */
 	public void setStringField(String stringField) {
 		this.stringField = stringField;
@@ -264,7 +266,8 @@ public class Foo {
 	}
 
 	/**
-	 * @param primitiveByteField the primitiveByteField to set
+	 * @param primitiveByteField
+	 *            the primitiveByteField to set
 	 */
 	public void setPrimitiveByteField(byte primitiveByteField) {
 		this.primitiveByteField = primitiveByteField;
@@ -278,7 +281,8 @@ public class Foo {
 	}
 
 	/**
-	 * @param primitiveShortField the primitiveShortField to set
+	 * @param primitiveShortField
+	 *            the primitiveShortField to set
 	 */
 	public void setPrimitiveShortField(short primitiveShortField) {
 		this.primitiveShortField = primitiveShortField;
@@ -292,7 +296,8 @@ public class Foo {
 	}
 
 	/**
-	 * @param primitiveIntField the primitiveIntField to set
+	 * @param primitiveIntField
+	 *            the primitiveIntField to set
 	 */
 	public void setPrimitiveIntField(int primitiveIntField) {
 		this.primitiveIntField = primitiveIntField;
@@ -306,7 +311,8 @@ public class Foo {
 	}
 
 	/**
-	 * @param primitiveLongField the primitiveLongField to set
+	 * @param primitiveLongField
+	 *            the primitiveLongField to set
 	 */
 	public void setPrimitiveLongField(long primitiveLongField) {
 		this.primitiveLongField = primitiveLongField;
@@ -320,7 +326,8 @@ public class Foo {
 	}
 
 	/**
-	 * @param primitiveFloatField the primitiveFloatField to set
+	 * @param primitiveFloatField
+	 *            the primitiveFloatField to set
 	 */
 	public void setPrimitiveFloatField(float primitiveFloatField) {
 		this.primitiveFloatField = primitiveFloatField;
@@ -334,7 +341,8 @@ public class Foo {
 	}
 
 	/**
-	 * @param primitiveDoubleField the primitiveDoubleField to set
+	 * @param primitiveDoubleField
+	 *            the primitiveDoubleField to set
 	 */
 	public void setPrimitiveDoubleField(double primitiveDoubleField) {
 		this.primitiveDoubleField = primitiveDoubleField;
@@ -348,7 +356,8 @@ public class Foo {
 	}
 
 	/**
-	 * @param primitiveBooleanField the primitiveBooleanField to set
+	 * @param primitiveBooleanField
+	 *            the primitiveBooleanField to set
 	 */
 	public void setPrimitiveBooleanField(boolean primitiveBooleanField) {
 		this.primitiveBooleanField = primitiveBooleanField;
@@ -362,7 +371,8 @@ public class Foo {
 	}
 
 	/**
-	 * @param primitiveCharField the primitiveCharField to set
+	 * @param primitiveCharField
+	 *            the primitiveCharField to set
 	 */
 	public void setPrimitiveCharField(char primitiveCharField) {
 		this.primitiveCharField = primitiveCharField;
@@ -376,7 +386,8 @@ public class Foo {
 	}
 
 	/**
-	 * @param enumFoo the enumFoo to set
+	 * @param enumFoo
+	 *            the enumFoo to set
 	 */
 	public void setEnumFoo(EnumFoo enumFoo) {
 		this.enumFoo = enumFoo;
@@ -390,20 +401,21 @@ public class Foo {
 	}
 
 	/**
-	 * @param location the location to set
+	 * @param location
+	 *            the location to set
 	 */
 	public void setLocation(Location location) {
 		this.location = location;
 	}
-	
+
 	public Bar getBar() {
 		return bar;
 	}
-	
+
 	public List<Bar> getBarList() {
 		return barList;
 	}
-	
+
 	public void setBar(Bar bar) {
 		this.bar = bar;
 	}
@@ -427,19 +439,19 @@ public class Foo {
 	public Set<String> getStringSet() {
 		return stringSet;
 	}
-	
+
 	public void setStringList(List<String> stringList) {
 		this.stringList = stringList;
 	}
-	
+
 	public void setStringArray(String[] stringArray) {
 		this.stringArray = stringArray;
 	}
-	
+
 	public void setStringSet(Set<String> stringSet) {
 		this.stringSet = stringSet;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -461,7 +473,9 @@ public class Foo {
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -509,7 +523,9 @@ public class Foo {
 		return true;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -521,8 +537,5 @@ public class Foo {
 				+ ", primitiveCharField=" + primitiveCharField + ", enumFoo=" + enumFoo + ", location=" + location
 				+ ", date=" + date + "]";
 	}
-	
-	
-	
-	
+
 }

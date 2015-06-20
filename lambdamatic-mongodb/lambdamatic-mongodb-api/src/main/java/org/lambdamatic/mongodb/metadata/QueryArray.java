@@ -12,11 +12,12 @@ import org.lambdamatic.SerializablePredicate;
  * MongoDB operation available on a given Document field of type Array in MongoDB (mapped as a {@link List} or
  * {@link Set} in Java to specify a query filter.
  * 
- * @param T can be a {@link QueryMetadata} or a simple Java Type (String, Enum, etc.)
+ * @param T
+ *            can be a {@link QueryMetadata} or a simple Java Type (String, Enum, etc.)
  *
  * @author Xavier Coulon <xcoulon@redhat.com>
  */
-//TODO: verify that query operation such as below work (ie: compile and convert)
+// TODO: verify that query operation such as below work (ie: compile and convert)
 // db.test.insert({tags:[{name:"foo", score:1}, {name:"bar", score:2}]} )
 // db.test.find({"tags.name":"bar", "tags.score":{$gt:1}}, {"tags.$":1}) // find tag with 'name' == 'bar' OR 'score' > 1
 // and db.test.find({tags : { $elemMatch : { name : "foo", score : 1}}})
@@ -30,11 +31,12 @@ public interface QueryArray<T> {
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/all/#op._S_all">MongoDB documentation</a>
 	 */
 	@MongoOperation(MongoOperator.ALL)
-	public boolean matchesAll(Object values); //FIXME: use matchesAll(T... values) instead ?
+	public boolean matchesAll(Object values); // FIXME: use matchesAll(T... values) instead ?
 
 	/**
 	 * Matches documents that contain an array field with at least one element that matches the specified query
-	 * expression. 
+	 * expression.
+	 * 
 	 * @param expression
 	 *            the query in the form of a lambda expression
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/elemMatch/#op._S_elemMatch">MongoDB

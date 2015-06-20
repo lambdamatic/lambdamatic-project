@@ -8,7 +8,6 @@
 
 package org.lambdamatic.mongodb.metadata;
 
-
 /**
  * Marker interface for generated metadata classes used to express filters in queries.
  * 
@@ -18,4 +17,3 @@ package org.lambdamatic.mongodb.metadata;
 public interface QueryMetadata<DomainType> {
 
 }
-

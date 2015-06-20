@@ -50,7 +50,7 @@ import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.ast.node.NullLiteral;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.ObjectInstance;
-import org.lambdamatic.analyzer.ast.node.ObjectVariable;
+import org.lambdamatic.analyzer.ast.node.ObjectInstanciation;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.StringLiteral;
 import org.lambdamatic.testutils.TestWatcher;
@@ -155,8 +155,8 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
 		final List<Object> otherElements = new ArrayList<>();
 		final MethodInvocation t_elementList_dot_equals_otherElements = new MethodInvocation(t_elementList, Object_equals, new ObjectInstance(otherElements));
 		final MethodInvocation t_dot_equals_newTestPojo = new MethodInvocation(var_t, Object_equals,
-				new ObjectVariable(TestPojo.class));
-		final ObjectVariable testPojoVariable = new ObjectVariable(TestPojo.class);
+				new ObjectInstanciation(TestPojo.class));
+		final ObjectInstanciation testPojoVariable = new ObjectInstanciation(TestPojo.class);
 		testPojoVariable.setInitArguments(Arrays.asList(new StringLiteral("foo"), new NumberLiteral(42)));
 		final MethodInvocation t_dot_equals_newTestPojo_foo42 = new MethodInvocation(var_t, Object_equals,
 				testPojoVariable);

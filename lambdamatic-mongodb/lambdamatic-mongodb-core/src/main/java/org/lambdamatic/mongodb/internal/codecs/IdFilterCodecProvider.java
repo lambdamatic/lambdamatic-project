@@ -21,11 +21,12 @@ public class IdFilterCodecProvider implements CodecProvider {
 
 	/** The binding service. */
 	private final BindingService bindingService;
-	
+
 	/**
 	 * Constructor
 	 * 
-	 * @param bindingService the {@link BindingService}.
+	 * @param bindingService
+	 *            the {@link BindingService}.
 	 */
 	public IdFilterCodecProvider(final BindingService bindingService) {
 		this.bindingService = bindingService;
@@ -33,12 +34,14 @@ public class IdFilterCodecProvider implements CodecProvider {
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.bson.codecs.configuration.CodecProvider#get(java.lang.Class, org.bson.codecs.configuration.CodecRegistry)
+	 * 
+	 * @see org.bson.codecs.configuration.CodecProvider#get(java.lang.Class,
+	 *      org.bson.codecs.configuration.CodecRegistry)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Codec<T> get(final Class<T> clazz, final CodecRegistry registry) {
-		if(clazz != null && clazz.equals(IdFilter.class)) {
+		if (clazz != null && clazz.equals(IdFilter.class)) {
 			return (Codec<T>) new IdFilterCodec(bindingService);
 		}
 		return null;

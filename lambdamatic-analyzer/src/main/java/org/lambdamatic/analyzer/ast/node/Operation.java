@@ -116,13 +116,13 @@ public class Operation extends ComplexExpression {
 	public Object getValue() {
 		switch(this.operator) {
 		case ADD:
-			return new NumberLiteral(MathUtils.add((Number)leftOperand.getValue(), (Number)rightOperand.getValue()));
+			return new NumberLiteral(MathUtils.add((Number)leftOperand.getValue(), (Number)rightOperand.getValue()), true);
 		case SUBTRACT:
-			return new NumberLiteral(MathUtils.subtract((Number)leftOperand.getValue(), (Number)rightOperand.getValue()));
+			return new NumberLiteral(MathUtils.subtract((Number)leftOperand.getValue(), (Number)rightOperand.getValue()), true);
 		case MULTIPLY:
-			return new NumberLiteral(MathUtils.multiply((Number)leftOperand.getValue(), (Number)rightOperand.getValue()));
+			return new NumberLiteral(MathUtils.multiply((Number)leftOperand.getValue(), (Number)rightOperand.getValue()), true);
 		case DIVIDE:
-			return new NumberLiteral(MathUtils.divide((Number)leftOperand.getValue(), (Number)rightOperand.getValue()));
+			return new NumberLiteral(MathUtils.divide((Number)leftOperand.getValue(), (Number)rightOperand.getValue()), true);
 		default:
 			throw new AnalyzeException("Operator '" + this.operator + "' is not supported while trying to evaluate the operation.");
 		}

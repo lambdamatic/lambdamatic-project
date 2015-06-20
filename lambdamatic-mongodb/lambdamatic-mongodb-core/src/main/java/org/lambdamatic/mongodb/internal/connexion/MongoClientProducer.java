@@ -28,18 +28,17 @@ import com.mongodb.MongoClient;
  */
 @ApplicationScoped
 public class MongoClientProducer {
-	
+
 	@Produces
 	@Singleton
-	public MongoClient createMongoClient(MongoClientConfiguration mongoDBClientConfiguration) throws UnknownHostException {
-	    MongoClient mongoClient = new MongoClient();
-	    return mongoClient;
+	public MongoClient createMongoClient(MongoClientConfiguration mongoDBClientConfiguration)
+			throws UnknownHostException {
+		MongoClient mongoClient = new MongoClient();
+		return mongoClient;
 	}
 
 	public void disposeClient(@Disposes MongoClient mongoClient) {
 		mongoClient.close();
 	}
-	
 
 }
-

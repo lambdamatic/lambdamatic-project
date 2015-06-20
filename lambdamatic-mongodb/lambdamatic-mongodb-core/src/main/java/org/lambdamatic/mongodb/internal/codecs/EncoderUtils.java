@@ -20,7 +20,6 @@ import org.lambdamatic.analyzer.ast.node.Statement;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.exceptions.ConversionException;
-import org.lambdamatic.mongodb.metadata.ProjectionField;
 import org.lambdamatic.mongodb.metadata.QueryField;
 
 /**
@@ -97,37 +96,27 @@ public class EncoderUtils {
 	 *            the Metadata class the FieldAccess belongs to
 	 * @param expression
 	 *            the {@link Expression} to analyze
-	 * @return the document field
+	 * @return the document field name or <code>null</code> if the given {@link Expression} is not a valid one.
 	 */
-	private static String getDocumentFieldName(final Class<?> metadataClass, final Expression expression) {
+	public static String getDocumentFieldName(final Class<?> metadataClass, final Expression expression) {
 		if (expression == null) {
-			return "";
+			return null;
 		}
 		switch (expression.getExpressionType()) {
 		case FIELD_ACCESS:
-			final String fieldName = ((FieldAccess) expression).getFieldName();
+			final FieldAccess fieldAccess = (FieldAccess) expression;
+			final String fieldName = fieldAccess.getFieldName();
 			final String documentFieldName = EncoderUtils.getDocumentFieldName(metadataClass, fieldName);
-			return getDocumentFieldName(metadataClass, expression.getParent()) + documentFieldName + ".";
-		default:
-			return "";
-		}
-	}
+			final String documentFieldParentName = getDocumentFieldName(metadataClass, fieldAccess.getSource());
+			if (documentFieldParentName != null) {
+				return documentFieldParentName + "." + documentFieldName;
+			} else {
+				return documentFieldName;
+			}
 
-	/**
-	 * Finds and returns the document field associated with the given {@link FieldAccess} expression
-	 * 
-	 * @param metadataClass
-	 *            the Metadata class the FieldAccess belongs to
-	 * @param fieldAccess
-	 *            the {@link FieldAccess} to analyze
-	 * @return the document field
-	 */
-	public static String getDocumentFieldName(final Class<?> metadataClass, final FieldAccess fieldAccess) {
-		final String fieldName = fieldAccess.getFieldName();
-		final String parentExpressionName = EncoderUtils.getDocumentFieldName(metadataClass, fieldAccess.getParent());
-		final String documentFieldName = parentExpressionName
-				+ EncoderUtils.getDocumentFieldName(metadataClass, fieldName);
-		return documentFieldName;
+		default:
+			return null;
+		}
 	}
 
 	/**
@@ -155,15 +144,6 @@ public class EncoderUtils {
 		}
 		throw new ConversionException("Unable to find the DocumentField annotation of field '" + fieldName
 				+ "' in class " + queryMetadataClass.getName());
-	}
-
-	/**
-	 * 
-	 * @param projectionField
-	 * @return
-	 */
-	public String getDocumentFieldName(final ProjectionField projectionField) {
-		return null;
 	}
 
 	/**

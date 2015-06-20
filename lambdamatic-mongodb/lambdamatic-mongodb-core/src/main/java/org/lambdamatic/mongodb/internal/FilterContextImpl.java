@@ -26,32 +26,39 @@ import com.mongodb.client.MongoCollection;
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
- * @param <DomainType> the Domain Type annotated with {@link Document}
- * @param <ProjectionType> the {@link ProjectionMetadata} associated with Domain Type
- * @param <UpdateType> the {@link UpdateMetadata} associated with Domain Type
+ * @param <DomainType>
+ *            the Domain Type annotated with {@link Document}
+ * @param <ProjectionType>
+ *            the {@link ProjectionMetadata} associated with Domain Type
+ * @param <UpdateType>
+ *            the {@link UpdateMetadata} associated with Domain Type
  *
  */
-public class FilterContextImpl<DomainType, QueryType, ProjectionType, UpdateType> implements FilterContext<DomainType, ProjectionType, UpdateType> {
-	
+public class FilterContextImpl<DomainType, QueryType, ProjectionType, UpdateType>
+		implements FilterContext<DomainType, ProjectionType, UpdateType> {
+
 	/** The mongo collection on which the operation will be performed. */
 	private final MongoCollection<DomainType> mongoCollection;
-	
-	/** the initial filter expression.*/ 
+
+	/** the initial filter expression. */
 	private final BsonDocument filterDocument;
-	
-	/** The registry of the custom {@link Codec}.*/
+
+	/** The registry of the custom {@link Codec}. */
 	private final CodecRegistry codecRegistry;
 
 	/** the optional {@link BsonDocument} corresponding to a given {@link ProjectionExpression}. */
 	private BsonDocument projectionDocument;
-	
+
 	/**
 	 * Constructor
-	 * @param filter The {@link FindFluent} element built with a Filter argument.
-	 * @param codecRegistry The registry of the custom {@link Codec}.
+	 * 
+	 * @param filter
+	 *            The {@link FindFluent} element built with a Filter argument.
+	 * @param codecRegistry
+	 *            The registry of the custom {@link Codec}.
 	 */
-	public FilterContextImpl(final MongoCollection<DomainType> mongoCollection, final FilterExpression<QueryType> filterExpression,
-			final CodecRegistry codecRegistry) {
+	public FilterContextImpl(final MongoCollection<DomainType> mongoCollection,
+			final FilterExpression<QueryType> filterExpression, final CodecRegistry codecRegistry) {
 		this.mongoCollection = mongoCollection;
 		this.filterDocument = BsonDocumentWrapper.asBsonDocument(filterExpression, codecRegistry);
 		this.codecRegistry = codecRegistry;
@@ -62,7 +69,7 @@ public class FilterContextImpl<DomainType, QueryType, ProjectionType, UpdateType
 		this.projectionDocument = BsonDocumentWrapper.asBsonDocument(projectionExpression, codecRegistry);
 		return this;
 	}
-	
+
 	@Override
 	public List<DomainType> toList() {
 		return mongoCollection.find(filterDocument).projection(projectionDocument).into(new ArrayList<>());
@@ -72,7 +79,7 @@ public class FilterContextImpl<DomainType, QueryType, ProjectionType, UpdateType
 	public DomainType first() {
 		return mongoCollection.find(filterDocument).projection(projectionDocument).first();
 	}
-	
+
 	@Override
 	public void forEach(final UpdateExpression<UpdateType> updateExpression) {
 		final BsonDocument updateDocument = BsonDocumentWrapper.asBsonDocument(updateExpression, codecRegistry);

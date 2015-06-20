@@ -15,4 +15,3 @@ package org.lambdamatic.mongodb.query.context;
 public interface NearContext {
 
 }
-
