@@ -1,28 +1,24 @@
-/**
- * 
- */
+/*******************************************************************************
+ * Copyright (c) 2015 Red Hat.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat - Initial Contribution
+ *******************************************************************************/
+
 package org.lambdamatic.mongodb.query.context;
 
 import org.lambdamatic.mongodb.ProjectionExpression;
 import org.lambdamatic.mongodb.UpdateExpression;
-import org.lambdamatic.mongodb.annotations.Document;
-import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
-import org.lambdamatic.mongodb.metadata.UpdateMetadata;
 
 /**
- * Terminal context for the find operation.
- * 
- * @author Xavier Coulon <xcoulon@redhat.com>
- * 
- * @param <DomainType>
- *            the Domain Type annotated with {@link Document}
- * @param <ProjectionType>
- *            the {@link ProjectionMetadata} associated with Domain Type
- * @param <UpdateType>
- *            the {@link UpdateMetadata} associated with Domain Type
+ * @author xcoulon
  *
  */
-public interface FilterContext<DomainType, ProjectionType, UpdateType> extends FindTerminalContext<DomainType> {
+public interface FilterContext<DomainType, ProjectionType, UpdateType> extends ProjectionContext<DomainType> {
 
 	/**
 	 * Reduce the fields to be <strong>included<strong> or <strong>excluded</strong> in the returned to the given
@@ -30,9 +26,9 @@ public interface FilterContext<DomainType, ProjectionType, UpdateType> extends F
 	 *
 	 * @param projectionExpression
 	 *            the set of fields to include in the returned document
-	 * @return the {@link FilterContext} to optionally specify more settings
+	 * @return the {@link CollectionContext} to optionally specify more settings
 	 */
-	public FindTerminalContext<DomainType> projection(final ProjectionExpression<ProjectionType> projectionExpression);
+	public ProjectionContext<DomainType> projection(final ProjectionExpression<ProjectionType> projectionExpression);
 
 	/**
 	 * Updates <strong>one</strong> {@code domainObject}, performing <strong>a partial replacement</strong> based on the
@@ -43,4 +39,10 @@ public interface FilterContext<DomainType, ProjectionType, UpdateType> extends F
 	 */
 	public void forEach(final UpdateExpression<UpdateType> updateExpression);
 
+	/**
+	 * Removes all element matching the preceding request
+	 */
+	public abstract void remove();
+
+	
 }

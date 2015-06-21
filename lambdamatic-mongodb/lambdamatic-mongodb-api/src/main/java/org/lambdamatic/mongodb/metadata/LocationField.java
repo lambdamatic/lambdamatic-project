@@ -10,8 +10,6 @@ package org.lambdamatic.mongodb.metadata;
 
 import java.util.List;
 
-import org.lambdamatic.mongodb.query.context.GeoNearContext;
-import org.lambdamatic.mongodb.query.context.NearContext;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 import org.lambdamatic.mongodb.types.geospatial.Polygon;
 
@@ -48,9 +46,9 @@ public interface LocationField extends QueryField<Location> {
 	 * @param latitude
 	 * @return
 	 */
-	public NearContext near(double longitude, double latitude);
+	public boolean near(double longitude, double latitude);
 
-	public GeoNearContext geoNear(double longitude, double latitude);
+	public boolean geoNear(double longitude, double latitude);
 
 	/**
 	 * Selects documents with geospatial data that exists entirely within a specified shape. When determining inclusion,

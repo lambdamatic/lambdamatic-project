@@ -6,7 +6,7 @@ package org.lambdamatic.mongodb.metadata;
 import java.util.List;
 import java.util.Set;
 
-import org.lambdamatic.SerializablePredicate;
+import org.lambdamatic.mongodb.FilterExpression;
 
 /**
  * MongoDB operation available on a given Document field of type Array in MongoDB (mapped as a {@link List} or
@@ -43,7 +43,7 @@ public interface QueryArray<T> {
 	 *      documentation</a>
 	 */
 	@MongoOperation(MongoOperator.ELEMEMT_MATCH)
-	public boolean elementMatch(final SerializablePredicate<T> expression);
+	public boolean elementMatch(final FilterExpression<T> expression);
 
 	/**
 	 * Matches any array with the number of elements specified by the argument.

@@ -31,6 +31,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 
+import com.sample.EnumBar;
 import com.sample.EnumFoo;
 import com.sample.Foo;
 import com.sample.Foo.FooBuilder;
@@ -149,7 +150,13 @@ public class FilterExpressionCodecTest {
 				new Object[] {
 						(SerializablePredicate<QFoo>) ((QFoo foo) -> foo.barList
 								.elementMatch(b -> b.stringField.equals("foo"))),
-						"{barList: { $elemMatch: {stringField: 'foo' }}}" }, };
+						"{barList: { $elemMatch: {stringField: 'foo' }}}" }, 
+				// testing on nested documents
+				new Object[] {
+						(SerializablePredicate<QFoo>) ((QFoo foo) -> foo.bar.enumBar.equals(EnumBar.BAR)),
+						"{bar.enumBar: 'BAR'}" },
+				
+				};
 	}
 
 	private final SerializablePredicate<QFoo> expr;

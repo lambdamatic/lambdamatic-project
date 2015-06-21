@@ -410,7 +410,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			builder.append(target).append('.');
 		}
 		final String fieldName = expr.getFieldName();
-		final String documentFieldName = EncoderUtils.getDocumentFieldName(queryMetadataClass, fieldName);
+		final String documentFieldName = EncoderUtils.getDocumentFieldName(expr.getSource().getJavaType(), fieldName);
 		builder.append(documentFieldName);
 		return builder.toString();
 	}

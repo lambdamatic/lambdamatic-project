@@ -15,7 +15,6 @@ import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.lambdamatic.mongodb.metadata.UpdateMetadata;
 import org.lambdamatic.mongodb.query.context.FilterContext;
-import org.lambdamatic.mongodb.query.context.FindTerminalContext;
 
 /**
  * Database Collection for a given type of element (along with its associated metadata)
@@ -33,18 +32,23 @@ import org.lambdamatic.mongodb.query.context.FindTerminalContext;
  *            the {@link UpdateMetadata} associated with Domain Type
  *
  */
-public interface LambdamaticMongoCollection<DomainType, QueryType extends QueryMetadata<DomainType>, ProjectionType extends ProjectionMetadata<DomainType>, UpdateType extends UpdateMetadata<DomainType>> {
+public interface LambdamaticMongoCollection<DomainType, QueryType extends QueryMetadata<DomainType>, ProjectionType extends ProjectionMetadata<DomainType>, UpdateType extends UpdateMetadata<DomainType>> extends FilterContext<DomainType, ProjectionType, UpdateType>{
 
 	/**
 	 * Finds one or many documents matching the given lambda {@link SerializablePredicate}.
 	 * 
 	 * @param filterExpression
 	 *            the filter query in the form of a lambda expression
-	 * @return the {@link FindTerminalContext} element to carry on with the query
+	 * @return the {@link CollectionContext} element to carry on with the query using the given <code>filterExpression</code>
 	 */
 	public FilterContext<DomainType, ProjectionType, UpdateType> filter(
 			final FilterExpression<QueryType> filterExpression);
 
+	/**
+	 * @return the {@link CollectionContext} element to carry on with the query <strong>matching all elements</strong>.
+	 */
+	public FilterContext<DomainType, ProjectionType, UpdateType> all();
+	
 	/**
 	 * Adds (Inserts) the given {@code domainObjects} in the underlying MongoDB Collection. If no {@code id} attribute
 	 * (ie, annotated with {@link DocumentId}) was not set, a random value will be provided.

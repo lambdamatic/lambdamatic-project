@@ -6,7 +6,7 @@ package org.lambdamatic.mongodb.metadata;
 import java.util.List;
 import java.util.Set;
 
-import org.lambdamatic.SerializablePredicate;
+import org.lambdamatic.mongodb.FilterExpression;
 import org.lambdamatic.mongodb.LambdamaticMongoCollection;
 
 /**
@@ -23,7 +23,7 @@ public interface ProjectionArray<DomainType> extends ProjectionField {
 	 * contain only the first element matching the query document.
 	 * 
 	 * Use {@link ProjectionArray#first()} in the projection document of the
-	 * {@link LambdamaticMongoCollection#filter(SerializablePredicate)} method when you only need one particular array
+	 * {@link LambdamaticMongoCollection#filter(FilterExpression)} method when you only need one particular array
 	 * element in selected documents.
 	 * 
 	 * @see http://docs.mongodb.org/manual/reference/operator/projection/positional/#proj._S_
@@ -41,6 +41,6 @@ public interface ProjectionArray<DomainType> extends ProjectionField {
 	 * @see http://docs.mongodb.org/manual/reference/operator/projection/elemMatch/#proj._S_elemMatch
 	 */
 	@MongoOperation(MongoOperator.ELEMEMT_MATCH)
-	public ProjectionField elementMatch(final SerializablePredicate<DomainType> expression);
+	public ProjectionField elementMatch(final FilterExpression<DomainType> expression);
 
 }
