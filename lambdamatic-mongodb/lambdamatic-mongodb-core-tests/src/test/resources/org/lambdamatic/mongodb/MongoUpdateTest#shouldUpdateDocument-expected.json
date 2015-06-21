@@ -10,7 +10,7 @@
 	  	{ _targetClass : "com.sample.BlogEntryComment",
 	  	  author:"anonymous",
 	  	  content: "lorem ipsum! what else ?",
-	  	  date: {$date:"2015-06-12T19:40:00Z"}
+	  	  date: {$date:"2015-06-07T16:40:00Z"}
 	  	 }
 	  ]
 	 } 

@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -56,7 +57,9 @@ public class MongoUpdateTest extends MongoBaseTest {
 		Assertions.assertThat(blogEntry).isNotNull();
 		blogEntry.setAuthorName("John Doe");
 		blogEntry.setContent("Updating documents...");
-		final Date publishDate = new GregorianCalendar(2015, 05, 07, 16, 40, 0).getTime();
+		final GregorianCalendar gregorianCalendar = new GregorianCalendar(2015, 05, 07, 16, 40, 0);
+		gregorianCalendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+		final Date publishDate = gregorianCalendar.getTime();
 		blogEntry.setPublishDate(publishDate);
 		final List<String> tags = Arrays.asList("doc", "update");
 		blogEntry.setTags(tags);
@@ -74,8 +77,12 @@ public class MongoUpdateTest extends MongoBaseTest {
 		final BlogEntry blogEntry = blogEntryCollection.filter(e -> e.id.equals("1"))
 				.projection(e -> Projection.include(e.authorName, e.title, e.publishDate))
 				.first();
+		final GregorianCalendar gregorianCalendar = new GregorianCalendar(2015, 05, 07, 16, 40, 0);
+		gregorianCalendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+		final Date publishDate = gregorianCalendar.getTime();
+		
 		final BlogEntryComment comment = new BlogEntryComment("anonymous",
-				new GregorianCalendar(2015, 05, 12, 21, 40, 0).getTime(), "lorem ipsum! what else ?");
+				publishDate, "lorem ipsum! what else ?");
 		Assertions.assertThat(blogEntry).isNotNull();
 		// when
 		blogEntryCollection.filter(e -> e.id.equals("1")).forEach(e -> {
