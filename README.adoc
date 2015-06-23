@@ -1,8 +1,13 @@
 = Lambdamatic: Query MongoDB with Lambda Expressions
 
+== Status
+
+Prototype (with its share of missing features and bugs)
+
+
 == Project Configuration
 
-In your pom.xml, add the following dependency:
+In your `pom.xml`, add the following dependency:
 
 [code,xml]
 ----
@@ -44,9 +49,15 @@ then, configure the following build plugins:
 </plugin>
 ----
 
-Once this is done, if you use Eclipse, you should install https://github.com/jbosstools/m2e-apt[the m2e-apt plugin] to let Eclipse invoke the Lambdamatic Annotation Processor each time a class annotated with @Document is saved.
+== Querying Documents
 
-Once this is done, you can annotate your domain class with @Document and its fields with @DocumentId/@DocumentField as follow:
+Once this is done, if you use Eclipse, you should install
+https://github.com/jbosstools/m2e-apt[the m2e-apt plugin] to let Eclipse invoke
+the Lambdamatic Annotation Processor each time a class annotated with `@Document`
+is saved.
+
+Once this is done, you can annotate your domain class with `@Document` and its
+fields with `@DocumentId`/`@DocumentField` as follow:
 
 [code,java]
 ----
@@ -86,30 +97,97 @@ public class BikeStation {
 }
 ----
 
-From the class above, the Lambdamatic will generate the following classes:
+From the class above, the Lambdamatic's annotation processor will generate the following classes:
 
-- com.example.domain.BikeStation_
-- com.example.domain.BikeStationCollection
-- com.example.domain.BikeStationCollectionProducer
+- `com.example.domain.QBikeStation`
+- `com.example.domain.PBikeStation`
+- `com.example.domain.UBikeStation`
+- `com.example.domain.BikeStationCollection`
+- `com.example.domain.BikeStationCollectionProducer`
 
-These classes are located in the target/generated-sources/apt folder of your project.
+These classes are located in the `target/generated-sources/apt` folder of your project.
 
-In your code, you can now write queries as follow:
+In your code, you can now write queries as follow to find all `BikeStation` that are `IN_SERVICE`:
 
 [code,java]
 ----
 public List<BikeStation> findWithin(final List<Location> corners) {
-  return bikeStationCollection.find(
+  return bikeStationCollection.filter(
     s -> s.status == BikeStationStatus.IN_SERVICE
       && s.location.geoWithin(corners)).toList();
 }
 ----
 
-See the https://github.com/lambdamatic/lambdamatic-mongodb-citibikesnyc[Sample application] for more details.
+or even more interestingly, you can leverage MongoDB's geosearch capabilities to find
+all `BikeStation` that are `IN_SERVICE` and within an area:
 
-== Status
+[code,java]
+----
+import org.lambdamatic.mongodb.types.geospatial.Location;
+...
 
-Prototype (with its share of missing features and bugs)
+public List<BikeStation> findWithin(final Location[] corners) {
+  return bikeStationCollection.filter(
+      s -> s.status.equals(BikeStationStatus.IN_SERVICE)
+           && s.location.geoWithin(corners)).toList();
+}
+----
+
+
+See the https://github.com/lambdamatic/lambdamatic-mongodb-citibikesnyc[NYC Bikes sample application] for more details.
+
+=== Projections
+
+In some cases, you may not want to retrieve all the documents'fields from MongoDB,
+but just the ones you want to display in the UI. Lambdamatic supports `Projection`
+as well, using the following syntax:
+
+[code,java]
+----
+import org.lambdamatic.mongodb.types.geospatial.Location;
+import static org.lambdamatic.mongodb.Projection.include;
+...
+
+return bikeStationCollection.filter(s -> s.status.equals(BikeStationStatus.IN_SERVICE)
+    && s.location.geoWithin(corners))
+    .projection(s -> include(s.stationName, s.availableBikes, s.availableDocks))
+    .toList();
+----
+
+== Updating Documents
+
+=== Full replacement
+Lambdamatic supports 2 modes to update entities. The first one is the full-replacement mode:
+
+[code,java]
+----
+blogEntryCollection.replace(blogEntry);
+----
+
+In this case, the document whose `id` is the one given in `blogEntry` will be
+replaced with the given `blogEntry`.
+
+=== Partial replacement
+
+The second mode to update an existing document is by specifying the fields that need
+to be updated............................................................................
+
+[code,java]
+----
+Date now = new Date();
+blogEntryCollection.filter(e -> e.id.equals("1")).forEach(e -> {
+      e.lastUpdate = today;
+			e.commentsNumber++;
+			e.comments.push(comment);
+		});
+----
+ in the example above, the document in the `blogEntryCollection` whose `id` is `1`
+ will be updated in the following manner:
+
+ - `lastUpdate` field will be set to `now`,
+ - `commentsNumber` field will be incremented by `1`
+ - the given `comment` sub-document will be added in the array of `comments`
+
 
 == Installation/Build
 
@@ -121,7 +199,7 @@ Run
 mvn clean install
 ----
 
-(requires a mongod running and listening on default port 27017)
+(requires a mongod instance running and listening on default port 27017)
 
 or
 
