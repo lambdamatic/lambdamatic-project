@@ -36,6 +36,9 @@ public class BlogEntry {
 	/** date of publication. */
 	private Date publishDate;
 
+	/** date of last change. */
+	private Date lastUpdate;
+
 	/** Content on the blog entry. */
 	private String content;
 
@@ -93,6 +96,15 @@ public class BlogEntry {
 		this.publishDate = publishDate;
 	}
 
+	
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+	
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
+	
 	public String getTitle() {
 		return title;
 	}

@@ -211,6 +211,7 @@ public class DocumentEncoder {
 	 *            the {@link EncoderContext}
 	 * 
 	 */
+	//FIXME: move into EncoderUtils
 	void writeNamedValue(final BsonWriter writer, final String name, final Object value,
 			final EncoderContext encoderContext) {
 		if (value == null) {

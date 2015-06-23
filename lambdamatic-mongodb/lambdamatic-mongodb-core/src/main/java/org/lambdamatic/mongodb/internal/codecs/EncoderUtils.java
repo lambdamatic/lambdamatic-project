@@ -4,6 +4,7 @@
 package org.lambdamatic.mongodb.internal.codecs;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -163,6 +164,8 @@ public class EncoderUtils {
 			writer.writeString(((Character) value).toString());
 		} else if (value instanceof String) {
 			writer.writeString((String) value);
+		} else if (value instanceof Date) {
+			writer.writeDateTime(((Date) value).getTime());
 		} else if (value instanceof Enum) {
 			writer.writeString(((Enum<?>) value).name());
 		} else if (value.getClass().isArray()) {
@@ -201,6 +204,8 @@ public class EncoderUtils {
 			writer.writeString(name, (String) value);
 		} else if (value instanceof Enum) {
 			writer.writeString(name, ((Enum<?>) value).name());
+		} else if (value instanceof Date) {
+			writer.writeDateTime(name, ((Date) value).getTime());
 		} else if (value.getClass().isArray()) {
 			writer.writeStartArray(name);
 			final Object[] array = (Object[]) value;

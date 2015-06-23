@@ -85,8 +85,9 @@ public class MongoUpdateTest extends MongoBaseTest {
 				publishDate, "lorem ipsum! what else ?");
 		Assertions.assertThat(blogEntry).isNotNull();
 		// when
+		final Date now = gregorianCalendar.getTime();
 		blogEntryCollection.filter(e -> e.id.equals("1")).forEach(e -> {
-			e.authorName = "Xavier";
+			e.lastUpdate = now;
 			e.commentsNumber++;
 			e.comments.push(comment);
 		});
