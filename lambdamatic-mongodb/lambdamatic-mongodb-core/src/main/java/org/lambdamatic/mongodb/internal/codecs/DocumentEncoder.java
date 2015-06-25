@@ -11,18 +11,18 @@
 
 package org.lambdamatic.mongodb.internal.codecs;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.bson.BsonDocument;
@@ -211,7 +211,7 @@ public class DocumentEncoder {
 	 *            the {@link EncoderContext}
 	 * 
 	 */
-	//FIXME: move into EncoderUtils
+	// FIXME: move into EncoderUtils
 	void writeNamedValue(final BsonWriter writer, final String name, final Object value,
 			final EncoderContext encoderContext) {
 		if (value == null) {
@@ -427,30 +427,30 @@ public class DocumentEncoder {
 		else if (value instanceof BsonDocument && targetType.getAnnotation(EmbeddedDocument.class) != null) {
 			return decodeDocument(new BsonDocumentReader((BsonDocument) value), DecoderContext.builder().build());
 		}
-		// array of embedded values/documents
-		else if (targetType.isArray()) {
-			final Class<?> componentType = targetType.getComponentType();
-			final List<Object> values = new ArrayList<>();
-			for (Object v : (Collection<?>) value) {
-				values.add(getValue((BsonValue) v));
-			}
-			return values.toArray((Object[]) java.lang.reflect.Array.newInstance(componentType, values.size()));
-		}
 		// List of embedded values/documents
 		else if (List.class.isAssignableFrom(targetType)) {
-			final List<Object> values = new ArrayList<>();
-			for (Object v : (Collection<?>) value) {
-				values.add(getValue((BsonValue) v));
-			}
+			final List<Object> values = ((List<?>) value).stream().collect(Collectors.toList());
 			return values;
 		}
 		// Set of embedded values/documents
 		else if (Set.class.isAssignableFrom(targetType)) {
-			final Set<Object> values = new HashSet<>();
-			for (Object v : (Collection<?>) value) {
-				values.add(getValue((BsonValue) v));
-			}
+			final Set<Object> values = ((Set<?>) value).stream().collect(Collectors.toSet());
+			// final Set<Object> values = new HashSet<>();
+			// for (Object v : (Collection<?>) value) {
+			// values.add(getValue((BsonValue) v));
+			// }
 			return values;
+		}
+		// array of embedded values/documents
+		else if (targetType.isArray()) {
+
+			// final Object[] values = ((List<?>) value).stream().collect(Collectors.toList());
+			// final Class<?> componentType = targetType.getComponentType();
+			// final List<Object> values = new ArrayList<>();
+			// for (Object v : (Collection<?>) value) {
+			// values.add(getValue((BsonValue) v, componentType));
+			// }
+			return (Object[]) value;
 		}
 		// other types of fields.
 		else {
@@ -487,8 +487,12 @@ public class DocumentEncoder {
 			case "java.util.Date":
 				return new Date((long) value);
 			case "org.lambdamatic.mongodb.types.geospatial.Location":
-				return new LocationCodec(this.codecRegistry, bindingService)
-						.decode(new BsonDocumentReader((BsonDocument) value), DecoderContext.builder().build());
+				if (value instanceof Location) {
+					return value;
+				} else {
+					return new LocationCodec(this.codecRegistry, bindingService)
+							.decode(new BsonDocumentReader((BsonDocument) value), DecoderContext.builder().build());
+				}
 			}
 		}
 		throw new ConversionException("Unable to convert value '" + value + "' to type " + targetType.getName());
@@ -505,7 +509,7 @@ public class DocumentEncoder {
 	 */
 	protected Object getValue(final BsonElement bsonElement, final Class<?> expectedType) {
 		if (bsonElement != null) {
-			final Object bsonValue = getValue(bsonElement.getValue());
+			final Object bsonValue = getValue(bsonElement.getValue(), expectedType);
 			return convert(bsonValue, expectedType);
 		}
 		return null;
@@ -518,11 +522,20 @@ public class DocumentEncoder {
 	 *            the element to inspect
 	 * @return the wrapped value
 	 */
-	public static Object getValue(final BsonValue bsonValue) {
+	public Object getValue(final BsonValue bsonValue, final Class<?> expectedType) {
 		if (bsonValue != null) {
 			switch (bsonValue.getBsonType()) {
 			case ARRAY:
-				return bsonValue.asArray().getValues();
+				if (List.class.isAssignableFrom(expectedType)) {
+					return bsonValue.asArray().getValues().stream().map(v -> getValue(v, expectedType))
+							.collect(Collectors.toList());
+				} else if (Set.class.isAssignableFrom(expectedType)) {
+					return bsonValue.asArray().getValues().stream().map(v -> getValue(v, expectedType))
+							.collect(Collectors.toSet());
+				} else {
+					return bsonValue.asArray().getValues().stream().map(v -> getValue(v, expectedType))
+							.toArray(size -> (Object[]) Array.newInstance(expectedType.getComponentType(), size));
+				}
 			case BINARY:
 				return bsonValue.asBinary().getData();
 			case BOOLEAN:
@@ -554,8 +567,14 @@ public class DocumentEncoder {
 			case TIMESTAMP:
 				return bsonValue.asTimestamp().getTime();
 			case DOCUMENT:
-				// the bsonValue (a BsonDocument) will be processed later
-				return bsonValue;
+				final BsonDocument bsonDocument = (BsonDocument) bsonValue;
+				if (expectedType == Location.class) {
+					return new LocationCodec(this.codecRegistry, this.bindingService)
+							.decode(new BsonDocumentReader(bsonDocument), DecoderContext.builder().build());
+				} else {
+					return new DocumentCodec<>(expectedType, this.codecRegistry, this.bindingService)
+							.decode(new BsonDocumentReader(bsonDocument), DecoderContext.builder().build());
+				}
 			case END_OF_DOCUMENT:
 			case UNDEFINED:
 			case MAX_KEY:

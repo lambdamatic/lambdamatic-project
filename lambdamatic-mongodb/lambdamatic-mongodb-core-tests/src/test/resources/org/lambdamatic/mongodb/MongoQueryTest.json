@@ -8,6 +8,6 @@
 	
 	{ "_id": "3", "_targetClass" : "com.sample.BlogEntry",  
 	  "authorName" : "jdoe", content: "Title3", "tags" : ["foo", "bar", "baz"],
-	  comments: [{author:"anonymous"}] }
+	  comments: [{_targetClass: "com.sample.BlogEntryComment", author:"anonymous"}] }
 	]
 }

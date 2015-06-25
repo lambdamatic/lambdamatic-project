@@ -452,10 +452,17 @@ public class Foo {
 		this.stringSet = stringSet;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((bar == null) ? 0 : bar.hashCode());
+		result = prime * result + ((barList == null) ? 0 : barList.hashCode());
+		result = prime * result + ((date == null) ? 0 : date.hashCode());
+		result = prime * result + Arrays.hashCode(enumBarArray);
 		result = prime * result + ((enumFoo == null) ? 0 : enumFoo.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((location == null) ? 0 : location.hashCode());
@@ -469,13 +476,14 @@ public class Foo {
 		result = prime * result + primitiveIntField;
 		result = prime * result + (int) (primitiveLongField ^ (primitiveLongField >>> 32));
 		result = prime * result + primitiveShortField;
+		result = prime * result + Arrays.hashCode(stringArray);
 		result = prime * result + ((stringField == null) ? 0 : stringField.hashCode());
+		result = prime * result + ((stringList == null) ? 0 : stringList.hashCode());
+		result = prime * result + ((stringSet == null) ? 0 : stringSet.hashCode());
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -487,6 +495,23 @@ public class Foo {
 		if (getClass() != obj.getClass())
 			return false;
 		Foo other = (Foo) obj;
+		if (bar == null) {
+			if (other.bar != null)
+				return false;
+		} else if (!bar.equals(other.bar))
+			return false;
+		if (barList == null) {
+			if (other.barList != null)
+				return false;
+		} else if (!barList.equals(other.barList))
+			return false;
+		if (date == null) {
+			if (other.date != null)
+				return false;
+		} else if (!date.equals(other.date))
+			return false;
+		if (!Arrays.equals(enumBarArray, other.enumBarArray))
+			return false;
 		if (enumFoo != other.enumFoo)
 			return false;
 		if (id == null) {
@@ -515,27 +540,25 @@ public class Foo {
 			return false;
 		if (primitiveShortField != other.primitiveShortField)
 			return false;
+		if (!Arrays.equals(stringArray, other.stringArray))
+			return false;
 		if (stringField == null) {
 			if (other.stringField != null)
 				return false;
 		} else if (!stringField.equals(other.stringField))
 			return false;
+		if (stringList == null) {
+			if (other.stringList != null)
+				return false;
+		} else if (!stringList.equals(other.stringList))
+			return false;
+		if (stringSet == null) {
+			if (other.stringSet != null)
+				return false;
+		} else if (!stringSet.equals(other.stringSet))
+			return false;
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "Foo [id=" + id + ", stringField=" + stringField + ", primitiveByteField=" + primitiveByteField
-				+ ", primitiveShortField=" + primitiveShortField + ", primitiveIntField=" + primitiveIntField
-				+ ", primitiveLongField=" + primitiveLongField + ", primitiveFloatField=" + primitiveFloatField
-				+ ", primitiveDoubleField=" + primitiveDoubleField + ", primitiveBooleanField=" + primitiveBooleanField
-				+ ", primitiveCharField=" + primitiveCharField + ", enumFoo=" + enumFoo + ", location=" + location
-				+ ", date=" + date + "]";
-	}
-
+	
 }

@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import com.mongodb.DBObjectCodecProvider;
 import com.mongodb.DBRefCodecProvider;
+import com.sample.Bar;
 import com.sample.EnumFoo;
 import com.sample.Foo;
 import com.sample.Foo.FooBuilder;
@@ -114,7 +115,14 @@ public class DocumentCodecTest {
 						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
 								+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
 								+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
-								+ "stringArray:['bar', 'baz', 'foo']}" } };
+								+ "stringArray:['bar', 'baz', 'foo']}" },
+				
+				new Object[] { "Document with Array of embedded documents",
+						new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withBarList(new Bar("foo", 1)).build(),
+						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', "
+								+ "barList:[{_targetClass: 'com.sample.Bar', stringField:'foo' , primitiveIntField:1}]}" },
+				
+		};
 		return data;
 	}
 
