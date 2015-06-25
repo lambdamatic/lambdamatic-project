@@ -429,27 +429,14 @@ public class DocumentEncoder {
 		}
 		// List of embedded values/documents
 		else if (List.class.isAssignableFrom(targetType)) {
-			final List<Object> values = ((List<?>) value).stream().collect(Collectors.toList());
-			return values;
+			return ((List<?>) value);
 		}
 		// Set of embedded values/documents
 		else if (Set.class.isAssignableFrom(targetType)) {
-			final Set<Object> values = ((Set<?>) value).stream().collect(Collectors.toSet());
-			// final Set<Object> values = new HashSet<>();
-			// for (Object v : (Collection<?>) value) {
-			// values.add(getValue((BsonValue) v));
-			// }
-			return values;
+			return (Set<?>) value;
 		}
 		// array of embedded values/documents
 		else if (targetType.isArray()) {
-
-			// final Object[] values = ((List<?>) value).stream().collect(Collectors.toList());
-			// final Class<?> componentType = targetType.getComponentType();
-			// final List<Object> values = new ArrayList<>();
-			// for (Object v : (Collection<?>) value) {
-			// values.add(getValue((BsonValue) v, componentType));
-			// }
 			return (Object[]) value;
 		}
 		// other types of fields.
