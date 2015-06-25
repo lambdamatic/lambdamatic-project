@@ -18,6 +18,7 @@
 	<modules>
 		<module>lambdamatic-analyzer</module>
 		<module>lambdamatic-mongodb</module>
+		<module>lambdamatic-jpa</module>
 	</modules>
 
 	<dependencyManagement>

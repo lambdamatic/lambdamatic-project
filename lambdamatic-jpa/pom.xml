@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.lambdamatic</groupId>
+    <artifactId>lambdamatic</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+  
+  <groupId>org.lambdamatic.jpa</groupId>
+  <artifactId>lambdamatic-jpa</artifactId>
+  <packaging>pom</packaging>
+  <modules>
+    <module>lambdamatic-jpa-core</module>
+    <module>lambdamatic-jpa-metadata-generator</module>
+    <module>lambdamatic-jpa-metadata-generator-tests</module>
+    <module>lambdamatic-jpa-core-tests</module>
+  </modules>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.hibernate.javax.persistence</groupId>
+  		<artifactId>hibernate-jpa-2.1-api</artifactId>
+  		<version>1.0.0.Final</version>
+  	</dependency>
+  </dependencies>
+</project>
