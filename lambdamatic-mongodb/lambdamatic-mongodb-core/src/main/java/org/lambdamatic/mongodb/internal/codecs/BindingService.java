@@ -18,6 +18,9 @@ import org.lambdamatic.mongodb.exceptions.ConversionException;
 import com.mongodb.DBObject;
 
 /**
+ * Service that binds the Java Class fields to MongoDB Document fields.
+ * This class implements the singleton pattern for easy access in any Codec or Encoder classes.
+ * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
@@ -28,6 +31,23 @@ public class BindingService {
 	 */
 	private final Map<Class<?>, Map<String, Field>> bindings = new HashMap<Class<?>, Map<String, Field>>();
 
+	private static final BindingService instance = new BindingService();
+	
+	/**
+	 * Access to the singleton instance.
+	 * @return the singleton instance of the {@link BindingService}.
+	 */
+	public static BindingService getInstance() {
+		return instance;
+	}
+	
+	/**
+	 * Singleton constructor.
+	 */
+	private BindingService() {
+		super();
+	}
+	
 	/**
 	 * Checks if the given binding is a {@link DocumentId} binding.
 	 * 

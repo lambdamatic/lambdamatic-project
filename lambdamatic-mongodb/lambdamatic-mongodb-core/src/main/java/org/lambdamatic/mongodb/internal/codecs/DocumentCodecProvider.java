@@ -19,19 +19,6 @@ import org.lambdamatic.mongodb.annotations.Document;
  */
 public class DocumentCodecProvider implements CodecProvider {
 
-	/** The binding service. */
-	private final BindingService bindingService;
-
-	/**
-	 * Constructor
-	 * 
-	 * @param bindingService
-	 *            the {@link BindingService}.
-	 */
-	public DocumentCodecProvider(final BindingService bindingService) {
-		this.bindingService = bindingService;
-	}
-
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -41,7 +28,7 @@ public class DocumentCodecProvider implements CodecProvider {
 	@Override
 	public <T> Codec<T> get(final Class<T> clazz, final CodecRegistry registry) {
 		if (clazz != null && clazz.getAnnotation(Document.class) != null) {
-			final DocumentCodec<T> lambdamaticDocumentCodec = new DocumentCodec<T>(clazz, registry, bindingService);
+			final DocumentCodec<T> lambdamaticDocumentCodec = new DocumentCodec<T>(clazz, registry);
 			return lambdamaticDocumentCodec;
 		}
 		return null;

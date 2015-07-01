@@ -19,19 +19,6 @@ import org.lambdamatic.mongodb.internal.IdFilter;
  */
 public class IdFilterCodecProvider implements CodecProvider {
 
-	/** The binding service. */
-	private final BindingService bindingService;
-
-	/**
-	 * Constructor
-	 * 
-	 * @param bindingService
-	 *            the {@link BindingService}.
-	 */
-	public IdFilterCodecProvider(final BindingService bindingService) {
-		this.bindingService = bindingService;
-	}
-
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -42,7 +29,7 @@ public class IdFilterCodecProvider implements CodecProvider {
 	@Override
 	public <T> Codec<T> get(final Class<T> clazz, final CodecRegistry registry) {
 		if (clazz != null && clazz.equals(IdFilter.class)) {
-			return (Codec<T>) new IdFilterCodec(bindingService);
+			return (Codec<T>) new IdFilterCodec();
 		}
 		return null;
 	}

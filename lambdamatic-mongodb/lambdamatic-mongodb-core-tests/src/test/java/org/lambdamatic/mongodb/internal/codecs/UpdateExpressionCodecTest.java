@@ -93,7 +93,7 @@ public class UpdateExpressionCodecTest {
 
 	@Before
 	public void setupCodec() {
-		codec = new UpdateExpressionCodec(DocumentCodecTest.DEFAULT_CODEC_REGISTRY, new BindingService());
+		codec = new UpdateExpressionCodec(DocumentCodecTest.DEFAULT_CODEC_REGISTRY);
 	}
 
 	@Test

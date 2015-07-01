@@ -154,7 +154,7 @@ public class DocumentCodecTest {
 		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8"));
 		final EncoderContext context = EncoderContext.builder().isEncodingCollectibleDocument(true).build();
 		// when
-		new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY, new BindingService()).encode(bsonWriter, (Foo) foo,
+		new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY).encode(bsonWriter, (Foo) foo,
 				context);
 		// then
 		final String actualJson = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
@@ -179,7 +179,7 @@ public class DocumentCodecTest {
 		final BsonReader bsonReader = new JsonReader(expectedJson);
 		final DecoderContext decoderContext = DecoderContext.builder().build();
 		// when
-		final Foo actualFoo = new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY, new BindingService())
+		final Foo actualFoo = new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY)
 				.decode(bsonReader, decoderContext);
 		// then
 		assertEquals(foo, actualFoo);

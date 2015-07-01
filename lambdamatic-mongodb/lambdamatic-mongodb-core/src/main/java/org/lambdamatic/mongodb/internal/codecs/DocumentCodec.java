@@ -45,9 +45,6 @@ public class DocumentCodec<T> implements Codec<T> {
 	/** the codec registry, to decode elements of an incoming BSON document. */
 	private final CodecRegistry codecRegistry;
 
-	/** The binding service. */
-	private final BindingService bindingService;
-
 	/**
 	 * Constructor
 	 * 
@@ -55,21 +52,10 @@ public class DocumentCodec<T> implements Codec<T> {
 	 *            the domain class supported by this {@link Codec}.
 	 * @param codecRegistry
 	 *            the associated {@link CodecRegistry}
-	 * @param bindingService
-	 *            the Binding Service.
 	 */
-	public DocumentCodec(final Class<T> targetClass, final CodecRegistry codecRegistry,
-			final BindingService bindingService) {
+	public DocumentCodec(final Class<T> targetClass, final CodecRegistry codecRegistry) {
 		this.targetClass = targetClass;
 		this.codecRegistry = codecRegistry;
-		this.bindingService = bindingService;
-	}
-
-	/**
-	 * @return the {@link BindingService} of this {@link DocumentCodec}.
-	 */
-	public BindingService getBindingService() {
-		return bindingService;
 	}
 
 	public CodecRegistry getCodecRegistry() {
@@ -90,14 +76,13 @@ public class DocumentCodec<T> implements Codec<T> {
 	 */
 	@Override
 	public void encode(final BsonWriter writer, final T domainObject, final EncoderContext encoderContext) {
-		final DocumentEncoder encoder = new DocumentEncoder(this.targetClass, this.bindingService, this.codecRegistry);
 		if (LOGGER.isDebugEnabled()) {
 			try {
 				// use an intermediate JsonWriter whose Outputstream can be
 				// retrieved
 				final ByteArrayOutputStream jsonOutputStream = new ByteArrayOutputStream();
 				final BsonWriter debugWriter = new JsonWriter(new OutputStreamWriter(jsonOutputStream, "UTF-8"));
-				encoder.encodeDomainObject(debugWriter, domainObject, encoderContext);
+				EncoderUtils.encodeDomainObject(debugWriter, domainObject, encoderContext, this.codecRegistry);
 				final String jsonContent = IOUtils.toString(jsonOutputStream.toByteArray(), "UTF-8");
 				LOGGER.debug("Encoded document: {}", jsonContent);
 				// now, write the document in the target writer
@@ -109,7 +94,7 @@ public class DocumentCodec<T> implements Codec<T> {
 						e);
 			}
 		} else {
-			encoder.encodeDomainObject(writer, domainObject, encoderContext);
+			EncoderUtils.encodeDomainObject(writer, domainObject, encoderContext, this.codecRegistry);
 		}
 	}
 
@@ -124,7 +109,7 @@ public class DocumentCodec<T> implements Codec<T> {
 	 */
 	@Override
 	public T decode(final BsonReader reader, final DecoderContext decoderContext) {
-		final DocumentEncoder encoder = new DocumentEncoder(this.targetClass, this.bindingService, this.codecRegistry);
+		final DocumentEncoder encoder = new DocumentEncoder(this.targetClass, this.codecRegistry);
 		// code adapted from "org.bson.codecs.BsonDocumentCodec"
 		return encoder.decodeDocument(reader, decoderContext);
 	}

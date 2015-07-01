@@ -17,7 +17,6 @@ import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.lambdamatic.mongodb.internal.codecs.BindingService;
 import org.lambdamatic.mongodb.internal.codecs.DocumentCodecProvider;
 import org.lambdamatic.mongodb.internal.codecs.FilterExpressionCodecProvider;
 import org.lambdamatic.mongodb.internal.codecs.IdFilterCodecProvider;
@@ -30,16 +29,11 @@ import org.lambdamatic.mongodb.internal.codecs.UpdateExpressionCodecProvider;
  */
 public class BsonUtils {
 	
-	/**
-	 * Internal cache of bindings to convert domain class instances from/to {@link BsonDocument}.
-	 */
-	private static final BindingService bindingService = new BindingService();
-
 	/** The registry of the custom {@link Codec}. */
-	static final CodecRegistry codecRegistry = CodecRegistries.fromProviders(new DocumentCodecProvider(bindingService),
+	static final CodecRegistry codecRegistry = CodecRegistries.fromProviders(new DocumentCodecProvider(),
 			new FilterExpressionCodecProvider(), new ProjectionExpressionCodecProvider(),
-			new UpdateExpressionCodecProvider(bindingService), new IdFilterCodecProvider(bindingService),
-			new BsonValueCodecProvider());;
+			new UpdateExpressionCodecProvider(), new IdFilterCodecProvider(),
+			new BsonValueCodecProvider());
 
 	/**
 	 * Private constructor of this utility class

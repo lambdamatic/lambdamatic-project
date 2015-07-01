@@ -118,8 +118,8 @@ public class ProjectionExpressionEncoder extends ExpressionVisitor {
 			element.accept(this);
 		}
 		if (this.projectionType == ProjectionType.INCLUDE
-				&& !projectedFieldNames.contains(DocumentEncoder.MONGOBD_DOCUMENT_ID)) {
-			encode(DocumentEncoder.MONGOBD_DOCUMENT_ID, ProjectionType.EXCLUDE);
+				&& !projectedFieldNames.contains(EncoderUtils.MONGOBD_DOCUMENT_ID)) {
+			encode(EncoderUtils.MONGOBD_DOCUMENT_ID, ProjectionType.EXCLUDE);
 		}
 		if (!nestedExpression) {
 			writer.writeEndDocument();

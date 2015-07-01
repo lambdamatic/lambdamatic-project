@@ -35,25 +35,18 @@ public class UpdateExpressionEncoder extends ExpressionVisitor {
 
 	private final Class<?> argumentType;
 
-	private final String argumentName;
-
 	private final BsonWriter writer;
 
 	private final EncoderContext encoderContext;
 
 	private final CodecRegistry codecRegistry;
 
-	private final BindingService bindingService;
-
-	public UpdateExpressionEncoder(final Class<?> argumentType, final String argumentName, final BsonWriter writer,
-			final EncoderContext encoderContext, final CodecRegistry codecRegistry,
-			final BindingService bindingService) {
-		this.argumentName = argumentName;
+	public UpdateExpressionEncoder(final Class<?> argumentType, final BsonWriter writer,
+			final EncoderContext encoderContext, final CodecRegistry codecRegistry) {
 		this.argumentType = argumentType;
 		this.encoderContext = encoderContext;
 		this.writer = writer;
 		this.codecRegistry = codecRegistry;
-		this.bindingService = bindingService;
 	}
 
 	@Override
@@ -111,12 +104,10 @@ public class UpdateExpressionEncoder extends ExpressionVisitor {
 			case OBJECT_INSTANCIATION:
 			case OBJECT_INSTANCE:
 				final String documentFieldName = EncoderUtils.getDocumentFieldName(argumentType, targetArray);
-				final DocumentEncoder documentEncoder = new DocumentEncoder(valueExpression.getValue().getClass(),
-						bindingService, codecRegistry);
 				writer.writeStartDocument(documentFieldName);
 				try {
-					documentEncoder.encodeDomainObjectContent(this.writer, valueExpression.getValue(),
-							this.encoderContext);
+					EncoderUtils.encodeDomainObjectContent(this.writer, valueExpression.getValue(),
+							this.encoderContext, this.codecRegistry);
 				} catch (IllegalAccessException e) {
 					throw new ConversionException(
 							"Failed to encode argument during '" + MongoOperator.PUSH.getLiteral() + "' operation", e);

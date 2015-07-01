@@ -49,8 +49,8 @@ public class LocationCodec extends DocumentCodec<Location> {
 	 * @param codecRegistry
 	 *            the {@link CodecRegistry} to use.
 	 */
-	public LocationCodec(final CodecRegistry codecRegistry, final BindingService bindingService) {
-		super(Location.class, codecRegistry, bindingService);
+	public LocationCodec(final CodecRegistry codecRegistry) {
+		super(Location.class, codecRegistry);
 	}
 
 	/**
@@ -98,8 +98,7 @@ public class LocationCodec extends DocumentCodec<Location> {
 	@Override
 	public Location decode(final BsonReader reader, final DecoderContext decoderContext) {
 		// code duplicated and adapted from "org.bson.codecs.BsonDocumentCodec"
-		final DocumentEncoder documentEncoder = new DocumentEncoder(Location.class, getBindingService(),
-				getCodecRegistry());
+		final DocumentEncoder documentEncoder = new DocumentEncoder(Location.class, getCodecRegistry());
 		final Map<String, BsonElement> keyValuePairs = new HashMap<>();
 		reader.readStartDocument();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
@@ -110,7 +109,7 @@ public class LocationCodec extends DocumentCodec<Location> {
 		// now, convert the map key-pairs into an instance of the target
 		// document
 		final LocationDocument locationDocument = new LocationDocument();
-		final Map<String, Field> bindings = getBindingService().getBindings(LocationDocument.class);
+		final Map<String, Field> bindings = BindingService.getInstance().getBindings(LocationDocument.class);
 		for (Iterator<String> iterator = keyValuePairs.keySet().iterator(); iterator.hasNext();) {
 			final String key = iterator.next();
 			final Field field = bindings.get(key);

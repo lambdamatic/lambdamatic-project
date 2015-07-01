@@ -30,18 +30,13 @@ public class UpdateExpressionCodec extends BaseLambdaExpressionCodec<Serializabl
 	/** the codec registry, to decode elements of an incoming BSON document. */
 	private final CodecRegistry codecRegistry;
 
-	/** The binding service. */
-	private final BindingService bindingService;
-
 	/**
 	 * Constructor
 	 * 
 	 * @param codecRegistry
-	 * @param bindingService
 	 */
-	public UpdateExpressionCodec(final CodecRegistry codecRegistry, final BindingService bindingService) {
+	public UpdateExpressionCodec(final CodecRegistry codecRegistry) {
 		this.codecRegistry = codecRegistry;
-		this.bindingService = bindingService;
 	}
 
 	void encodeExpression(final LambdaExpression lambdaExpression, final BsonWriter writer,
@@ -50,8 +45,8 @@ public class UpdateExpressionCodec extends BaseLambdaExpressionCodec<Serializabl
 		writer.writeStartDocument();
 		for (Expression expression : expressions) {
 			final UpdateExpressionEncoder expressionEncoder = new UpdateExpressionEncoder(
-					lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName(), writer, encoderContext,
-					codecRegistry, bindingService);
+					lambdaExpression.getArgumentType(), writer, encoderContext,
+					codecRegistry);
 			expression.accept(expressionEncoder);
 		}
 		writer.writeEndDocument();

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.lambdamatic.analyzer.ast.CapturedArgumentsEvaluator;
@@ -131,13 +132,15 @@ public class LambdaExpressionAnalyzer {
 						serializedLambda.getFunctionalInterfaceMethodSignature());
 				LOGGER.debug(" Lambda Implementation: {}.{} ({})", serializedLambda.getImplClass(),
 						serializedLambda.getImplMethodName(), serializedLambda.getImplMethodSignature());
-				for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
-					LOGGER.debug(
-							"  with Captured Arg(" + i + "): '" + serializedLambda.getCapturedArg(i)
-									+ ((serializedLambda.getCapturedArg(i) != null)
-											? "' (" + serializedLambda.getCapturedArg(i).getClass().getName() + ")"
-											: ""));
-				}
+				IntStream.range(0, serializedLambda.getCapturedArgCount())
+						.forEach(
+								i -> LOGGER
+										.debug("  with Captured Arg(" + i + "): '" + serializedLambda.getCapturedArg(i)
+												+ ((serializedLambda.getCapturedArg(i) != null) ? "' ("
+														+ serializedLambda.getCapturedArg(i).getClass().getName() + ")"
+														: "")));
+				serializedLambda.getCapturedArgCount();
+
 				return new SerializedLambdaInfo(serializedLambda);
 			}
 		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -218,7 +221,8 @@ public class LambdaExpressionAnalyzer {
 		LOGGER.debug("Analyzing lambda expression bytecode at {}.{}", lambdaInfo.getImplClassName(),
 				lambdaInfo.getImplMethodName());
 		final LambdaExpressionReader lambdaExpressionReader = new LambdaExpressionReader();
-		final Pair<List<Statement>, List<LocalVariable>> bytecode = lambdaExpressionReader.readBytecodeStatement(lambdaInfo);
+		final Pair<List<Statement>, List<LocalVariable>> bytecode = lambdaExpressionReader
+				.readBytecodeStatement(lambdaInfo);
 		final List<LocalVariable> lambdaExpressionArguments = bytecode.getRight();
 		final List<Statement> lambdaExpressionStatements = bytecode.getLeft();
 		final List<Statement> processedBlock = lambdaExpressionStatements.stream().map(s -> thinOut(s))
@@ -233,8 +237,10 @@ public class LambdaExpressionAnalyzer {
 		case CONTROL_FLOW_STMT:
 			final ControlFlowStatement controlFlowStmt = (ControlFlowStatement) statement;
 			final Expression simplifiedControlFlowExpression = simplify(controlFlowStmt.getControlFlowExpression());
-			final List<Statement> simplifiedThenStmts = controlFlowStmt.getThenStatements().stream().map(s -> simplify(s)).collect(Collectors.toList());
-			final List<Statement> simplifiedElseStmts = controlFlowStmt.getElseStatements().stream().map(s -> simplify(s)).collect(Collectors.toList());
+			final List<Statement> simplifiedThenStmts = controlFlowStmt.getThenStatements().stream()
+					.map(s -> simplify(s)).collect(Collectors.toList());
+			final List<Statement> simplifiedElseStmts = controlFlowStmt.getElseStatements().stream()
+					.map(s -> simplify(s)).collect(Collectors.toList());
 			return new ControlFlowStatement(simplifiedControlFlowExpression, simplifiedThenStmts, simplifiedElseStmts);
 		case EXPRESSION_STMT:
 			final ExpressionStatement expressionStmt = (ExpressionStatement) statement;
@@ -284,7 +290,8 @@ public class LambdaExpressionAnalyzer {
 			// retrieve the captured arguments from the given serializedLambda
 			final List<Object> capturedArgValues = capturedArguments.stream().map(a -> a.getValue())
 					.collect(Collectors.toList());
-			statements.stream().forEach(s ->s.accept(new StatementExpressionsDelegateVisitor(new CapturedArgumentsEvaluator(capturedArgValues))));
+			statements.stream().forEach(s -> s.accept(
+					new StatementExpressionsDelegateVisitor(new CapturedArgumentsEvaluator(capturedArgValues))));
 			// final StatementVisitor visitor = new CapturedArgumentsEvaluator(capturedArgValues);
 			// return ExpressionVisitorUtil.visit(sourceExpression, visitor);
 			return statements;
@@ -344,7 +351,7 @@ public class LambdaExpressionAnalyzer {
 				}
 				if (relevantExpressions.size() > 1) {
 					expressions.add(new InfixExpression(InfixOperator.CONDITIONAL_AND, relevantExpressions));
-				} else if(!relevantExpressions.isEmpty()){
+				} else if (!relevantExpressions.isEmpty()) {
 					expressions.add(relevantExpressions.getFirst());
 				}
 
