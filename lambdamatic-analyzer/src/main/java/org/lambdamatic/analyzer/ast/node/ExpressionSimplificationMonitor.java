@@ -52,7 +52,7 @@ public class ExpressionSimplificationMonitor {
 	/** Whether this monitor is stopped (ie, best simplification was found).*/
 	private boolean stopped = false;
 
-	/** The original {@link InfixExpression} that is being simplified.*/
+	/** The original {@link CompoundExpression} that is being simplified.*/
 	private final Expression expressionToSimplify;
 
 	public ExpressionSimplificationMonitor(final Expression expressionToSimplify) {

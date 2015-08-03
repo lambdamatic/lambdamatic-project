@@ -14,8 +14,8 @@ import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
-import org.lambdamatic.analyzer.ast.node.InfixExpression;
-import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.slf4j.Logger;
@@ -25,9 +25,9 @@ import org.slf4j.LoggerFactory;
  * Creates a new {@link Expression} where method calls such as
  * {@link Long#longValue()}, etc. are removed because they are not relevant in
  * our case (they are just underlying conversion methods) Finally,
- * {@link InfixExpression} with a boolean conditions (eg:
+ * {@link CompoundExpression} with a boolean conditions (eg:
  * {@link MethodInvocation} == {@link BooleanLiteral}) are simplified as well:
- * the {@link InfixExpression} is replaced with the meaningful operand.
+ * the {@link CompoundExpression} is replaced with the meaningful operand.
  *
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
@@ -38,23 +38,23 @@ public class ExpressionSanitizer extends ExpressionVisitor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExpressionSanitizer.class);
 
 	/**
-	 * If the {@link InfixExpression} with a boolean conditions (eg:
+	 * If the {@link CompoundExpression} with a boolean conditions (eg:
 	 * {@link MethodInvocation} == {@link BooleanLiteral}), replace it with the meaningful operand (which may need to be inverted).
 	 * 
-	 * @param expr the {@link InfixExpression} to analyze
+	 * @param expr the {@link CompoundExpression} to analyze
 	 */
 	@Override
-	public boolean visitInfixExpression(final InfixExpression expr) {
+	public boolean visitInfixExpression(final CompoundExpression expr) {
 		// manually visit all operands, first
 		expr.getOperands().stream().forEach(operand -> operand.accept(this));
-		if ((expr.getOperator() == InfixOperator.EQUALS || expr.getOperator() == InfixOperator.NOT_EQUALS)
+		if ((expr.getOperator() == CompoundExpressionOperator.EQUALS || expr.getOperator() == CompoundExpressionOperator.NOT_EQUALS)
 				&& expr.getOperands().size() == 2
 				&& expr.getOperands().stream().anyMatch(e -> e.getExpressionType() == ExpressionType.BOOLEAN_LITERAL)) {
 			final ComplexExpression parentExpression = expr.getParent();
 			final Optional<Expression> replacementExpr = expr.getOperands().stream().filter(e -> e.getExpressionType() != ExpressionType.BOOLEAN_LITERAL).findFirst();
 			if(replacementExpr.isPresent()) {
 				parentExpression.replaceElement(expr,
-						(expr.getOperator() == InfixOperator.EQUALS) ? replacementExpr.get() : replacementExpr.get()
+						(expr.getOperator() == CompoundExpressionOperator.EQUALS) ? replacementExpr.get() : replacementExpr.get()
 								.inverse());
 			}
 		}

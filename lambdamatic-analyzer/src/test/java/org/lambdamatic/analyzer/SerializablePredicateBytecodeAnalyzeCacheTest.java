@@ -11,8 +11,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.lambdamatic.SerializablePredicate;
-import org.lambdamatic.analyzer.ast.node.InfixExpression;
-import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
@@ -52,7 +52,7 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 		// when (first call) 
 		final LambdaExpression lambdaExpression1 = getLambdaExpression();
 		// then 
-		Assertions.assertThat(lambdaExpression1.getBody()).containsExactly(new ReturnStatement(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
+		Assertions.assertThat(lambdaExpression1.getBody()).containsExactly(new ReturnStatement(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, 
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack"))
 				)));
@@ -63,7 +63,7 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 		// when (second call)
 		final LambdaExpression lambdaExpression2 = getLambdaExpression();
 		// then 
-		Assertions.assertThat(lambdaExpression2.getBody()).containsExactly(new ReturnStatement(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
+		Assertions.assertThat(lambdaExpression2.getBody()).containsExactly(new ReturnStatement(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, 
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack"))
 				)));
@@ -79,7 +79,7 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 		// when (first call) 
 		final LambdaExpression lambdaExpression1 = getLambdaExpression("john1", "jack1");
 		// then 
-		Assertions.assertThat(lambdaExpression1.getBody()).containsExactly(new ReturnStatement(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
+		Assertions.assertThat(lambdaExpression1.getBody()).containsExactly(new ReturnStatement(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, 
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john1")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack1"))
 				)));
@@ -90,7 +90,7 @@ public class SerializablePredicateBytecodeAnalyzeCacheTest {
 		// when (second call)
 		final LambdaExpression lambdaExpression2 = getLambdaExpression("john2", "jack2");
 		// then 
-		Assertions.assertThat(lambdaExpression2.getBody()).containsExactly(new ReturnStatement(new InfixExpression(InfixOperator.CONDITIONAL_OR, 
+		Assertions.assertThat(lambdaExpression2.getBody()).containsExactly(new ReturnStatement(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, 
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("john2")),
 				new MethodInvocation(getStringValue, Object_equals, new StringLiteral("jack2"))
 				)));

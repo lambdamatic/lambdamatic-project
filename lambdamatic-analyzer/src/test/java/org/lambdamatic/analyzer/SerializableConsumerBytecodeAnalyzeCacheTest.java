@@ -13,8 +13,8 @@ import org.junit.Test;
 import org.lambdamatic.SerializableConsumer;
 import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
-import org.lambdamatic.analyzer.ast.node.InfixExpression;
-import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
@@ -58,7 +58,7 @@ public class SerializableConsumerBytecodeAnalyzeCacheTest {
 		// then 
 		final MethodInvocation fieldEqualsJohnMethod = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("john"));
 		final MethodInvocation fieldEqualsJackMethod = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("jack"));
-		final InfixExpression infixExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsJohnMethod, fieldEqualsJackMethod);
+		final CompoundExpression infixExpression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, fieldEqualsJohnMethod, fieldEqualsJackMethod);
 		final LambdaExpression nestedExpression = new LambdaExpression(new ReturnStatement(infixExpression), TestPojo.class, "e");
 		final MethodInvocation elementMatchMethod = new MethodInvocation(t, TestPojo_elementMatch, nestedExpression);
 		final Statement expectedStmt = new ExpressionStatement(elementMatchMethod);
@@ -88,7 +88,7 @@ public class SerializableConsumerBytecodeAnalyzeCacheTest {
 		// then 
 		final MethodInvocation fieldEqualsJohn1Method = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("john1"));
 		final MethodInvocation fieldEqualsJack1Method = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("jack1"));
-		final InfixExpression infixExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsJohn1Method, fieldEqualsJack1Method);
+		final CompoundExpression infixExpression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, fieldEqualsJohn1Method, fieldEqualsJack1Method);
 		final LambdaExpression nestedExpression1 = new LambdaExpression(new ReturnStatement(infixExpression), TestPojo.class, "e");
 		final MethodInvocation elementMatchMethod1 = new MethodInvocation(t, TestPojo_elementMatch, nestedExpression1);
 		final Statement expectedStmt1 = new ExpressionStatement(elementMatchMethod1);
@@ -102,7 +102,7 @@ public class SerializableConsumerBytecodeAnalyzeCacheTest {
 		// then 
 		final MethodInvocation fieldEqualsJohn2Method = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("john2"));
 		final MethodInvocation fieldEqualsJack2Method = new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("jack2"));
-		final InfixExpression infixExpression2 = new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsJohn2Method, fieldEqualsJack2Method);
+		final CompoundExpression infixExpression2 = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, fieldEqualsJohn2Method, fieldEqualsJack2Method);
 		final LambdaExpression nestedExpression2 = new LambdaExpression(new ReturnStatement(infixExpression2), TestPojo.class, "e");
 		final MethodInvocation elementMatchMethod2 = new MethodInvocation(t, TestPojo_elementMatch, nestedExpression2);
 		final Statement expectedStmt2 = new ExpressionStatement(elementMatchMethod2);

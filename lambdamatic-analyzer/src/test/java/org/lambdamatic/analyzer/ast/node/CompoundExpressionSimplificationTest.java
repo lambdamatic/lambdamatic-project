@@ -12,7 +12,7 @@ import static org.lambdamatic.testutils.JavaMethods.TestPojo_getStringValue;
 import java.util.Collection;
 
 import org.junit.Test;
-import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 
 import com.sample.model.EnumPojo;
 import com.sample.model.TestPojo;
@@ -21,7 +21,7 @@ import com.sample.model.TestPojo;
  * @author xcoulon
  *
  */
-public class InfixExpressionSimplificationTest {
+public class CompoundExpressionSimplificationTest {
 
 	@Test
 	public void shouldApplyIdempotentLawWithConditionnalOROnTwoOperands() {
@@ -29,7 +29,7 @@ public class InfixExpressionSimplificationTest {
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsA1Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsA2Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsA1Method, equalsA2Method);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsA1Method, equalsA2Method);
 		// when
 		final Collection<Expression> results = expression.applyIdempotentLaw();
 		// then expect '(a)'
@@ -44,12 +44,12 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsA1Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsA2Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsA1Method, equalsA2Method, equalsBMethod);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsA1Method, equalsA2Method, equalsBMethod);
 		// when
 		final Collection<Expression> results = expression.applyIdempotentLaw();
 		// then expect '(a)'
 		assertThat(results).hasSize(1);
-		assertThat(results).contains(new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsA1Method, equalsBMethod));
+		assertThat(results).contains(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsA1Method, equalsBMethod));
 	}
 	
 	@Test
@@ -58,7 +58,7 @@ public class InfixExpressionSimplificationTest {
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsA1Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsA2Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsA1Method, equalsA2Method);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsA1Method, equalsA2Method);
 		// when
 		final Collection<Expression> results = expression.applyIdempotentLaw();
 		// then expect '(a)'
@@ -73,12 +73,12 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsA1Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsA2Method = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsA1Method, equalsA2Method, equalsBMethod);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsA1Method, equalsA2Method, equalsBMethod);
 		// when
 		final Collection<Expression> results = expression.applyIdempotentLaw();
 		// then expect '(a.b)'
 		assertThat(results).hasSize(1);
-		assertThat(results).contains(new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsA1Method, equalsBMethod));
+		assertThat(results).contains(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsA1Method, equalsBMethod));
 	}
 	
 	@Test
@@ -88,14 +88,14 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsBMethod, equalsCMethod));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsBMethod, equalsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyAssociativeLaw();
 		// then expect '(a + b + c)'
 		assertThat(results).hasSize(1);
 		assertThat(results).contains(
-				new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod, equalsCMethod));
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod, equalsCMethod));
 	}
 
 	@Test
@@ -105,8 +105,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsBMethod, equalsCMethod));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsBMethod, equalsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyAssociativeLaw();
 		// then expect no result
@@ -120,14 +120,14 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsBMethod, equalsCMethod));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsBMethod, equalsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyAssociativeLaw();
 		// then expect '(a.b.c)'
 		assertThat(results).hasSize(1);
 		assertThat(results).contains(
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, equalsCMethod));
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, equalsCMethod));
 	}
 
 	@Test
@@ -137,8 +137,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsBMethod, equalsCMethod));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsBMethod, equalsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyAssociativeLaw();
 		// then expect no result
@@ -150,8 +150,8 @@ public class InfixExpressionSimplificationTest {
 		// given '(a + O)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
-		final BooleanLiteral emptySetOperator = new BooleanLiteral(Boolean.FALSE);
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, emptySetOperator);
+		final BooleanLiteral emptySetOperator = new BooleanLiteral(false);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, emptySetOperator);
 		// when
 		final Collection<Expression> results = expression.applyEmptySetLaw();
 		// then expect '(a)'
@@ -165,13 +165,13 @@ public class InfixExpressionSimplificationTest {
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
-		final BooleanLiteral emptySetOperator = new BooleanLiteral(Boolean.FALSE);
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod, emptySetOperator);
+		final BooleanLiteral emptySetOperator = new BooleanLiteral(false);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod, emptySetOperator);
 		// when
 		final Collection<Expression> results = expression.applyEmptySetLaw();
 		// then expect '(a + b)'
 		assertThat(results).hasSize(1);
-		assertThat(results).contains(new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod));
+		assertThat(results).contains(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod));
 	}
 	
 	@Test
@@ -179,7 +179,7 @@ public class InfixExpressionSimplificationTest {
 		// given '(a.O)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, BooleanLiteral.EMPTY_SET_OPERATOR);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, BooleanLiteral.EMPTY_SET_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyEmptySetLaw();
 		// then expect '(O)'
@@ -193,7 +193,7 @@ public class InfixExpressionSimplificationTest {
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, BooleanLiteral.EMPTY_SET_OPERATOR);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, BooleanLiteral.EMPTY_SET_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyEmptySetLaw();
 		// then expect '(O)'
@@ -206,7 +206,7 @@ public class InfixExpressionSimplificationTest {
 		// given '(a + 1)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyUniversalSetLaw();
 		// then expect '(1)'
@@ -220,7 +220,7 @@ public class InfixExpressionSimplificationTest {
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyUniversalSetLaw();
 		// then expect '(1)'
@@ -233,7 +233,7 @@ public class InfixExpressionSimplificationTest {
 		// given '(a.1)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyUniversalSetLaw();
 		// then expect '(a)'
@@ -248,12 +248,12 @@ public class InfixExpressionSimplificationTest {
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, BooleanLiteral.UNIVERSAL_OPERATOR);
 		// when
 		final Collection<Expression> results = expression.applyUniversalSetLaw();
 		// then expect '(a.b)'
 		assertThat(results).hasSize(1);
-		assertThat(results).contains(new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod));
+		assertThat(results).contains(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod));
 	}
 
 	@Test
@@ -262,7 +262,7 @@ public class InfixExpressionSimplificationTest {
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, notEqualsAMethod);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, notEqualsAMethod);
 		// when
 		final Collection<Expression> results = expression.applyUnaryOperationLaw();
 		// then expect '(1)'
@@ -277,7 +277,7 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, notEqualsAMethod, equalsBMethod);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, notEqualsAMethod, equalsBMethod);
 		// when
 		final Collection<Expression> results = expression.applyUnaryOperationLaw();
 		// then expect '(1)'
@@ -291,7 +291,7 @@ public class InfixExpressionSimplificationTest {
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, notEqualsAMethod);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, notEqualsAMethod);
 		// when
 		final Collection<Expression> results = expression.applyUnaryOperationLaw();
 		// then expect '(0)'
@@ -306,7 +306,7 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, notEqualsAMethod, equalsBMethod);
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, notEqualsAMethod, equalsBMethod);
 		// when
 		final Collection<Expression> results = expression.applyUnaryOperationLaw();
 		// then expect '(0)'
@@ -321,8 +321,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyAbsorptionLaw();
@@ -338,8 +338,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyAbsorptionLaw();
@@ -355,14 +355,14 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod), equalsDMethod);
 		// when
 		final Collection<Expression> results = expression.applyAbsorptionLaw();
 		// then expect '(a.d)'
 		assertThat(results).hasSize(1);
-		assertThat(results).contains(new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsDMethod));
+		assertThat(results).contains(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsDMethod));
 	}
 
 	@Test
@@ -373,8 +373,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod), equalsDMethod);
 		// when
 		final Collection<Expression> results = expression.applyAbsorptionLaw();
@@ -389,8 +389,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyAbsorptionLaw();
@@ -406,8 +406,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyAbsorptionLaw();
@@ -423,14 +423,14 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod), equalsDMethod);
 		// when
 		final Collection<Expression> results = expression.applyAbsorptionLaw();
 		// then expect '(a + d)'
 		assertThat(results).hasSize(1);
-		assertThat(results).contains(new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsDMethod));
+		assertThat(results).contains(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsDMethod));
 	}
 
 	@Test
@@ -441,8 +441,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod), equalsDMethod);
 		// when
 		final Collection<Expression> results = expression.applyAbsorptionLaw();
@@ -458,15 +458,15 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, notEqualsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, notEqualsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
 				notEqualsAMethod, equalsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyRedundancyLaw();
 		// then expect '(a.b.c)'
 		assertThat(results).hasSize(1);
 		assertThat(results).contains(
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, equalsCMethod));
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, equalsCMethod));
 	}
 
 	@Test
@@ -476,8 +476,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation notEqualsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B")).inverse();
 		final MethodInvocation notEqualsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C")).inverse();
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsAMethod, notEqualsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, notEqualsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
 				equalsAMethod, notEqualsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyRedundancyLaw();
@@ -494,15 +494,15 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, notEqualsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, notEqualsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
 				notEqualsAMethod, equalsCMethod), equalsDMethod);
 		// when
 		final Collection<Expression> results = expression.applyRedundancyLaw();
 		// then expect '(a.b.c.d)'
 		assertThat(results).hasSize(1);
 		assertThat(results).contains(
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, equalsCMethod, equalsDMethod));
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod, equalsCMethod, equalsDMethod));
 	}
 
 	@Test
@@ -513,8 +513,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
 				equalsAMethod, equalsCMethod), equalsDMethod);
 		// when
 		final Collection<Expression> results = expression.applyRedundancyLaw();
@@ -530,37 +530,37 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation notEqualsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A")).inverse();
 		final MethodInvocation notEqualsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B")).inverse();
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, notEqualsAMethod, notEqualsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, notEqualsAMethod, notEqualsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
 				notEqualsAMethod, equalsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyRedundancyLaw();
 		// then expect '(a + !b + c)'
 		assertThat(results).hasSize(1);
 		assertThat(results).contains(
-				new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, notEqualsBMethod, equalsCMethod));
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, notEqualsBMethod, equalsCMethod));
 	}
 
 	@Test
 	public void shouldApplyRedundancyLawOnAllComplexInfixExpressionOperandsOnConditionalOR() {
 		// given '(p.(!f+!e) + (f.e))' (ie, same as: a.!b + b = a + b)
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final InfixExpression primitiveIntValueEquals42Expression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
-		final InfixExpression fieldEqualsFooExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
-		final InfixExpression enumPojoEqualsFOOExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "enumPojo"), new EnumLiteral(EnumPojo.FOO));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression,
-				new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsFooExpression.inverse(), enumPojoEqualsFOOExpression.inverse())),
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, fieldEqualsFooExpression, enumPojoEqualsFOOExpression));
+		final CompoundExpression primitiveIntValueEquals42Expression = new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
+		final CompoundExpression fieldEqualsFooExpression = new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
+		final CompoundExpression enumPojoEqualsFOOExpression = new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "enumPojo"), new EnumLiteral(EnumPojo.FOO));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression,
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, fieldEqualsFooExpression.inverse(), enumPojoEqualsFOOExpression.inverse())),
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, fieldEqualsFooExpression, enumPojoEqualsFOOExpression));
 				
 		// when
 		final Collection<Expression> results = expression.applyRedundancyLaw();
 		// then expect 'p + (f.e)'
 		assertThat(results).hasSize(1);
 		assertThat(results).contains(
-				new InfixExpression(InfixOperator.CONDITIONAL_OR,
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
 						primitiveIntValueEquals42Expression,
-						new InfixExpression(InfixOperator.CONDITIONAL_AND, fieldEqualsFooExpression, enumPojoEqualsFOOExpression)));
+						new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, fieldEqualsFooExpression, enumPojoEqualsFOOExpression)));
 	}
 	
 	@Test
@@ -570,8 +570,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod));
 		// when
 		final Collection<Expression> results = expression.applyRedundancyLaw();
@@ -588,15 +588,15 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation notEqualsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B")).inverse();
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, notEqualsAMethod, notEqualsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, notEqualsAMethod, notEqualsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
 				notEqualsAMethod, equalsCMethod), equalsDMethod);
 		// when
 		final Collection<Expression> results = expression.applyRedundancyLaw();
 		// then expect '(a + b + c + d)'
 		assertThat(results).hasSize(1);
 		assertThat(results).contains(
-				new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, notEqualsBMethod, equalsCMethod, equalsDMethod));
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, notEqualsBMethod, equalsCMethod, equalsDMethod));
 	}
 
 	@Test
@@ -607,8 +607,8 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
 				equalsAMethod, equalsCMethod), equalsDMethod);
 		// when
 		final Collection<Expression> results = expression.applyRedundancyLaw();
@@ -624,15 +624,15 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
-				equalsAMethod, equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsDMethod));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
+				equalsAMethod, equalsCMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsDMethod));
 		// when
 		final Collection<Expression> results = expression.applyFactorizationLaw();
 		// then expect '(a.(b + c + d))'
 		assertThat(results).hasSize(1);
 		assertThat(results).contains(
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(InfixOperator.CONDITIONAL_OR,
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
 						equalsBMethod, equalsCMethod, equalsDMethod)));
 	}
 
@@ -644,19 +644,19 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
-				equalsAMethod, equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsBMethod, equalsDMethod));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
+				equalsAMethod, equalsCMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsBMethod, equalsDMethod));
 		// when
 		final Collection<Expression> results = expression.applyFactorizationLaw();
 		// then expect '(a.(b + c) + (b.d))' and '(b.(a + d) + (a.c))'
 		assertThat(results).hasSize(2);
-		final InfixExpression expectedExpression1 = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod, new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsBMethod,
-						equalsCMethod)), new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsBMethod, equalsDMethod));
-		final InfixExpression expectedExpression2 = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsBMethod, new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod,
-						equalsDMethod)), new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsCMethod));
+		final CompoundExpression expectedExpression1 = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsBMethod,
+						equalsCMethod)), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsBMethod, equalsDMethod));
+		final CompoundExpression expectedExpression2 = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsBMethod, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod,
+						equalsDMethod)), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsCMethod));
 		assertThat(results).contains(expectedExpression1, expectedExpression2);
 	}
 
@@ -668,15 +668,15 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				equalsAMethod, equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsDMethod));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+				equalsAMethod, equalsCMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsDMethod));
 		// when
 		final Collection<Expression> results = expression.applyFactorizationLaw();
 		// then expect '(a + (b.c.d))'
 		assertThat(results).hasSize(1);
 		assertThat(results).contains(
-				new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(InfixOperator.CONDITIONAL_AND,
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
 						equalsBMethod, equalsCMethod, equalsDMethod)));
 	}
 
@@ -688,19 +688,19 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsBMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("C"));
 		final MethodInvocation equalsDMethod = new MethodInvocation(var, Object_equals,  new StringLiteral("D"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				equalsAMethod, equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsBMethod, equalsDMethod));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+				equalsAMethod, equalsCMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsBMethod, equalsDMethod));
 		// when
 		final Collection<Expression> results = expression.applyFactorizationLaw();
 		// then expect '((a + (b.c)).(b + d))' and '((b + (a.c)).(a + c))'
 		assertThat(results).hasSize(2);
-		final InfixExpression expectedExpression1 = new InfixExpression(InfixOperator.CONDITIONAL_AND, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsBMethod,
-						equalsCMethod)), new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsBMethod, equalsDMethod));
-		final InfixExpression expectedExpression2 = new InfixExpression(InfixOperator.CONDITIONAL_AND, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsBMethod, new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod,
-						equalsDMethod)), new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsCMethod));
+		final CompoundExpression expectedExpression1 = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsBMethod,
+						equalsCMethod)), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsBMethod, equalsDMethod));
+		final CompoundExpression expectedExpression2 = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsBMethod, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod,
+						equalsDMethod)), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsCMethod));
 		assertThat(results).contains(expectedExpression1, expectedExpression2);
 	}
 
@@ -717,15 +717,15 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod.inverse(), equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
-				equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod.inverse(),
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod.inverse(), equalsCMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
+				equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod.inverse(),
 				equalsCMethod));
 		// when
 		final Expression result = expression.simplify();
 		// then expect ((a.b) + c)
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), equalsCMethod);
+		final CompoundExpression expectedExpression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod), equalsCMethod);
 		assertThat(result).isEqualTo(expectedExpression);
 	}
 
@@ -739,14 +739,14 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod.inverse(), equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND,
-				equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsCMethod));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod.inverse(), equalsCMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
+				equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsCMethod));
 		// when
 		final Expression result = expression.simplify();
 		// then expect ((a.b) || c)
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsCMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod));
+		final CompoundExpression expectedExpression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsCMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsAMethod, equalsBMethod));
 		assertThat(result).isEqualTo(expectedExpression);
 	}
 
@@ -760,14 +760,14 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_AND, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsAMethod.inverse(), equalsCMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				equalsAMethod, equalsBMethod), new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsCMethod));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod.inverse(), equalsCMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+				equalsAMethod, equalsBMethod), new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsCMethod));
 		// when
 		final Expression result = expression.simplify();
 		// then expect ((a + b).c)
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsCMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod));
+		final CompoundExpression expectedExpression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsCMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, equalsBMethod));
 		assertThat(result).isEqualTo(expectedExpression);
 	}
 
@@ -781,13 +781,13 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsAMethod = new MethodInvocation(fieldA, Object_equals,  new StringLiteral("A"));
 		final MethodInvocation equalsBMethod = new MethodInvocation(fieldB, Object_equals,  new StringLiteral("B"));
 		final MethodInvocation equalsCMethod = new MethodInvocation(fieldC, Object_equals,  new StringLiteral("C"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsBMethod, equalsCMethod));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsBMethod, equalsCMethod));
 		// when
 		final Expression result = expression.simplify();
 		// then expect same expression
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsAMethod, new InfixExpression(
-				InfixOperator.CONDITIONAL_AND, equalsBMethod, equalsCMethod));
+		final CompoundExpression expectedExpression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsAMethod, new CompoundExpression(
+				CompoundExpressionOperator.CONDITIONAL_AND, equalsBMethod, equalsCMethod));
 		assertThat(result).isEqualTo(expectedExpression);
 	}
 
@@ -799,17 +799,17 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsFoo = new MethodInvocation(fieldF, Object_equals,  new StringLiteral("foo"));
 		final MethodInvocation equalsBar = new MethodInvocation(fieldF, Object_equals,  new StringLiteral("bar"));
 		final MethodInvocation equalsBaz = new MethodInvocation(fieldF, Object_equals,  new StringLiteral("baz"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, 
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo, new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsBar, equalsBaz.inverse())),
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBaz.inverse()));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, 
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFoo, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsBar, equalsBaz.inverse())),
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBaz.inverse()));
 		// when
 		final Collection<Expression> results = expression.applyDistributiveLaw();
 		// then expect '(foo.bar + foo.!baz) + (!foo.!baz)' 
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				new InfixExpression(InfixOperator.CONDITIONAL_OR, 
-						new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo, equalsBar), 
-						new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo, equalsBaz.inverse())),
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBaz.inverse()));
+		final CompoundExpression expectedExpression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, 
+						new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFoo, equalsBar), 
+						new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFoo, equalsBaz.inverse())),
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBaz.inverse()));
 		assertThat(results).hasSize(1);
 		assertThat(results).contains(expectedExpression);
 	}
@@ -818,24 +818,24 @@ public class InfixExpressionSimplificationTest {
 	public void shouldApplyDistributiveLawOnConditionalORWithTwoInfixExpressionOperands() {
 		// given '((p.(f+ (!f.e))) + (!p.e))'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-		final InfixExpression primitiveIntValueEquals42Expression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
-		final InfixExpression fieldEqualsFooExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
-		final InfixExpression enumPojoEqualsFOOExpression = new InfixExpression(InfixOperator.EQUALS, new FieldAccess(var, "enumPojo"), new EnumLiteral(EnumPojo.FOO));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression,
-						new InfixExpression(InfixOperator.CONDITIONAL_OR, fieldEqualsFooExpression, 
-								new InfixExpression(InfixOperator.CONDITIONAL_AND, fieldEqualsFooExpression.inverse(), enumPojoEqualsFOOExpression))),
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression.inverse(), enumPojoEqualsFOOExpression));
+		final CompoundExpression primitiveIntValueEquals42Expression = new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
+		final CompoundExpression fieldEqualsFooExpression = new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
+		final CompoundExpression enumPojoEqualsFOOExpression = new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "enumPojo"), new EnumLiteral(EnumPojo.FOO));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression,
+						new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, fieldEqualsFooExpression, 
+								new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, fieldEqualsFooExpression.inverse(), enumPojoEqualsFOOExpression))),
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression.inverse(), enumPojoEqualsFOOExpression));
 
 		// when
 		final Collection<Expression> results = expression.applyDistributiveLaw();
 		// then expect should expect: '((p.f) + (p.!f.e) + (!p.e))' 
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				new InfixExpression(InfixOperator.CONDITIONAL_OR,
-						new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression, fieldEqualsFooExpression),
-						new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression, 
-								new InfixExpression(InfixOperator.CONDITIONAL_AND, fieldEqualsFooExpression.inverse(), enumPojoEqualsFOOExpression))),
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression.inverse(), enumPojoEqualsFOOExpression));
+		final CompoundExpression expectedExpression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+						new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression, fieldEqualsFooExpression),
+						new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression, 
+								new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, fieldEqualsFooExpression.inverse(), enumPojoEqualsFOOExpression))),
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, primitiveIntValueEquals42Expression.inverse(), enumPojoEqualsFOOExpression));
 		assertThat(results).hasSize(1);
 		assertThat(results).contains(expectedExpression);
 	}
@@ -847,10 +847,10 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsFoo = new MethodInvocation(var, Object_equals,  new StringLiteral("foo"));
 		final MethodInvocation equalsBar = new MethodInvocation(var, Object_equals,  new StringLiteral("bar"));
 		final MethodInvocation equalsBaz = new MethodInvocation(var, Object_equals,  new StringLiteral("baz"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, 
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo, equalsBar),
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo, 
-						new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsBar.inverse(), equalsBaz.inverse())));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, 
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFoo, equalsBar),
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFoo, 
+						new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsBar.inverse(), equalsBaz.inverse())));
 		// when
 		final Collection<Expression> results = expression.applyDistributiveLaw();
 		// then expect no result (associative law may be used, but not in this test)
@@ -865,13 +865,13 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation equalsFoo = new MethodInvocation(var, Object_equals,  new StringLiteral("foo"));
 		final MethodInvocation equalsBar = new MethodInvocation(var, Object_equals,  new StringLiteral("bar"));
 		final MethodInvocation equalsBaz = new MethodInvocation(var, Object_equals,  new StringLiteral("baz"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsFoo,
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBar),
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBar.inverse(), equalsBaz));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsFoo,
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBar),
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFoo.inverse(), equalsBar.inverse(), equalsBaz));
 		// when
 		final Expression result = expression.simplify();
 		// then expect (foo || bar || baz)
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsFoo, equalsBar, equalsBaz);
+		final CompoundExpression expectedExpression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsFoo, equalsBar, equalsBaz);
 		assertThat(result).isEqualTo(expectedExpression);
 	}
 	
@@ -880,12 +880,12 @@ public class InfixExpressionSimplificationTest {
 		// given '(foo + (!foo.bar) + (!foo.bar.!baz)'
 		final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
 		final MethodInvocation getStringValueMethod = new MethodInvocation(var, TestPojo_getStringValue);
-		final InfixExpression equalsFooExpr = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("foo"));
-		final InfixExpression equalsBarExpr = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("bar"));
-		final InfixExpression equalsBazExpr = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("baz"));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, equalsFooExpr, 
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooExpr.inverse(), equalsBarExpr), 
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, equalsFooExpr.inverse(), equalsBarExpr.inverse(), equalsBazExpr));
+		final CompoundExpression equalsFooExpr = new CompoundExpression(CompoundExpressionOperator.EQUALS, getStringValueMethod, new StringLiteral("foo"));
+		final CompoundExpression equalsBarExpr = new CompoundExpression(CompoundExpressionOperator.EQUALS, getStringValueMethod, new StringLiteral("bar"));
+		final CompoundExpression equalsBazExpr = new CompoundExpression(CompoundExpressionOperator.EQUALS, getStringValueMethod, new StringLiteral("baz"));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, equalsFooExpr, 
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFooExpr.inverse(), equalsBarExpr), 
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFooExpr.inverse(), equalsBarExpr.inverse(), equalsBazExpr));
 				
 		// when
 		final Collection<Expression> results = expression.applyDistributiveLaw();
@@ -900,16 +900,16 @@ public class InfixExpressionSimplificationTest {
 		final MethodInvocation getStringValueMethod = new MethodInvocation(var, TestPojo_getStringValue);
 		final MethodInvocation getEnumPojoMethod = new MethodInvocation(var, TestPojo_getEnumPojo);
 		final MethodInvocation getPrimitiveIntMethod = new MethodInvocation(var, TestPojo_getPrimitiveIntValue);
-		final InfixExpression getStringValueMethodEqualsFoo = new InfixExpression(InfixOperator.EQUALS, getStringValueMethod, new StringLiteral("foo"));
-		final InfixExpression getEnumPojoMethodEqualsBar = new InfixExpression(InfixOperator.EQUALS, getEnumPojoMethod, new EnumLiteral(EnumPojo.BAR));
-		final InfixExpression getPrimitiveIntMethodEquals42 = new InfixExpression(InfixOperator.EQUALS, getPrimitiveIntMethod, new NumberLiteral(42));
-		final InfixExpression expression = new InfixExpression(InfixOperator.CONDITIONAL_OR, getPrimitiveIntMethodEquals42, 
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsBar), 
-				new InfixExpression(InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsBar.inverse(), getStringValueMethodEqualsFoo));
+		final CompoundExpression getStringValueMethodEqualsFoo = new CompoundExpression(CompoundExpressionOperator.EQUALS, getStringValueMethod, new StringLiteral("foo"));
+		final CompoundExpression getEnumPojoMethodEqualsBar = new CompoundExpression(CompoundExpressionOperator.EQUALS, getEnumPojoMethod, new EnumLiteral(EnumPojo.BAR));
+		final CompoundExpression getPrimitiveIntMethodEquals42 = new CompoundExpression(CompoundExpressionOperator.EQUALS, getPrimitiveIntMethod, new NumberLiteral(42));
+		final CompoundExpression expression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, getPrimitiveIntMethodEquals42, 
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsBar), 
+				new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsBar.inverse(), getStringValueMethodEqualsFoo));
 		// when
 		final Expression result = expression.simplify();
 		// then expect (foo || bar || baz)
-		final InfixExpression expectedExpression = new InfixExpression(InfixOperator.CONDITIONAL_OR, getPrimitiveIntMethodEquals42, getEnumPojoMethodEqualsBar, getStringValueMethodEqualsFoo);
+		final CompoundExpression expectedExpression = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, getPrimitiveIntMethodEquals42, getEnumPojoMethodEqualsBar, getStringValueMethodEqualsFoo);
 		assertThat(result).isEqualTo(expectedExpression);
 	}
 }

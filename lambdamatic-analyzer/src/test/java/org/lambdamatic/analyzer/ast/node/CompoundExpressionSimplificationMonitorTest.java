@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.lambdamatic.testutils.JavaMethods.Object_equals;
 
 import org.junit.Test;
-import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 
 import com.sample.model.TestPojo;
 
@@ -20,7 +20,7 @@ import com.sample.model.TestPojo;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class InfixExpressionSimplificationMonitorTest {
+public class CompoundExpressionSimplificationMonitorTest {
 
 	@Test
 	public void shouldRecognizeForm() {
@@ -32,12 +32,12 @@ public class InfixExpressionSimplificationMonitorTest {
 				Object_equals, new StringLiteral("bar"));
 		final MethodInvocation equalsBazMethod = new MethodInvocation(new FieldAccess(testPojo, "field"),
 				Object_equals, new StringLiteral("baz"));
-		final InfixExpression expression = new InfixExpression(1, InfixOperator.CONDITIONAL_OR, new InfixExpression(InfixOperator.CONDITIONAL_AND,
+		final CompoundExpression expression = new CompoundExpression(1, CompoundExpressionOperator.CONDITIONAL_OR, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
 				equalsFooMethod, equalsBarMethod), equalsBazMethod);
 		final ExpressionSimplificationMonitor monitor = new ExpressionSimplificationMonitor(expression);
 		monitor.registerExpression(expression);
 		// when
-		final InfixExpression similarExpression = new InfixExpression(1, InfixOperator.CONDITIONAL_OR, equalsBazMethod, new InfixExpression(InfixOperator.CONDITIONAL_AND,
+		final CompoundExpression similarExpression = new CompoundExpression(1, CompoundExpressionOperator.CONDITIONAL_OR, equalsBazMethod, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
 				equalsBarMethod, equalsFooMethod));
 		final boolean expressionFormKnown = monitor.isExpressionFormKnown(similarExpression);
 		// expect 23 (2 infix expressions + 3 simple expressions)

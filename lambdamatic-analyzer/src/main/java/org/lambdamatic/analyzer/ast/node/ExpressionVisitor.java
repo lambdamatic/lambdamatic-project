@@ -34,8 +34,8 @@ public abstract class ExpressionVisitor {
 				return visitCharacterLiteralExpression((CharacterLiteral) expr);
 			case FIELD_ACCESS:
 				return visitFieldAccessExpression((FieldAccess) expr);
-			case INFIX:
-				return visitInfixExpression((InfixExpression) expr);
+			case COMPOUND:
+				return visitInfixExpression((CompoundExpression) expr);
 			case INSTANCE_OF:
 				return visitInstanceOfExpression((InstanceOf) expr);
 			case OBJECT_INSTANCIATION:
@@ -107,7 +107,7 @@ public abstract class ExpressionVisitor {
 		return true;
 	}
 
-	public boolean visitInfixExpression(final InfixExpression expr) {
+	public boolean visitInfixExpression(final CompoundExpression expr) {
 		return true;
 	}
 

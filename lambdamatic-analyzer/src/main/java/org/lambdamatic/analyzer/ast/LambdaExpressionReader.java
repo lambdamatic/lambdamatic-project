@@ -33,8 +33,8 @@ import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
-import org.lambdamatic.analyzer.ast.node.InfixExpression;
-import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
@@ -540,6 +540,9 @@ public class LambdaExpressionReader {
 			// store into a reference in an array
 			readArrayStoreInstruction(insnNode, expressionStack);
 			break;
+		case Opcodes.F2D:
+			// converts Float to Double -> ignored.
+			break;
 		default:
 			throw new AnalyzeException("Bytecode instruction with OpCode '" + insnNode.getOpcode() + "' is not supported.");
 		}
@@ -584,34 +587,34 @@ public class LambdaExpressionReader {
 	}
 
 	/**
-	 * Extracts the comparison {@link InfixOperator} from the given {@link JumpInsnNode}.
+	 * Extracts the comparison {@link CompoundExpressionOperator} from the given {@link JumpInsnNode}.
 	 * 
 	 * @param currentInstruction
 	 *            the comparison instruction
-	 * @return the corresponding {@link InfixOperator}
+	 * @return the corresponding {@link CompoundExpressionOperator}
 	 */
-	private InfixOperator extractComparisonOperator(final AbstractInsnNode currentInstruction) {
+	private CompoundExpressionOperator extractComparisonOperator(final AbstractInsnNode currentInstruction) {
 		switch (currentInstruction.getOpcode()) {
 		case Opcodes.IF_ACMPNE:
 		case Opcodes.IF_ICMPNE:
 		case Opcodes.IFNE:
-			return InfixOperator.NOT_EQUALS;
+			return CompoundExpressionOperator.NOT_EQUALS;
 		case Opcodes.IF_ACMPEQ:
 		case Opcodes.IF_ICMPEQ:
 		case Opcodes.IFEQ:
-			return InfixOperator.EQUALS;
+			return CompoundExpressionOperator.EQUALS;
 		case Opcodes.IF_ICMPLE:
 		case Opcodes.IFLE:
-			return InfixOperator.LESS_EQUALS;
+			return CompoundExpressionOperator.LESS_EQUALS;
 		case Opcodes.IF_ICMPLT:
 		case Opcodes.IFLT:
-			return InfixOperator.LESS;
+			return CompoundExpressionOperator.LESS;
 		case Opcodes.IF_ICMPGE:
 		case Opcodes.IFGE:
-			return InfixOperator.GREATER_EQUALS;
+			return CompoundExpressionOperator.GREATER_EQUALS;
 		case Opcodes.IF_ICMPGT:
 		case Opcodes.IFGT:
-			return InfixOperator.GREATER;
+			return CompoundExpressionOperator.GREATER;
 		default:
 			throw new AnalyzeException(
 					"Failed to retrieve the operator for the current comparison instruction (opcode: "
@@ -757,21 +760,21 @@ public class LambdaExpressionReader {
 	 *            the instruction
 	 * @param expressionStack
 	 *            the stack of expressions
-	 * @return the comparison expression (can be an {@link InfixExpression} or some other form of type of {@link Expression} that return a Boolean value)
+	 * @return the comparison expression (can be an {@link CompoundExpression} or some other form of type of {@link Expression} that return a Boolean value)
 	 */
 	private Expression getControlFlowExpression(final JumpInsnNode jumpInsnNode,
 			final Stack<Expression> expressionStack) {
-		final InfixOperator comparisonOperator = extractComparisonOperator(jumpInsnNode);
+		final CompoundExpressionOperator comparisonOperator = extractComparisonOperator(jumpInsnNode);
 		final Expression rightSideOperand = expressionStack.pop();
 		final Expression leftSideOperand = (expressionStack.empty() ? getDefaultComparisonOperand(rightSideOperand)
 				: expressionStack.pop());
-		if (leftSideOperand.equals(new BooleanLiteral(Boolean.FALSE))) {
+		if (leftSideOperand.equals(new BooleanLiteral(false))) {
 			switch (comparisonOperator) {
-				// if we have: 'expr == false', just return '!expr'
 			case EQUALS:
+				// if we have: 'expr == false', just return '!expr'
 				return rightSideOperand.inverse();
-				// if we have: 'expr != false', just return 'expr'
 			case NOT_EQUALS:
+				// if we have: 'expr != false', just return 'expr'
 				return rightSideOperand;
 			default:
 				throw new AnalyzeException("There's no expression to compare with " + rightSideOperand + " "
@@ -781,7 +784,7 @@ public class LambdaExpressionReader {
 		// ensure the operand types match by forcing the right side to be the same type as the left side
 		final Class<?> leftSideOperandType = getOperandType(leftSideOperand);
 		final Expression castedRightOperand = castOperand(rightSideOperand, leftSideOperandType.getName());
-		final InfixExpression controlFlowExpression = new InfixExpression(comparisonOperator,
+		final CompoundExpression controlFlowExpression = new CompoundExpression(comparisonOperator,
 				Arrays.asList(leftSideOperand, castedRightOperand));
 		return controlFlowExpression;
 	}
@@ -837,7 +840,7 @@ public class LambdaExpressionReader {
 			// equation.
 			if (methodInvocation.getReturnType().equals(Boolean.class)
 					|| methodInvocation.getReturnType().equals(boolean.class)) {
-				return new BooleanLiteral(Boolean.FALSE);
+				return new BooleanLiteral(false);
 			} else if (methodInvocation.getReturnType().equals(Byte.class)
 					|| methodInvocation.getReturnType().equals(byte.class)) {
 				return new NumberLiteral((byte) 0);
@@ -862,6 +865,8 @@ public class LambdaExpressionReader {
 			} else if (methodInvocation.getReturnType().equals(String.class)) {
 				return new NullLiteral();
 			}
+		} else if(expression!= null && expression.getExpressionType() == ExpressionType.FIELD_ACCESS && (expression.getJavaType() == Boolean.class || expression.getJavaType() == boolean.class)) {
+			return new BooleanLiteral(false);
 		}
 		throw new AnalyzeException("Sorry, I can't give a default comparison operand for '" + expression + "'");
 	}

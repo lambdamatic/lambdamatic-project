@@ -24,11 +24,24 @@ public class FieldAccess extends ComplexExpression {
 	 * <p>
 	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
 	 * </p>
-	 * @param source the source containing the field to access
+	 * @param sourceExpression the source containing the field to access
 	 * @param fieldName the name of the accessed field
 	 */
 	public FieldAccess(final Expression sourceExpression, final String fieldName) {
-		this(generateId(), sourceExpression, fieldName, false);
+		this(sourceExpression, fieldName, false);
+	}
+
+	/**
+	 * Full constructor
+	 * <p>
+	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
+	 * </p>
+	 * @param sourceExpression the source containing the field to access
+	 * @param fieldName the name of the accessed field
+	 * @param inverted if this {@link FieldAccess} expression is inverted
+	 */
+	public FieldAccess(final Expression sourceExpression, final String fieldName, final boolean inverted) {
+		this(generateId(), sourceExpression, fieldName, inverted);
 	}
 
 	/**
@@ -94,6 +107,16 @@ public class FieldAccess extends ComplexExpression {
 		return new FieldAccess(id, getSource().duplicate(), getFieldName(), isInverted());
 	}
 
+	/**
+	 * @return an inverted instance of the current element, only if the underlying Java type is {@link Boolean}
+	 */
+	@Override
+	public FieldAccess inverse() {
+		if(getJavaType() == Boolean.class || getJavaType() == boolean.class) {
+			return new FieldAccess(source, fieldName, !isInverted()); 
+		}
+		throw new UnsupportedOperationException("Field access on '" + getFieldName() + "' with Java type '" + getJavaType() + "' does not support inversion.");
+	}
 	/**
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()

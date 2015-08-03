@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * {@link Expression} visitor that will count the {@link Expression}s or counters in an {@link InfixExpression}.
+ * {@link Expression} visitor that will count the {@link Expression}s or counters in an {@link CompoundExpression}.
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  *

@@ -31,8 +31,8 @@ import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitorUtil;
-import org.lambdamatic.analyzer.ast.node.InfixExpression;
-import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
@@ -258,12 +258,12 @@ public class LambdaExpressionAnalyzer {
 	/**
 	 * @param expression
 	 *            the {@link Expression} to simplify
-	 * @return a simplified {@link Expression} if the given one is an {@link ExpressionType#INFIX}, otherwise returns
+	 * @return a simplified {@link Expression} if the given one is an {@link ExpressionType#COMPOUND}, otherwise returns
 	 *         the given {@link Expression}.
 	 */
 	private Expression simplify(final Expression expression) {
-		if (expression.getExpressionType() == ExpressionType.INFIX) {
-			final InfixExpression infixExpression = (InfixExpression) expression;
+		if (expression.getExpressionType() == ExpressionType.COMPOUND) {
+			final CompoundExpression infixExpression = (CompoundExpression) expression;
 			final Expression simplifiedExpression = infixExpression.simplify();
 			return ExpressionVisitorUtil.visit(simplifiedExpression, new ExpressionSanitizer());
 		}
@@ -300,7 +300,7 @@ public class LambdaExpressionAnalyzer {
 
 	/**
 	 * Simplify the given {@link Statement} keeping all branches that end with a "return 1" node, and combining the
-	 * remaining ones in an {@link InfixExpression}.
+	 * remaining ones in an {@link CompoundExpression}.
 	 * 
 	 * @param statement
 	 *            the statement to thin out
@@ -350,7 +350,7 @@ public class LambdaExpressionAnalyzer {
 					currentStmt = currentStmt.getParent();
 				}
 				if (relevantExpressions.size() > 1) {
-					expressions.add(new InfixExpression(InfixOperator.CONDITIONAL_AND, relevantExpressions));
+					expressions.add(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, relevantExpressions));
 				} else if (!relevantExpressions.isEmpty()) {
 					expressions.add(relevantExpressions.getFirst());
 				}
@@ -360,7 +360,7 @@ public class LambdaExpressionAnalyzer {
 				return statement;
 			}
 			final Statement result = (expressions.size() > 1)
-					? new ReturnStatement(new InfixExpression(InfixOperator.CONDITIONAL_OR, expressions))
+					? new ReturnStatement(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, expressions))
 					: new ReturnStatement(expressions.get(0));
 			LOGGER.debug("Thinned out expression: {}", result.toString());
 			return result;

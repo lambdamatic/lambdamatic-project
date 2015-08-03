@@ -23,7 +23,7 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	private Expression parent;
 
 	public enum ExpressionType {
-		BOOLEAN_LITERAL, CHARACTER_LITERAL, CLASS_LITERAL, NUMBER_LITERAL, NULL_LITERAL, STRING_LITERAL, OBJECT_INSTANCIATION, OBJECT_INSTANCE, ARRAY_VARIABLE, METHOD_INVOCATION, FIELD_ACCESS, INFIX, INSTANCE_OF, LOCAL_VARIABLE, CAPTURED_ARGUMENT, CAPTURED_ARGUMENT_REF, ENUM_LITERAL, LAMBDA_EXPRESSION, ASSIGNMENT, OPERATION;
+		BOOLEAN_LITERAL, CHARACTER_LITERAL, CLASS_LITERAL, NUMBER_LITERAL, NULL_LITERAL, STRING_LITERAL, OBJECT_INSTANCIATION, OBJECT_INSTANCE, ARRAY_VARIABLE, METHOD_INVOCATION, FIELD_ACCESS, COMPOUND, INSTANCE_OF, LOCAL_VARIABLE, CAPTURED_ARGUMENT, CAPTURED_ARGUMENT_REF, ENUM_LITERAL, LAMBDA_EXPRESSION, ASSIGNMENT, OPERATION;
 	}
 
 	/** synthetic id generator based on {@link AtomicInteger}. */
@@ -242,7 +242,7 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	 * Computes and returns the complexity for this {@link Expression}. Simple expressions have a complexity of
 	 * {@code 1}. See overridden methods for more complex Expressions.
 	 * 
-	 * @see InfixExpression.
+	 * @see CompoundExpression.
 	 * @return
 	 */
 	public int getComplexity() {
@@ -250,7 +250,7 @@ public abstract class Expression extends ASTNode implements Comparable<Expressio
 	}
 
 	/**
-	 * @return {@code true} if the current {@link InfixExpression} can be further simplified, {@code false} otherwise
+	 * @return {@code true} if the current {@link CompoundExpression} can be further simplified, {@code false} otherwise
 	 *         <p>
 	 *         Returns {@code false} by default, since simple expression cannot be further simplified.
 	 *         </p>

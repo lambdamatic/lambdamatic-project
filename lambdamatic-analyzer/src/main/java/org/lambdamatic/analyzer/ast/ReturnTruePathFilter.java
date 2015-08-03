@@ -6,7 +6,7 @@ import java.util.List;
 import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
-import org.lambdamatic.analyzer.ast.node.InfixExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
@@ -16,7 +16,7 @@ import org.lambdamatic.analyzer.exception.AnalyzeException;
 /**
  * Custom {@link StatementVisitor} that will retrieve all branches of the
  * bytecode AST that end with a {@link ReturnStatement} leaf node whose value is
- * {@link Boolean#TRUE}, an {@link InfixExpression} leaf node or a {@link MethodInvocation} leaf node.
+ * {@link Boolean#TRUE}, an {@link CompoundExpression} leaf node or a {@link MethodInvocation} leaf node.
  * 
  * @author xcoulon
  * 
@@ -41,8 +41,9 @@ public class ReturnTruePathFilter extends StatementVisitor {
 				getReturnStmts().add(returnStatement);
 			}
 			break;
-		case INFIX:
+		case COMPOUND:
 		case METHOD_INVOCATION:
+		case FIELD_ACCESS:
 			getReturnStmts().add(returnStatement);
 			break;
 		default:

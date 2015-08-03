@@ -16,8 +16,8 @@ import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
-import org.lambdamatic.analyzer.ast.node.InfixExpression;
-import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
@@ -97,7 +97,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	}
 
 	@Override
-	public boolean visitInfixExpression(final InfixExpression expr) {
+	public boolean visitInfixExpression(final CompoundExpression expr) {
 		if (!this.nestedExpression) {
 			writer.writeStartDocument();
 		}
@@ -112,21 +112,10 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			// <expressionN> } ] }
 			writeLogicalOperation(MongoOperator.OR, expr.getOperands());
 			break;
-		case EQUALS:
-			// eg: int == 3
-			// Syntax: {field: value}
-			writeOperation(MongoOperator.EQUALS, expr.getOperands().get(0), expr.getOperands().get(1),
-					expr.isInverted());
-			break;
-		case NOT_EQUALS:
-			// eg: int != 3
-			// Syntax: {field: {$ne: value} }
-			writeOperation(MongoOperator.NOT_EQUALS, expr.getOperands().get(0), expr.getOperands().get(1),
-					expr.isInverted());
-			break;
 		default:
-			throw new UnsupportedOperationException(
-					"Generating a query with '" + expr.getOperator() + "' is not supported yet (shame...)");
+			writeOperation(EncoderUtils.getMongoOperator(expr.getOperator()), expr.getOperands().get(0), expr.getOperands().get(1),
+					expr.isInverted());
+			break;
 		}
 		if (!this.nestedExpression) {
 			writer.writeEndDocument();
@@ -200,6 +189,25 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		return false;
 	}
 
+	@Override
+	public boolean visitFieldAccessExpression(final FieldAccess fieldAccess) {
+		// skip if fieldAccess unless it is part of an CompoundExpression or root 
+		if(fieldAccess.getParent() != null && fieldAccess.getParent().getExpressionType() != ExpressionType.COMPOUND) {
+			return false;
+		}
+		if(fieldAccess.getJavaType() == Boolean.class || fieldAccess.getJavaType() == boolean.class) {
+			if (!this.nestedExpression) {
+				writer.writeStartDocument();
+			}
+			writer.writeBoolean(fieldAccess.getFieldName(), !fieldAccess.isInverted());
+			if (!this.nestedExpression) {
+				writer.writeEndDocument();
+			}
+			return false;
+		}
+		throw new ConversionException("Unable to convert access to field '" + fieldAccess.getFieldName() + "' of type "
+				+ fieldAccess.getJavaType().getName() + " into a BSON query element.");
+	}
 	/**
 	 * Writes the operation for the given key/value pair
 	 * <p>
@@ -226,12 +234,11 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			if (key != null && !this.nestedExpression) {
 				writer.writeStartDocument(key);
 			}
-			if (inverted) {
-				writer.writeStartDocument(MongoOperator.NOT.getLiteral());
-				EncoderUtils.writeNamedExpression(writer, operator.getLiteral(), valueExpr);
-				writer.writeEndDocument();
-			} else if (valueExpr.getExpressionType() == ExpressionType.LAMBDA_EXPRESSION) {
+			if (valueExpr.getExpressionType() == ExpressionType.LAMBDA_EXPRESSION) {
 				writeNamedLambdaExpression(operator.getLiteral(), (LambdaExpression) valueExpr);
+			} else if (inverted) {
+				// here we inverse the operator instead of introducing the $not operator which has a slightly different behaviour.
+				EncoderUtils.writeNamedExpression(writer, operator.inverse().getLiteral(), valueExpr);
 			} else {
 				EncoderUtils.writeNamedExpression(writer, operator.getLiteral(), valueExpr);
 			}
@@ -261,10 +268,10 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		writer.writeStartDocument(name);
 		// writer each operand of the LambdaExpressionBlock in a compact form.
 		switch (expression.getExpressionType()) {
-		case INFIX:
-			final InfixExpression infixExpression = (InfixExpression) expression;
+		case COMPOUND:
+			final CompoundExpression infixExpression = (CompoundExpression) expression;
 			// assume that this is a logical AND operation
-			if (infixExpression.getOperator() != InfixOperator.CONDITIONAL_AND) {
+			if (infixExpression.getOperator() != CompoundExpressionOperator.CONDITIONAL_AND) {
 				throw new ConversionException("Did not expect a logical operation of type '"
 						+ infixExpression.getOperator() + "' while writing a nested Lambda Expression");
 			}

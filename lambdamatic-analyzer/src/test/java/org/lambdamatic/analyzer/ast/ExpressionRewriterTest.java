@@ -25,8 +25,8 @@ import org.lambdamatic.analyzer.ast.node.EnumLiteral;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitorUtil;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
-import org.lambdamatic.analyzer.ast.node.InfixExpression;
-import org.lambdamatic.analyzer.ast.node.InfixExpression.InfixOperator;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
@@ -53,53 +53,53 @@ public class ExpressionRewriterTest {
 		final MethodInvocation expression0 = new MethodInvocation(var, Object_equals,
 				new StringLiteral("foo"));
 		// substitute 2 enum literals
-		final InfixExpression getPrimitiveIntMethodEquals42_1 = new InfixExpression(InfixOperator.EQUALS,
+		final CompoundExpression getPrimitiveIntMethodEquals42_1 = new CompoundExpression(CompoundExpressionOperator.EQUALS,
 				new MethodInvocation(var, TestPojo_getPrimitiveIntValue), new NumberLiteral(42));
-		final InfixExpression getPrimitiveIntMethodEquals42_2 = new InfixExpression(InfixOperator.NOT_EQUALS,
+		final CompoundExpression getPrimitiveIntMethodEquals42_2 = new CompoundExpression(CompoundExpressionOperator.NOT_EQUALS,
 				new MethodInvocation(var, TestPojo_getPrimitiveIntValue), new NumberLiteral(42));
-		final InfixExpression getPrimitiveIntMethodEquals42_3 = new InfixExpression(InfixOperator.NOT_EQUALS,
+		final CompoundExpression getPrimitiveIntMethodEquals42_3 = new CompoundExpression(CompoundExpressionOperator.NOT_EQUALS,
 				new MethodInvocation(var, TestPojo_getPrimitiveIntValue), new NumberLiteral(42));
-		final InfixExpression getEnumPojoMethodEqualsFieldBar_1 = new InfixExpression(InfixOperator.EQUALS,
+		final CompoundExpression getEnumPojoMethodEqualsFieldBar_1 = new CompoundExpression(CompoundExpressionOperator.EQUALS,
 				new MethodInvocation(var, TestPojo_getEnumPojo), new FieldAccess(new ClassLiteral(
 						EnumPojo.class), "BAR"));
-		final InfixExpression getEnumPojoMethodEqualsFieldBar_2 = new InfixExpression(InfixOperator.NOT_EQUALS,
+		final CompoundExpression getEnumPojoMethodEqualsFieldBar_2 = new CompoundExpression(CompoundExpressionOperator.NOT_EQUALS,
 				new MethodInvocation(var, TestPojo_getEnumPojo), new FieldAccess(new ClassLiteral(
 						EnumPojo.class), "BAR"));
-		final InfixExpression getStringValueMethodEqualsFoo1 = new InfixExpression(InfixOperator.EQUALS,
+		final CompoundExpression getStringValueMethodEqualsFoo1 = new CompoundExpression(CompoundExpressionOperator.EQUALS,
 				new MethodInvocation(var, TestPojo_getStringValue), new StringLiteral("foo"));
-		final InfixExpression expression1 = new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				getPrimitiveIntMethodEquals42_1, new InfixExpression(InfixOperator.CONDITIONAL_AND,
-						getPrimitiveIntMethodEquals42_2, getEnumPojoMethodEqualsFieldBar_1), new InfixExpression(
-						InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42_3,
+		final CompoundExpression expression1 = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+				getPrimitiveIntMethodEquals42_1, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
+						getPrimitiveIntMethodEquals42_2, getEnumPojoMethodEqualsFieldBar_1), new CompoundExpression(
+						CompoundExpressionOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42_3,
 						getEnumPojoMethodEqualsFieldBar_2.inverse(), getStringValueMethodEqualsFoo1));
-		final InfixExpression getEnumPojoMethodEqualsEnumBar_1 = new InfixExpression(InfixOperator.EQUALS,
+		final CompoundExpression getEnumPojoMethodEqualsEnumBar_1 = new CompoundExpression(CompoundExpressionOperator.EQUALS,
 				new MethodInvocation(var, TestPojo_getEnumPojo), new EnumLiteral(EnumPojo.BAR));
-		final InfixExpression getEnumPojoMethodEqualsEnumBar_2 = new InfixExpression(InfixOperator.EQUALS,
+		final CompoundExpression getEnumPojoMethodEqualsEnumBar_2 = new CompoundExpression(CompoundExpressionOperator.EQUALS,
 				new MethodInvocation(var, TestPojo_getEnumPojo), new EnumLiteral(EnumPojo.BAR));
-		final InfixExpression expectedExpression1 = new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				getPrimitiveIntMethodEquals42_1, new InfixExpression(InfixOperator.CONDITIONAL_AND,
-						getPrimitiveIntMethodEquals42_2, getEnumPojoMethodEqualsEnumBar_1), new InfixExpression(
-						InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42_3,
+		final CompoundExpression expectedExpression1 = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+				getPrimitiveIntMethodEquals42_1, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
+						getPrimitiveIntMethodEquals42_2, getEnumPojoMethodEqualsEnumBar_1), new CompoundExpression(
+						CompoundExpressionOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42_3,
 						getEnumPojoMethodEqualsEnumBar_2, getStringValueMethodEqualsFoo1));
 		// Substitute 2 Enum literals from duplicate expressions
-		final InfixExpression getPrimitiveIntMethodEquals42 = new InfixExpression(InfixOperator.EQUALS,
+		final CompoundExpression getPrimitiveIntMethodEquals42 = new CompoundExpression(CompoundExpressionOperator.EQUALS,
 				new MethodInvocation(var, TestPojo_getPrimitiveIntValue), new NumberLiteral(42));
-		final InfixExpression getEnumPojoMethodEqualsFieldBar = new InfixExpression(InfixOperator.EQUALS,
+		final CompoundExpression getEnumPojoMethodEqualsFieldBar = new CompoundExpression(CompoundExpressionOperator.EQUALS,
 				new MethodInvocation(var, TestPojo_getEnumPojo), new FieldAccess(new ClassLiteral(
 						EnumPojo.class), "BAR"));
-		final InfixExpression getStringValueMethodEqualsFoo = new InfixExpression(InfixOperator.EQUALS,
+		final CompoundExpression getStringValueMethodEqualsFoo = new CompoundExpression(CompoundExpressionOperator.EQUALS,
 				new MethodInvocation(var, TestPojo_getStringValue), new StringLiteral("foo"));
-		final InfixExpression expression2 = new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				getPrimitiveIntMethodEquals42, new InfixExpression(InfixOperator.CONDITIONAL_AND,
-						getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsFieldBar), new InfixExpression(
-						InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(),
+		final CompoundExpression expression2 = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+				getPrimitiveIntMethodEquals42, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
+						getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsFieldBar), new CompoundExpression(
+						CompoundExpressionOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(),
 						getEnumPojoMethodEqualsFieldBar.inverse(), getStringValueMethodEqualsFoo));
-		final InfixExpression getEnumPojoMethodEqualsEnumBar = new InfixExpression(InfixOperator.EQUALS,
+		final CompoundExpression getEnumPojoMethodEqualsEnumBar = new CompoundExpression(CompoundExpressionOperator.EQUALS,
 				new MethodInvocation(var, TestPojo_getEnumPojo), new EnumLiteral(EnumPojo.BAR));
-		final InfixExpression expectedExpression2 = new InfixExpression(InfixOperator.CONDITIONAL_OR,
-				getPrimitiveIntMethodEquals42, new InfixExpression(InfixOperator.CONDITIONAL_AND,
-						getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsEnumBar), new InfixExpression(
-						InfixOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(),
+		final CompoundExpression expectedExpression2 = new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
+				getPrimitiveIntMethodEquals42, new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
+						getPrimitiveIntMethodEquals42.inverse(), getEnumPojoMethodEqualsEnumBar), new CompoundExpression(
+						CompoundExpressionOperator.CONDITIONAL_AND, getPrimitiveIntMethodEquals42.inverse(),
 						getEnumPojoMethodEqualsEnumBar.inverse(), getStringValueMethodEqualsFoo));
 
 		return new Object[][] { new Object[] { expression0, expression0 },

@@ -26,27 +26,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Infix expression AST node type. {@code Expression InfixOperator Expression [InfixOperator Expression]*}
+ * Infix expression AST node type. {@code Expression CompoundExpressionOperator Expression [CompoundExpressionOperator Expression]*}
  * 
- * <strong>Note</strong>: If the {@code InfixOperator} is the same between all {@code Expression} items of this {@link InfixExpression}
+ * <strong>Note</strong>: If the {@code CompoundExpressionOperator} is the same between all {@code Expression} items of this {@link CompoundExpression}
  * 
  *
  * @author xcoulon
  *
  */
-public class InfixExpression extends ComplexExpression {
+public class CompoundExpression extends ComplexExpression {
 
 	/** The usual logger. */
-	private static final Logger LOGGER = LoggerFactory.getLogger(InfixExpression.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CompoundExpression.class);
 
-	/** The base complexity for any {@link InfixExpression}. */
+	/** The base complexity for any {@link CompoundExpression}. */
 	private static final int BASE_COMPLEXITY = 10;
 
 	/**
-	 * Infix operators (typesafe enumeration).
+	 * {@link CompoundExpression} operators.
 	 * 
 	 * <pre>
-	 * InfixOperator:<code>
+	 * CompoundExpressionOperator:<code>
 	 *    <b>*</b>	TIMES
 	 *    <b>/</b>  DIVIDE
 	 *    <b>%</b>  REMAINDER
@@ -68,14 +68,14 @@ public class InfixExpression extends ComplexExpression {
 	 *    <b>||</b>  CONDITIONAL_OR</code>
 	 * </pre>
 	 */
-	public enum InfixOperator {
+	public enum CompoundExpressionOperator {
 		TIMES("*"), DIVIDE("/"), REMAINDER("%"), PLUS("+"), MINUS("-"), LESS("<"), GREATER(">"), LESS_EQUALS("<="), GREATER_EQUALS(">="), EQUALS(
 				"=="), NOT_EQUALS("!="), XORE("^"), AND("&"), OR("|"), CONDITIONAL_AND("&&"), CONDITIONAL_OR("||"), LEFT_SHIFT("<<"), RIGHT_SHIFT(
 				">>"), RIGHT_SHIFT_UNSIGNED(">>>");
 
 		private final String value;
 
-		private InfixOperator(final String v) {
+		private CompoundExpressionOperator(final String v) {
 			this.value = v;
 		}
 
@@ -85,10 +85,10 @@ public class InfixExpression extends ComplexExpression {
 		}
 
 		/**
-		 * @return the inverse of {@link InfixOperator} of {@code this} operator
+		 * @return the inverse of {@link CompoundExpressionOperator} of {@code this} operator
 		 * @throws AnalyzeException if there is not inverse operator defined for {@code this}.
 		 */
-		public InfixOperator inverse() {
+		public CompoundExpressionOperator inverse() {
 			switch(this) {
 			case EQUALS:
 				return NOT_EQUALS;
@@ -117,9 +117,9 @@ public class InfixExpression extends ComplexExpression {
 	private final List<Expression> operands;
 
 	/** The Infix expression operator. */
-	private final InfixOperator operator;
+	private final CompoundExpressionOperator operator;
 
-	/** the measured complexity of this {@link InfixExpression}. */
+	/** the measured complexity of this {@link CompoundExpression}. */
 	private int complexity;
 
 	/**
@@ -130,7 +130,7 @@ public class InfixExpression extends ComplexExpression {
 	 * @param operands
 	 *            the Infix expression operands.
 	 */
-	public InfixExpression(final InfixOperator operator, final Expression... operands) {
+	public CompoundExpression(final CompoundExpressionOperator operator, final Expression... operands) {
 		this(generateId(), operator, Arrays.asList(operands), false);
 	}
 
@@ -138,7 +138,7 @@ public class InfixExpression extends ComplexExpression {
 	 * Full constructor
 	 * 
 	 * @param id
-	 *            the synthetic ID of this {@link InfixExpression}
+	 *            the synthetic ID of this {@link CompoundExpression}
 	 * @param operator
 	 *            the Infix expression operator.
 	 * @param operands
@@ -146,7 +146,7 @@ public class InfixExpression extends ComplexExpression {
 	 * @param inverted
 	 *            the inversion flag of this {@link Expression}.
 	 */
-	public InfixExpression(final int id, final InfixOperator operator, final Expression... operands) {
+	public CompoundExpression(final int id, final CompoundExpressionOperator operator, final Expression... operands) {
 		this(id, operator, Arrays.asList(operands), false);
 	}
 
@@ -158,7 +158,7 @@ public class InfixExpression extends ComplexExpression {
 	 * @param operands
 	 *            the list Infix expression operands.
 	 */
-	public InfixExpression(final InfixOperator operator, final List<Expression> operands) {
+	public CompoundExpression(final CompoundExpressionOperator operator, final List<Expression> operands) {
 		this(generateId(), operator, operands, false);
 	}
 
@@ -166,7 +166,7 @@ public class InfixExpression extends ComplexExpression {
 	 * Full constructor
 	 * 
 	 * @param id
-	 *            the synthetic ID of this {@link InfixExpression}
+	 *            the synthetic ID of this {@link CompoundExpression}
 	 * @param operator
 	 *            the Infix expression operator.
 	 * @param operands
@@ -174,10 +174,10 @@ public class InfixExpression extends ComplexExpression {
 	 * @param inverted
 	 *            the inversion flag of this {@link Expression}.
 	 */
-	public InfixExpression(final int id, final InfixOperator operator, final List<Expression> operands, final boolean inverted) {
+	public CompoundExpression(final int id, final CompoundExpressionOperator operator, final List<Expression> operands, final boolean inverted) {
 		super(id, inverted);
-		if (operands.size() == 1 && operands.get(0).getExpressionType() == ExpressionType.INFIX) {
-			final InfixExpression infixOperand = (InfixExpression) operands.get(0);
+		if (operands.size() == 1 && operands.get(0).getExpressionType() == ExpressionType.COMPOUND) {
+			final CompoundExpression infixOperand = (CompoundExpression) operands.get(0);
 			this.operands = new ArrayList<>(infixOperand.operands);
 			this.operator = infixOperand.operator;
 		} else {
@@ -203,8 +203,8 @@ public class InfixExpression extends ComplexExpression {
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)
 	 */
 	@Override
-	public InfixExpression duplicate(int id) {
-		return new InfixExpression(getId(), operator, Expression.duplicateExpressions(operands), isInverted());
+	public CompoundExpression duplicate(int id) {
+		return new CompoundExpression(getId(), operator, Expression.duplicateExpressions(operands), isInverted());
 	}
 
 	/**
@@ -213,12 +213,12 @@ public class InfixExpression extends ComplexExpression {
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
 	 */
 	@Override
-	public InfixExpression duplicate() {
+	public CompoundExpression duplicate() {
 		return duplicate(generateId());
 	}
 	
 	/**
-	 * Computes the complexity of this {@link InfixExpression} using the following rule:
+	 * Computes the complexity of this {@link CompoundExpression} using the following rule:
 	 * <ul>
 	 * <li>Perform the sum of all operands'complexity</li>
 	 * <li>Add {@code 10}
@@ -237,11 +237,11 @@ public class InfixExpression extends ComplexExpression {
 	 */
 	@Override
 	public ExpressionType getExpressionType() {
-		return ExpressionType.INFIX;
+		return ExpressionType.COMPOUND;
 	}
 	
 	/**
-	 * {@link InfixExpression} return a {@link Boolean} type.
+	 * {@link CompoundExpression} return a {@link Boolean} type.
 	 * {@inheritDoc}
 	 * @see org.lambdamatic.analyzer.ast.node.Expression#getJavaType()
 	 */
@@ -267,7 +267,7 @@ public class InfixExpression extends ComplexExpression {
 	 * @param operands the new operands
 	 * @return {@code this}
 	 */
-	private InfixExpression setOperands(final List<Expression> operands) {
+	private CompoundExpression setOperands(final List<Expression> operands) {
 		this.operands.clear();
 		this.operands.addAll(operands);
 		this.complexity = BASE_COMPLEXITY + this.operands.stream().mapToInt(Expression::getComplexity).sum();
@@ -275,13 +275,13 @@ public class InfixExpression extends ComplexExpression {
 	}
 
 	/**
-	 * Add the given {@code operand} to the list of operands of this {@link InfixExpression}.
+	 * Add the given {@code operand} to the list of operands of this {@link CompoundExpression}.
 	 * 
 	 * @param operand
 	 *            the operand to add.
 	 * @return {@code this}
 	 */
-	public InfixExpression addOperand(final Expression operand) {
+	public CompoundExpression addOperand(final Expression operand) {
 		this.operands.add(operand);
 		Collections.sort(this.operands);
 		return this;
@@ -290,17 +290,17 @@ public class InfixExpression extends ComplexExpression {
 	/**
 	 * @return the operator
 	 */
-	public InfixOperator getOperator() {
+	public CompoundExpressionOperator getOperator() {
 		return operator;
 	}
 
 	/**
-	 * Removes the given {@link Expression} from the list of operands of this {@link InfixExpression}.
+	 * Removes the given {@link Expression} from the list of operands of this {@link CompoundExpression}.
 	 * 
 	 * @param operands
 	 *            the members to remove.
-	 * @return {@code this} {@link InfixExpression} after the given members removal. If there is only one member left in this
-	 *         {@link InfixExpression}, then the result if the remaining {@link Expression} itself.
+	 * @return {@code this} {@link CompoundExpression} after the given members removal. If there is only one member left in this
+	 *         {@link CompoundExpression}, then the result if the remaining {@link Expression} itself.
 	 */
 	public Expression removeOperands(final Expression... operands) {
 		final List<Expression> operandsWorkingCopy = new ArrayList<>(this.operands);
@@ -343,15 +343,15 @@ public class InfixExpression extends ComplexExpression {
 		switch (this.operator) {
 		case CONDITIONAL_AND:
 		case CONDITIONAL_OR:
-			// returns an InfixExpression with the inverted operator and the a *duplicate inverted version* of all
+			// returns an CompoundExpression with the inverted operator and the a *duplicate inverted version* of all
 			// operands, because their parent expression (the one being init and returned) is not *this*
 			// The 'inverse' flag remains 'false', though.
-			return new InfixExpression(this.getId(), operator.inverse(), duplicateAndInverseOperands(), false);
+			return new CompoundExpression(operator.inverse(), duplicateAndInverseOperands());
 		default:
-			// returns an InfixExpression with the inverted operator and the a *duplicate version* of all
+			// returns an CompoundExpression with the inverted operator and the a *duplicate version* of all
 			// operands, because their parent expression (the one being init and returned) is not *this*
 			// The 'inverse' flag remains 'false', and the operands are not inverted, though.
-			return new InfixExpression(this.getId(), operator.inverse(), Expression.duplicateExpressions(operands), false);
+			return new CompoundExpression(operator.inverse(), Expression.duplicateExpressions(operands));
 		}
 	}
 
@@ -428,7 +428,7 @@ public class InfixExpression extends ComplexExpression {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		InfixExpression other = (InfixExpression) obj;
+		CompoundExpression other = (CompoundExpression) obj;
 		if (operator != other.operator)
 			return false;
 		if (operands == null) {
@@ -450,7 +450,7 @@ public class InfixExpression extends ComplexExpression {
 	}
 
 	/**
-	 * Attempts to simplify this {@link InfixExpression} by applying some Boolean Algebra rules.
+	 * Attempts to simplify this {@link CompoundExpression} by applying some Boolean Algebra rules.
 	 * 
 	 * {@inheritDoc}
 	 * 
@@ -466,20 +466,20 @@ public class InfixExpression extends ComplexExpression {
 		final Expression simplestForm = variantForms.isEmpty() ? this : variantForms.get(0);
 		final long endTime = System.currentTimeMillis();
 		LOGGER.debug(" Simplest form for #{}: {} (c={}) in {}ms", simplestForm.getId(), simplestForm.toString(), simplestForm.getComplexity(), (endTime - startTime));
-		if (simplestForm.getExpressionType() == ExpressionType.INFIX) {
-			return ((InfixExpression) simplestForm).reorderOperands(this);
+		if (simplestForm.getExpressionType() == ExpressionType.COMPOUND) {
+			return ((CompoundExpression) simplestForm).reorderOperands(this);
 		}
 		return simplestForm;
 	}
 
 	/**
-	 * Reorders the operands of {@code this} {@link InfixExpression} by looking at the first operand of the given {@link InfixExpression}.
+	 * Reorders the operands of {@code this} {@link CompoundExpression} by looking at the first operand of the given {@link CompoundExpression}.
 	 * 
 	 * @param sourceExpression
-	 *            the source {@link InfixExpression}
-	 * @return {@code this} {@link InfixExpression}.
+	 *            the source {@link CompoundExpression}
+	 * @return {@code this} {@link CompoundExpression}.
 	 */
-	protected InfixExpression reorderOperands(final InfixExpression sourceExpression) {
+	protected CompoundExpression reorderOperands(final CompoundExpression sourceExpression) {
 		final List<Expression> orderedOperands = new ArrayList<>();
 		// look at each operand in the source expression, and if it exists in the list of operands of this expression, put it in front.
 		final List<Expression> pendingOperands = new ArrayList<>(this.operands);
@@ -489,7 +489,7 @@ public class InfixExpression extends ComplexExpression {
 				pendingOperands.remove(sourceOperand);
 			}
 		}
-		// TODO: if 'orderedOperands' is empty, we may need to look deeper into the operands, if they are themselves InfixExpression
+		// TODO: if 'orderedOperands' is empty, we may need to look deeper into the operands, if they are themselves CompoundExpression
 		orderedOperands.addAll(pendingOperands);
 		setOperands(orderedOperands);
 		return this;
@@ -497,7 +497,7 @@ public class InfixExpression extends ComplexExpression {
 	}
 
 	/**
-	 * Computes all variant forms of {@code this} {@link InfixExpression}.
+	 * Computes all variant forms of {@code this} {@link CompoundExpression}.
 	 * 
 	 * @return a list of {@link Expression} behing all equivalent of {@code this}.
 	 */
@@ -523,7 +523,7 @@ public class InfixExpression extends ComplexExpression {
 				for (Expression operand : this.operands) {
 					final Collection<Expression> variantFormsOfOperand = operand.computeVariants(monitor);
 					for (Expression variantFormOfOperand : variantFormsOfOperand) {
-						final InfixExpression variantFormOfThis = this.duplicate(getId());
+						final CompoundExpression variantFormOfThis = this.duplicate(getId());
 						variantFormOfThis.replaceElement(operand, variantFormOfOperand);
 						LOGGER.trace("{}variant form: #{} {}", monitor.getIndentation(), variantFormOfThis.getId(), variantFormOfThis.toString());
 						variantFormsOfThis.add(variantFormOfThis);
@@ -604,7 +604,7 @@ public class InfixExpression extends ComplexExpression {
 	}
 
 	/**
-	 * @return {@code true} if the current {@link InfixExpression} can be further simplified, {@code false} otherwise
+	 * @return {@code true} if the current {@link CompoundExpression} can be further simplified, {@code false} otherwise
 	 */
 	@Override
 	protected boolean canFurtherSimplify() {
@@ -618,8 +618,8 @@ public class InfixExpression extends ComplexExpression {
 		}
 		
 		// check if there are nested InfixExpressions with same operator
-		if(this.operands.parallelStream().anyMatch(o -> o.getExpressionType() == ExpressionType.INFIX && 
-				((InfixExpression)o).operator == this.operator)) {
+		if(this.operands.parallelStream().anyMatch(o -> o.getExpressionType() == ExpressionType.COMPOUND && 
+				((CompoundExpression)o).operator == this.operator)) {
 			return true;
 		}
 		// if the current expression is something like:
@@ -699,18 +699,18 @@ public class InfixExpression extends ComplexExpression {
 	}
 
 	/**
-	 * If the given {@link InfixOperator} is {@link InfixOperator#CONDITIONAL_AND}, then return {@link InfixOperator#CONDITIONAL_OR} and the
+	 * If the given {@link CompoundExpressionOperator} is {@link CompoundExpressionOperator#CONDITIONAL_AND}, then return {@link CompoundExpressionOperator#CONDITIONAL_OR} and the
 	 * other way around.
 	 * 
 	 * @param operator
 	 * @return the opposite operator, or null if the current operator did not match (this should not happen, though)
 	 */
-	private InfixOperator getOppositeOperator() {
+	private CompoundExpressionOperator getOppositeOperator() {
 		switch (this.operator) {
 		case CONDITIONAL_AND:
-			return InfixOperator.CONDITIONAL_OR;
+			return CompoundExpressionOperator.CONDITIONAL_OR;
 		case CONDITIONAL_OR:
-			return InfixOperator.CONDITIONAL_AND;
+			return CompoundExpressionOperator.CONDITIONAL_AND;
 		default:
 			return null;
 		}
@@ -729,8 +729,8 @@ public class InfixExpression extends ComplexExpression {
 		final List<Expression> resultOperands = new ArrayList<>();
 		boolean match = false;
 		for (Expression operand : this.operands) {
-			if (operand.getExpressionType() == ExpressionType.INFIX) {
-				final InfixExpression infixOperand = (InfixExpression) operand;
+			if (operand.getExpressionType() == ExpressionType.COMPOUND) {
+				final CompoundExpression infixOperand = (CompoundExpression) operand;
 				if (infixOperand.getOperator() == this.operator) {
 					resultOperands.addAll(infixOperand.getOperands());
 					match = true;
@@ -742,7 +742,7 @@ public class InfixExpression extends ComplexExpression {
 			}
 		}
 		if (match) {
-			final InfixExpression resultExpression = new InfixExpression(this.getId(), this.operator, new ArrayList<>(resultOperands), isInverted());
+			final CompoundExpression resultExpression = new CompoundExpression(this.getId(), this.operator, new ArrayList<>(resultOperands), isInverted());
 			//LOGGER.trace("  Associative Law: #{} {} -> {}", this.getId(), this.toString(), resultExpression.toString());
 			resultExpressions.add(resultExpression);
 		}
@@ -767,7 +767,7 @@ public class InfixExpression extends ComplexExpression {
 	 */
 	protected Set<Expression> applyRedundancyLaw() {
 		final Set<Expression> resultExpressions = new HashSet<>();
-		final InfixOperator oppositeOperator = getOppositeOperator();
+		final CompoundExpressionOperator oppositeOperator = getOppositeOperator();
 		for (Expression operand : this.operands) {
 			if(!operand.canBeInverted()) {
 				continue;
@@ -775,15 +775,15 @@ public class InfixExpression extends ComplexExpression {
 			final List<Expression> simplifiedOperands = this.operands
 					.stream()
 					.map(expression -> {
-						if (expression.getExpressionType() == ExpressionType.INFIX
-								&& ((InfixExpression) expression).operator == oppositeOperator
-								&& ((InfixExpression) expression).contains(operand.inverse())) {
-							return ((InfixExpression) expression).duplicate(getId()).removeOperands(operand.inverse());
+						if (expression.getExpressionType() == ExpressionType.COMPOUND
+								&& ((CompoundExpression) expression).operator == oppositeOperator
+								&& ((CompoundExpression) expression).contains(operand.inverse())) {
+							return ((CompoundExpression) expression).duplicate(getId()).removeOperands(operand.inverse());
 						}
 						return expression;
 					}).collect(Collectors.toList());
 			if (!simplifiedOperands.equals(this.operands)) {
-				final InfixExpression resultExpression = new InfixExpression(this.getId(), this.operator, new ArrayList<>(simplifiedOperands), isInverted());
+				final CompoundExpression resultExpression = new CompoundExpression(this.getId(), this.operator, new ArrayList<>(simplifiedOperands), isInverted());
 				//LOGGER.trace("  Redundancy Law: #{} {} -> {} [match on {}]", this.getId(), this.toString(), resultExpression.toString(), operand);
 				resultExpressions.add(resultExpression);
 			}
@@ -802,15 +802,15 @@ public class InfixExpression extends ComplexExpression {
 	 */
 	protected Set<Expression> applyAbsorptionLaw() {
 		final Set<Expression> resultExpressions = new HashSet<>();
-		final InfixOperator oppositeOperator = getOppositeOperator();
+		final CompoundExpressionOperator oppositeOperator = getOppositeOperator();
 		for (Expression operand : this.operands) {
 			// removes from 'simplifiedOperands' all expression that
 			// match '(a + b)' where 'a' is the operand to match
 			final List<Expression> remainingOperands = this.operands
 					.stream()
-					.filter(m -> m.equals(operand) || m.getExpressionType() != ExpressionType.INFIX
-							|| ((InfixExpression) m).getOperator() != oppositeOperator
-							|| !((InfixExpression) m).getOperands().contains(operand)).collect(Collectors.toList());
+					.filter(m -> m.equals(operand) || m.getExpressionType() != ExpressionType.COMPOUND
+							|| ((CompoundExpression) m).getOperator() != oppositeOperator
+							|| !((CompoundExpression) m).getOperands().contains(operand)).collect(Collectors.toList());
 			// if there's no match
 			if (remainingOperands.size() == this.operands.size()) {
 				continue;
@@ -820,7 +820,7 @@ public class InfixExpression extends ComplexExpression {
 			if (remainingOperands.size() == 1) {
 				resultExpressions.add(remainingOperands.get(0).duplicate(getId()));
 			} else {
-				final InfixExpression resultExpression = new InfixExpression(this.getId(), this.operator, new ArrayList<>(remainingOperands), isInverted());
+				final CompoundExpression resultExpression = new CompoundExpression(this.getId(), this.operator, new ArrayList<>(remainingOperands), isInverted());
 				//LOGGER.trace("  Absorption Law: #{} {} -> {} (match on {})", this.getId(), this.toString(), resultExpression.toString(), operand);
 				resultExpressions.add(resultExpression);
 			}
@@ -844,37 +844,37 @@ public class InfixExpression extends ComplexExpression {
 	 */
 	protected Set<Expression> applyFactorizationLaw() {
 		final Set<Expression> resultExpressions = new HashSet<>();
-		final InfixOperator oppositeOperator = getOppositeOperator();
+		final CompoundExpressionOperator oppositeOperator = getOppositeOperator();
 		// we keep track of operands that matched before, to avoid performing factorization multiple times for the same operand
 		// (because it's obviously repeated multiple times...)
 		final Set<Expression> matchOperands = new HashSet<>();
 		for (Expression currentOperand : this.operands) {
-			if (currentOperand.getExpressionType() == ExpressionType.INFIX) {
+			if (currentOperand.getExpressionType() == ExpressionType.COMPOUND) {
 				final List<Expression> otherOperands = getOtherOperands(currentOperand);
-				for (Expression operandElement : ((InfixExpression) currentOperand).getOperands()) {
+				for (Expression operandElement : ((CompoundExpression) currentOperand).getOperands()) {
 					if (matchOperands.contains(operandElement)) {
 						continue;
 					}
 					boolean anyMatch = otherOperands.stream().anyMatch(
-							o -> o.getExpressionType() == ExpressionType.INFIX && ((InfixExpression) o).getOperator() == oppositeOperator
-									&& ((InfixExpression) o).getOperands().contains(operandElement));
+							o -> o.getExpressionType() == ExpressionType.COMPOUND && ((CompoundExpression) o).getOperator() == oppositeOperator
+									&& ((CompoundExpression) o).getOperands().contains(operandElement));
 					if (anyMatch) {
 						matchOperands.add(operandElement);
 						final List<Expression> factorizedOperands = this.operands
 								.stream()
-								.filter(o -> o.getExpressionType() == ExpressionType.INFIX
-										&& ((InfixExpression) o).getOperator() == oppositeOperator
-										&& ((InfixExpression) o).getOperands().contains(operandElement))
-								.map(o -> ((InfixExpression) o).duplicate(getId()).removeOperands(operandElement))
+								.filter(o -> o.getExpressionType() == ExpressionType.COMPOUND
+										&& ((CompoundExpression) o).getOperator() == oppositeOperator
+										&& ((CompoundExpression) o).getOperands().contains(operandElement))
+								.map(o -> ((CompoundExpression) o).duplicate(getId()).removeOperands(operandElement))
 								.collect(Collectors.toList());
 						final List<Expression> remainingOperands = otherOperands
 								.stream()
-								.filter(o -> !(o.getExpressionType() == ExpressionType.INFIX
-										&& ((InfixExpression) o).getOperator() == oppositeOperator && ((InfixExpression) o).getOperands()
+								.filter(o -> !(o.getExpressionType() == ExpressionType.COMPOUND
+										&& ((CompoundExpression) o).getOperator() == oppositeOperator && ((CompoundExpression) o).getOperands()
 										.contains(operandElement))).collect(Collectors.toList());
-						final InfixExpression factorizedExpression = new InfixExpression(oppositeOperator, operandElement,
-								new InfixExpression(this.operator, factorizedOperands));
-						final InfixExpression resultExpression = new InfixExpression(this.getId(), this.operator, CollectionUtils.join(
+						final CompoundExpression factorizedExpression = new CompoundExpression(oppositeOperator, operandElement,
+								new CompoundExpression(this.operator, factorizedOperands));
+						final CompoundExpression resultExpression = new CompoundExpression(this.getId(), this.operator, CollectionUtils.join(
 								factorizedExpression, remainingOperands), isInverted());
 						//LOGGER.trace("  Factorization Law: #{} {} -> {} (match on {} of {})", this.getId(), this.toString(), resultExpression.toString(), operandElement, currentOperand);
 						resultExpressions.add(resultExpression);
@@ -916,7 +916,7 @@ public class InfixExpression extends ComplexExpression {
 				//LOGGER.trace("  Idempotent Law: #{} {} -> {} (match on {})", this.getId(), this.toString(), resultExpression.toString(), operand);
 				resultExpressions.add(resultExpression);
 			} else {
-				final InfixExpression resultExpression = new InfixExpression(this.getId(), this.operator, new ArrayList<>(operandsToKeep), isInverted());
+				final CompoundExpression resultExpression = new CompoundExpression(this.getId(), this.operator, new ArrayList<>(operandsToKeep), isInverted());
 				//LOGGER.trace("  Idempotent Law: #{} {} -> {} (match on {})", this.getId(), this.toString(), resultExpression.toString(), operand);
 				resultExpressions.add(resultExpression);
 			}
@@ -945,7 +945,7 @@ public class InfixExpression extends ComplexExpression {
 			final List<Expression> otherOperands = getOtherOperands(operand);
 			if (operand.canBeInverted() && otherOperands.contains(operand.inverse())) {
 				matchOperands.add(operand);
-				if (this.operator == InfixOperator.CONDITIONAL_AND) {
+				if (this.operator == CompoundExpressionOperator.CONDITIONAL_AND) {
 					final Expression resultExpression = new BooleanLiteral(getId(), EMPTY_SET_OPERATOR.getValue(), isInverted());
 					LOGGER.trace("  Unary Operation Law: {} -> {}", this, resultExpression);
 					resultExpressions.add(resultExpression);
@@ -977,7 +977,7 @@ public class InfixExpression extends ComplexExpression {
 	protected Set<Expression> applyEmptySetLaw() {
 		final Set<Expression> resultExpressions = new HashSet<>();
 		if (this.operands.contains(EMPTY_SET_OPERATOR)) {
-			if (this.operator == InfixOperator.CONDITIONAL_AND) {
+			if (this.operator == CompoundExpressionOperator.CONDITIONAL_AND) {
 				final Expression resultExpression = new BooleanLiteral(getId(), EMPTY_SET_OPERATOR.getValue(), isInverted());
 				//LOGGER.trace("  Empty Set Law: {} -> {}", this, resultExpression);
 				resultExpressions.add(resultExpression);
@@ -1002,8 +1002,8 @@ public class InfixExpression extends ComplexExpression {
 	protected Set<Expression> applyUniversalSetLaw() {
 		final Set<Expression> resultExpressions = new HashSet<>();
 		if (this.operands.contains(UNIVERSAL_OPERATOR)) {
-			if (this.operator == InfixOperator.CONDITIONAL_AND) {
-				// eg: 'something' && 'I' -> return 'something', no need to wrap the single operand in an InfixExpression
+			if (this.operator == CompoundExpressionOperator.CONDITIONAL_AND) {
+				// eg: 'something' && 'I' -> return 'something', no need to wrap the single operand in an CompoundExpression
 				if (this.operands.size() == 2) {
 					final Expression remainingOperand = this.operands.stream().filter(m -> !m.equals(UNIVERSAL_OPERATOR)).findFirst().get();
 					resultExpressions.add(remainingOperand.duplicate(getId()));
@@ -1014,7 +1014,7 @@ public class InfixExpression extends ComplexExpression {
 					//LOGGER.trace("  Universal Set Law: {} -> {}", this, resultExpression);
 					resultExpressions.add(resultExpression);
 				}
-			} else if (this.operator == InfixOperator.CONDITIONAL_OR) {
+			} else if (this.operator == CompoundExpressionOperator.CONDITIONAL_OR) {
 				// removes other operands if 'I' is part of the expression operands
 				final Expression resultExpression = new BooleanLiteral(getId(), UNIVERSAL_OPERATOR.getValue(), isInverted());
 				//LOGGER.trace("  Universal Set Law: #{} {} -> {}", this.getId(), this.toString(), resultExpression.toString());
@@ -1027,7 +1027,7 @@ public class InfixExpression extends ComplexExpression {
 	/**
 	 * Expands the given {@link Expression} if it meets the following requirements:
 	 * <ul>
-	 * <li>it is an {@link InfixExpression}</li>
+	 * <li>it is an {@link CompoundExpression}</li>
 	 * <li>contains one of the following forms:
 	 * <ul>
 	 * <li>{@code infix(infix(a, ...), infix(a, ...), ...)}</li>
@@ -1038,7 +1038,7 @@ public class InfixExpression extends ComplexExpression {
 	 * Eg:
 	 * <ul>
 	 * <li>{@code ((a.(b+c)) + (!a.(d+e))) = (a.b + a.c + !a.d + !a.e)}</li>
-	 * in each case, the presence of the {@code a} or {@code !a} operands associated with an {@link InfixExpression} is the key to trigger
+	 * in each case, the presence of the {@code a} or {@code !a} operands associated with an {@link CompoundExpression} is the key to trigger
 	 * the development.
 	 * 
 	 * @return a {@link Set} with the new {@link Expression} resulting from this boolean law, or empty list if no change was performed.
@@ -1046,23 +1046,23 @@ public class InfixExpression extends ComplexExpression {
 	protected Set<Expression> applyDistributiveLaw() {
 		final Set<Expression> resultExpressions = new HashSet<>();
 		for (Expression sourceOperand : this.operands) {
-			if (sourceOperand.getExpressionType() != ExpressionType.INFIX) {
+			if (sourceOperand.getExpressionType() != ExpressionType.COMPOUND) {
 				continue;
 			}
 			final List<Expression> otherOperands = getOtherOperands(sourceOperand);
-			for (Expression sourceSubOperand : ((InfixExpression) sourceOperand).getOperands()) {
-				final Map<InfixExpression, Expression> matchingOtherOperands = new HashMap<>();
+			for (Expression sourceSubOperand : ((CompoundExpression) sourceOperand).getOperands()) {
+				final Map<CompoundExpression, Expression> matchingOtherOperands = new HashMap<>();
 				if(!sourceSubOperand.canBeInverted()) {
 					continue;
 				}
 				final Expression inversedSourceSubOperand = sourceSubOperand.inverse();
 				for (Expression otherOperand : otherOperands) {
-					if (otherOperand.getExpressionType() != ExpressionType.INFIX) {
+					if (otherOperand.getExpressionType() != ExpressionType.COMPOUND) {
 						continue;
 					}
-					final InfixExpression otherInfixOperand = (InfixExpression) otherOperand;
+					final CompoundExpression otherInfixOperand = (CompoundExpression) otherOperand;
 					final boolean containsInfixOperands = (otherInfixOperand.getOperands().stream()
-							.anyMatch(o -> o.getExpressionType() == ExpressionType.INFIX && ((InfixExpression)o).operator == otherInfixOperand.operator.inverse()));
+							.anyMatch(o -> o.getExpressionType() == ExpressionType.COMPOUND && ((CompoundExpression)o).operator == otherInfixOperand.operator.inverse()));
 					if (containsInfixOperands && otherInfixOperand.getOperands().contains(sourceSubOperand)) {
 						// match found
 						matchingOtherOperands.put(otherInfixOperand, sourceSubOperand);
@@ -1080,7 +1080,7 @@ public class InfixExpression extends ComplexExpression {
 					matchingOtherOperands.entrySet().stream()
 							.forEach(entry -> resultOperands.addAll(entry.getKey().distribute(entry.getValue())));
 
-					final InfixExpression resultExpression = new InfixExpression(this.getId(), this.operator, resultOperands, isInverted());
+					final CompoundExpression resultExpression = new CompoundExpression(this.getId(), this.operator, resultOperands, isInverted());
 					if (!resultExpression.equals(this)) {
 						//LOGGER.trace("  Distributive Law: #{} {} -> {}", this.getId(), this.toString(), resultExpression.toString());
 						resultExpressions.add(resultExpression);
@@ -1092,7 +1092,7 @@ public class InfixExpression extends ComplexExpression {
 	}
 
 	/**
-	 * Expands the given {@link InfixExpression}:
+	 * Expands the given {@link CompoundExpression}:
 	 * <ul>
 	 * <li>{@code a.(b + c + d) = (a.b) + (a.c) + (a.d)}</li>
 	 * <li>{@code a + (b.c.d) = (a + b).(a + c).(a + d)}</li>
@@ -1103,18 +1103,18 @@ public class InfixExpression extends ComplexExpression {
 	 */
 	protected Set<Expression> distribute(final Expression sourceOperand) {
 		final Set<Expression> resultExpressions = new HashSet<>();
-		final InfixOperator oppositeOperator = getOppositeOperator();
-		final InfixExpression resultExpression = new InfixExpression(this.getId(), this.operator);
-		// pick the first other operand that is an InfixExpression
+		final CompoundExpressionOperator oppositeOperator = getOppositeOperator();
+		final CompoundExpression resultExpression = new CompoundExpression(this.getId(), this.operator);
+		// pick the first other operand that is an CompoundExpression
 		final Optional<Expression> optionalOtherInfixOperand = this.operands.stream()
-				.filter(e -> !e.equals(sourceOperand) && e.getExpressionType() == ExpressionType.INFIX).findFirst();
+				.filter(e -> !e.equals(sourceOperand) && e.getExpressionType() == ExpressionType.COMPOUND).findFirst();
 		if (!optionalOtherInfixOperand.isPresent()) {
 			resultExpressions.add(this);
 		} else {
-			final InfixExpression otherInfixOperand = (InfixExpression) optionalOtherInfixOperand.get();
-			final InfixExpression distributedConditionalAnd = new InfixExpression(oppositeOperator, Collections.emptyList());
+			final CompoundExpression otherInfixOperand = (CompoundExpression) optionalOtherInfixOperand.get();
+			final CompoundExpression distributedConditionalAnd = new CompoundExpression(oppositeOperator, Collections.emptyList());
 			for (Expression e : otherInfixOperand.getOperands()) {
-				distributedConditionalAnd.addOperand(new InfixExpression(this.operator, Arrays.asList(sourceOperand, e)));
+				distributedConditionalAnd.addOperand(new CompoundExpression(this.operator, Arrays.asList(sourceOperand, e)));
 			}
 			resultExpression.addOperand(distributedConditionalAnd);
 			// unmodified operands shall be added to the result expression

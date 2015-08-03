@@ -19,6 +19,7 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.types.ObjectId;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
@@ -30,6 +31,7 @@ import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.exceptions.ConversionException;
+import org.lambdamatic.mongodb.metadata.MongoOperator;
 import org.lambdamatic.mongodb.metadata.QueryField;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 
@@ -53,6 +55,24 @@ public class EncoderUtils {
 	private EncoderUtils() {
 	}
 
+	public static MongoOperator getMongoOperator(final CompoundExpressionOperator expressionOperator) {
+		switch(expressionOperator) {
+		case EQUALS:
+			return MongoOperator.EQUALS;
+		case NOT_EQUALS:
+			return MongoOperator.NOT_EQUALS;
+		case GREATER:
+			return MongoOperator.GREATER;
+		case GREATER_EQUALS:
+			return MongoOperator.GREATER_EQUALS;
+		case LESS:
+			return MongoOperator.LESS;
+		case LESS_EQUALS:
+			return MongoOperator.LESS_EQUALS;
+		default:
+			throw new ConversionException("No MongoDB operator is defined for expression operator '" + expressionOperator + "'");
+		}
+	}
 	/**
 	 * Extract the <strong>single</strong> {@link Expression} from the given {@link LambdaExpression#getBody()},
 	 * assuming that there's a single {@link Statement} which is a {@link ReturnStatement}, otherwise, throws a
@@ -241,14 +261,16 @@ public class EncoderUtils {
 			writer.writeDateTime(((Date) value).getTime());
 		} else if (value instanceof Enum) {
 			writer.writeString(((Enum<?>) value).name());
+		} else if(value instanceof Collection) {
+			writer.writeStartArray();
+			((Collection<?>)value).stream().forEach(v -> writeValue(writer, v));
+			writer.writeEndArray();
 		} else if (value.getClass().isArray()) {
 			writer.writeStartArray();
-			final Object[] array = (Object[]) value;
-			for (int i = 0; i < array.length; i++) {
-				writeValue(writer, value);
-			}
+			Stream.of((Object[]) value).forEach(v -> writeValue(writer, v));
 			writer.writeEndArray();
-		} else {
+		}
+			else {
 			throw new UnsupportedOperationException(
 					"Writing value of a '" + value.getClass() + "' is not supported yet");
 		}
@@ -479,6 +501,10 @@ public class EncoderUtils {
 			writer.writeInt32(name, (Integer) value);
 		} else if (value instanceof Long) {
 			writer.writeInt64(name, (Long) value);
+		} else if (value instanceof Float) {
+			writer.writeDouble(name, (Float) value);
+		} else if (value instanceof Double) {
+			writer.writeDouble(name, (Double) value);
 		} else if (value instanceof Character) {
 			writer.writeString(name, ((Character) value).toString());
 		} else if (value instanceof String) {

@@ -12,10 +12,10 @@ package org.lambdamatic.analyzer.ast.node;
 public class BooleanLiteral extends ObjectInstance {
 
 	/** The Universal Operator (or Boolean TRUE) */
-	public static final BooleanLiteral UNIVERSAL_OPERATOR = new BooleanLiteral(Boolean.TRUE);
+	public static final BooleanLiteral UNIVERSAL_OPERATOR = new BooleanLiteral(true);
 
 	/** The EmptySet Operator (or Boolean FALSE). */
-	public static final BooleanLiteral EMPTY_SET_OPERATOR = new BooleanLiteral(Boolean.FALSE);
+	public static final BooleanLiteral EMPTY_SET_OPERATOR = new BooleanLiteral(false);
 
 	/**
 	 * Full constructor
