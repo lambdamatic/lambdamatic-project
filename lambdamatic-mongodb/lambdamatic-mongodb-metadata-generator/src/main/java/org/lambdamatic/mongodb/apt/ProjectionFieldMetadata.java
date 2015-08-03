@@ -92,7 +92,7 @@ public class ProjectionFieldMetadata extends BaseFieldMetadata {
 	}
 	
 	/**
-	 * @return the fully qualified name of the {@link ProjectionMetadata} class corresponding to the given {@link Element}
+	 * @return the fully qualified name of the {@link ProjectionMetadata} class corresponding to the given {@link Element}. 
 	 * @param variableTypeElement the Element to use
 	 */
 	public static String getProjectionMetadataType(final Element variableTypeElement) {

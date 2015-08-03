@@ -9,10 +9,11 @@ import java.util.Set;
 import org.apache.commons.lang3.ClassUtils;
 
 /**
- * A field type to be used in the class templates. Provides the simple Java type name along with all types to
- * declare as import statements.
+ * A field type to be used in the class templates. Provides the simple Java type name along with all types to declare as
+ * import statements.
  * <p>
- * Eg: <code>List&lt;Foo&gt;</code> with <code>java.util.List, com.sample.Foo</code>
+ * Eg: field of type <code>List&lt;Foo&gt;</code> requires imports of <code>java.util.List</code> and
+ * <code>com.sample.Foo</code>.
  * </p>
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
@@ -59,7 +60,9 @@ public class FieldType {
 	public FieldType(final Class<?> javaType, final Collection<Object> parameterTypes) {
 		final StringBuilder simpleNameBuilder = new StringBuilder();
 		simpleNameBuilder.append(javaType.getSimpleName());
-		this.requiredTypes.add(javaType.getName());
+		if(!javaType.isPrimitive()) {
+			this.requiredTypes.add(javaType.getName());
+		}
 		if (!parameterTypes.isEmpty()) {
 			simpleNameBuilder.append('<');
 			parameterTypes.stream().forEach(p -> {
@@ -72,7 +75,7 @@ public class FieldType {
 					simpleNameBuilder.append(fieldType.getSimpleName()).append(", ");
 					this.requiredTypes.addAll(fieldType.getRequiredTypes());
 				}
-			} );
+			});
 			// little hack: there's an extra ", " sequence that needs to be remove from the simpleNameBuilder
 			simpleNameBuilder.delete(simpleNameBuilder.length() - 2, simpleNameBuilder.length());
 			simpleNameBuilder.append('>');

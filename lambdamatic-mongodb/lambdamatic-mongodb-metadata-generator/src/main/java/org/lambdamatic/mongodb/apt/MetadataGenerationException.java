@@ -33,5 +33,14 @@ public class MetadataGenerationException extends Exception {
 	public MetadataGenerationException(final Throwable cause) {
 		super(cause);
 	}
+
+	/**
+	 * Constructor
+	 * @param message the exception message
+	 * @param cause the underlying cause
+	 */
+	public MetadataGenerationException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
 	
 }

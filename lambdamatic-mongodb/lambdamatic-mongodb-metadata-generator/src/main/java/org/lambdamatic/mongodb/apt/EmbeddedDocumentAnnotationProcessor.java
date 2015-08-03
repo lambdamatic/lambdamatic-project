@@ -46,9 +46,9 @@ public class EmbeddedDocumentAnnotationProcessor extends BaseAnnotationProcessor
 		templateContextProperties.put(Constants.QUERY_METADATA_CLASS_NAME, generateQueryMetadataSimpleClassName(domainElement));
 		templateContextProperties.put(Constants.QUERY_ARRAY_METADATA_CLASS_NAME, generateQueryArrayMetadataSimpleClassName(domainElement));
 		templateContextProperties.put(Constants.PROJECTION_FIELDS, allFields.get(ProjectionMetadata.class));
-		templateContextProperties.put(Constants.PROJECTION_METADATA_CLASS_NAME, generateProjectionSimpleClassName(domainElement));
+		templateContextProperties.put(Constants.PROJECTION_METADATA_CLASS_NAME, generateProjectionMetadataSimpleClassName(domainElement));
 		templateContextProperties.put(Constants.UPDATE_FIELDS, allFields.get(UpdateMetadata.class));
-		templateContextProperties.put(Constants.UPDATE_METADATA_CLASS_NAME, generateUpdateSimpleClassName(domainElement));
+		templateContextProperties.put(Constants.UPDATE_METADATA_CLASS_NAME, generateUpdateMetadataSimpleClassName(domainElement));
 		templateContextProperties.put(Constants.UPDATE_ARRAY_METADATA_CLASS_NAME, generateUpdateArrayMetadataSimpleClassName(domainElement));
 		return templateContextProperties;
 	}

@@ -13,7 +13,6 @@ import org.apache.commons.lang3.ClassUtils;
 import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
-import org.lambdamatic.mongodb.exceptions.ConversionException;
 import org.lambdamatic.mongodb.metadata.LocationField;
 import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryField;
@@ -57,17 +56,17 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 	}
 
 	/**
-	 * Returns the fully qualified name of the type of the given {@link VariableElement}, or {@code null} if it was not
+	 * Returns the fully qualified name of the type of the given {@link VariableElement}, or throws a {@link MetadataGenerationException} if it was not
 	 * a known or supported type.
 	 * 
 	 * @param variableElement
 	 *            the variable to analyze
 	 * @return
-	 * @throws MetadataGenerationException
+	 * @throws MetadataGenerationException if the given variable type is not supported
 	 */
 	protected static FieldType getMetadataFieldType(final TypeMirror variableType) throws MetadataGenerationException {
 		if (variableType instanceof PrimitiveType) {
-			return new FieldType(QueryField.class, getSimilarDeclaredType((PrimitiveType) variableType).getName());
+			return new FieldType(QueryField.class, ClassUtils.primitiveToWrapper(getVariableType(variableType)).getName());
 		} else if (variableType instanceof DeclaredType) {
 			final DeclaredType declaredType = (DeclaredType) variableType;
 			final Element declaredElement = declaredType.asElement();
@@ -103,6 +102,19 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 	}
 
 	/**
+	 * Attempts to load the Java {@link Class} associated with the given {@link TypeMirror}. This may not be possible if the {@link TypeMirror} corresponds to a user class that has not been compiled yet, in which case the method returns <code>null</code>. 
+	 * @param variableType the {@link TypeMirror} to analyze
+	 * @return the Java {@link Class} or <code>null</code> if it could not be loaded.
+	 */
+	private static Class<?> getVariableType(final TypeMirror variableType) {
+		try {
+			return ClassUtils.getClass(variableType.toString());
+		} catch (ClassNotFoundException e) {
+			return null;
+		}
+	}
+
+	/**
 	 * @return the fully qualified name of the {@link QueryMetadata} class corresponding to the given {@link Element}
 	 * @param elementTypeName the fully qualified name of the Element to use
 	 */
@@ -127,31 +139,6 @@ public class QueryFieldMetadata extends BaseFieldMetadata {
 			final String shortClassName = Constants.QUERY_METADATA_CLASSNAME_PREFIX
 					+ ClassUtils.getShortClassName(elementTypeName.toString()) + Constants.QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX;
 			return packageName + '.' + shortClassName;
-		}
-	}
-
-	private static Class<?> getSimilarDeclaredType(final PrimitiveType variableType) {
-		final TypeKind variableTypeKind = variableType.getKind();
-		switch (variableTypeKind) {
-		case BOOLEAN:
-			return Boolean.class;
-		case BYTE:
-			return Byte.class;
-		case SHORT:
-			return Short.class;
-		case INT:
-			return Integer.class;
-		case LONG:
-			return Long.class;
-		case FLOAT:
-			return Float.class;
-		case DOUBLE:
-			return Double.class;
-		case CHAR:
-			return Character.class;
-		default:
-			throw new ConversionException(
-					"Failed to provide a declared type equivalent to '" + variableTypeKind.name().toLowerCase() + "'");
 		}
 	}
 
