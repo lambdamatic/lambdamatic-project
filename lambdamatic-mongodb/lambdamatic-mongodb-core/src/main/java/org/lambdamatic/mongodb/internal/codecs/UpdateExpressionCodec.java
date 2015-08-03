@@ -25,7 +25,7 @@ import org.lambdamatic.mongodb.metadata.UpdateMetadata;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
-public class UpdateExpressionCodec extends BaseLambdaExpressionCodec<SerializableConsumer<UpdateMetadata<?>>> {
+public class UpdateExpressionCodec extends BaseLambdaExpressionCodec<SerializableConsumer<? extends UpdateMetadata<?>>> {
 
 	/** the codec registry, to decode elements of an incoming BSON document. */
 	private final CodecRegistry codecRegistry;

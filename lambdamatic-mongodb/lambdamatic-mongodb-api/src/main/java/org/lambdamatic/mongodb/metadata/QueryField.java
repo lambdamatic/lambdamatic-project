@@ -13,6 +13,7 @@ import java.util.Collection;
  */
 public interface QueryField<DomainType> {
 
+	
 	/**
 	 * Specifies equality condition. The {@link QueryField#eq(Object)} ({@code $eq}) operator matches documents where
 	 * the value of a field equals the specified value.
@@ -34,7 +35,7 @@ public interface QueryField<DomainType> {
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/ne/#op._S_ne">MongoDB documentation</a>
 	 */
 	@MongoOperation(MongoOperator.NOT_EQUALS)
-	public boolean notEquals(Object value);
+	public boolean notEquals(DomainType value);
 
 	/**
 	 * Selects the documents where the value of the field is greater than (i.e. >) the specified value.
@@ -44,7 +45,7 @@ public interface QueryField<DomainType> {
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/gt/#op._S_gt">MongoDB documentation</a>
 	 */
 	@MongoOperation(MongoOperator.GREATER)
-	public boolean greaterThan(Object value);
+	public boolean greaterThan(DomainType value);
 
 	/**
 	 * Selects the documents where the value of the field is greater than or equal to (i.e. >=) a specified value (e.g.
@@ -56,7 +57,7 @@ public interface QueryField<DomainType> {
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/gte/#op._S_gte">MongoDB documentation</a>
 	 */
 	@MongoOperation(MongoOperator.GREATER_EQUALS)
-	public boolean greaterOrEquals(Object value);
+	public boolean greaterOrEquals(DomainType value);
 
 	/**
 	 * Selects the documents where the value of the field is less than (i.e. <) the specified value.
@@ -67,7 +68,7 @@ public interface QueryField<DomainType> {
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/lt/#op._S_lt">MongoDB documentation</a>
 	 */
 	@MongoOperation(MongoOperator.LESS)
-	public boolean lessThan(Object value);
+	public boolean lessThan(DomainType value);
 
 	/**
 	 * Selects the documents where the value of the field is less than or equal to (i.e. <=) the specified value.
@@ -78,7 +79,7 @@ public interface QueryField<DomainType> {
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/lte/#op._S_lte">MongoDB documentation</a>
 	 */
 	@MongoOperation(MongoOperator.LESS_EQUALS)
-	public boolean lessOrEquals(Object value);
+	public boolean lessOrEquals(DomainType value);
 
 	/**
 	 * The {@link QueryField#in(Object)} ({@code $in}) operator selects the documents where the value of a field equals
@@ -91,7 +92,7 @@ public interface QueryField<DomainType> {
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/in/#op._S_in">MongoDB documentation</a>
 	 */
 	@MongoOperation(MongoOperator.IN)
-	public boolean in(Object... values);
+	public boolean in(@SuppressWarnings("unchecked") DomainType... values);
 
 	/**
 	 * The {@link QueryField#in(Object)} ({@code $in}) operator selects the documents where the value of a field equals
@@ -104,7 +105,7 @@ public interface QueryField<DomainType> {
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/in/#op._S_in">MongoDB documentation</a>
 	 */
 	@MongoOperation(MongoOperator.IN)
-	public boolean in(Collection<Object> values);
+	public boolean in(Collection<DomainType> values);
 
 	/**
 	 * selects the documents where:
@@ -117,7 +118,7 @@ public interface QueryField<DomainType> {
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/nin/#op._S_nin">MongoDB documentation</a>
 	 */
 	@MongoOperation(MongoOperator.NOT_IN)
-	public boolean notIn(Object... values);
+	public boolean notIn(@SuppressWarnings("unchecked") DomainType... values);
 
 	/**
 	 * selects the documents where:
@@ -130,6 +131,6 @@ public interface QueryField<DomainType> {
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/nin/#op._S_nin">MongoDB documentation</a>
 	 */
 	@MongoOperation(MongoOperator.NOT_IN)
-	public boolean notIn(Collection<Object> values);
+	public boolean notIn(Collection<DomainType> values);
 
 }

@@ -30,7 +30,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.lambdamatic.SerializableConsumer;
-import org.lambdamatic.mongodb.metadata.UpdateMetadata;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,23 +69,38 @@ public class UpdateExpressionCodecTest {
 		getCodecLogger().setLevel(previousLoggerLevel);
 	}
 
+	/**
+	 * Utility method that makes the JUnit parameters declaration much more readable.
+	 * 
+	 * @param lambdaExpression
+	 *            the {@link FunctionalInterface} to encode
+	 * @param bson
+	 *            the expected result
+	 * @return
+	 */
+	private static Object[] match(final SerializableConsumer<UFoo> lambdaExpression, final String bson) {
+		return new Object[] {
+				lambdaExpression, bson };
+	}
+
 	@Parameters(name = "[{index}] {1}")
 	public static Object[][] data() {
 		final Bar bar = new Bar("foo", 1);
-		return new Object[][] { new Object[] { (SerializableConsumer<UFoo>) ((UFoo foo) -> {
-			foo.stringField = "foo";
-		}), "{$set: {stringField: 'foo'}}" }, new Object[] { (SerializableConsumer<UFoo>) ((UFoo foo) -> {
-			foo.primitiveIntField++;
-		}), "{$inc: {primitiveIntField: 1}}" }, new Object[] { (SerializableConsumer<UFoo>) ((UFoo foo) -> {
-			foo.barList.push(new Bar("foo", 1));
-		}), "{$push: {barList: {_targetClass : 'com.sample.Bar', stringField: 'foo', primitiveIntField: 1}}}" },
-				new Object[] { (SerializableConsumer<UFoo>) ((UFoo foo) -> {
+		return new Object[][] {
+				match(foo -> {
+					foo.stringField = "foo";
+				} , "{$set: {stringField: 'foo'}}"), match(foo -> {
+					foo.primitiveIntField++;
+				} , "{$inc: {primitiveIntField: 1}}"), match(foo -> {
+					foo.barList.push(new Bar("foo", 1));
+				} , "{$push: {barList: {_targetClass : 'com.sample.Bar', stringField: 'foo', primitiveIntField: 1}}}"),
+				match(foo -> {
 					foo.barList.push(bar);
-				}), "{$push: {barList: {_targetClass : 'com.sample.Bar', stringField: 'foo', primitiveIntField: 1}}}" }, };
+				} , "{$push: {barList: {_targetClass : 'com.sample.Bar', stringField: 'foo', primitiveIntField: 1}}}"), };
 	}
 
 	@Parameter(0)
-	public SerializableConsumer<UpdateMetadata<?>> updateExpression;
+	public SerializableConsumer<UFoo> updateExpression;
 
 	@Parameter(1)
 	public String jsonString;

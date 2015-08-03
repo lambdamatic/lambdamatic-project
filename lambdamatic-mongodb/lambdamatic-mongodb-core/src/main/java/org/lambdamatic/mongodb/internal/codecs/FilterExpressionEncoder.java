@@ -227,8 +227,13 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	private void writeOperation(final MongoOperator operator, final Expression keyExpr, final Expression valueExpr,
 			final boolean inverted) {
 		final String key = extractKey(keyExpr);
-		// simplified formula for EQUALS operator (when not inverted)
-		if (operator == MongoOperator.EQUALS && !inverted) {
+		if(inverted) {
+			writer.writeStartDocument(MongoOperator.NOT.getLiteral());
+			writeOperation(operator, keyExpr, valueExpr, false);
+			writer.writeEndDocument();
+		} else {
+		// simplified formula for EQUALS operator
+		if (operator == MongoOperator.EQUALS) {
 			EncoderUtils.writeNamedExpression(writer, key, valueExpr);
 		} else {
 			if (key != null && !this.nestedExpression) {
@@ -236,15 +241,13 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			}
 			if (valueExpr.getExpressionType() == ExpressionType.LAMBDA_EXPRESSION) {
 				writeNamedLambdaExpression(operator.getLiteral(), (LambdaExpression) valueExpr);
-			} else if (inverted) {
-				// here we inverse the operator instead of introducing the $not operator which has a slightly different behaviour.
-				EncoderUtils.writeNamedExpression(writer, operator.inverse().getLiteral(), valueExpr);
 			} else {
 				EncoderUtils.writeNamedExpression(writer, operator.getLiteral(), valueExpr);
 			}
 			if (key != null && !this.nestedExpression) {
 				writer.writeEndDocument();
 			}
+		}
 		}
 	}
 

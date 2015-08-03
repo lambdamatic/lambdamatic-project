@@ -497,12 +497,14 @@ public class EncoderUtils {
 		final Object value = (valueExpr != null) ? valueExpr.getValue() : null;
 		if (value == null) {
 			writer.writeNull(name);
+		} else if (value instanceof Boolean) {
+			writer.writeBoolean(name, (Boolean) value);
 		} else if (value instanceof Integer) {
 			writer.writeInt32(name, (Integer) value);
 		} else if (value instanceof Long) {
 			writer.writeInt64(name, (Long) value);
 		} else if (value instanceof Float) {
-			writer.writeDouble(name, (Float) value);
+			writer.writeDouble(name, Double.valueOf(((Float) value).toString()));
 		} else if (value instanceof Double) {
 			writer.writeDouble(name, (Double) value);
 		} else if (value instanceof Character) {
