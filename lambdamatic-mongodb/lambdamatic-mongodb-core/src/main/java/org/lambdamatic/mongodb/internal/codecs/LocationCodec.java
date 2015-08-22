@@ -103,7 +103,7 @@ public class LocationCodec extends DocumentCodec<Location> {
 		reader.readStartDocument();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
 			String fieldName = reader.readName();
-			keyValuePairs.put(fieldName, new BsonElement(fieldName, documentEncoder.readValue(reader, decoderContext)));
+			keyValuePairs.put(fieldName, new BsonElement(fieldName, documentEncoder.readBsonValue(reader, decoderContext)));
 		}
 		reader.readEndDocument();
 		// now, convert the map key-pairs into an instance of the target

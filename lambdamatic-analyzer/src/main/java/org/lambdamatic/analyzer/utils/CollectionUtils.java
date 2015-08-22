@@ -55,6 +55,6 @@ public class CollectionUtils {
 		}
 		return true;
 	}
-	
+
 }
 

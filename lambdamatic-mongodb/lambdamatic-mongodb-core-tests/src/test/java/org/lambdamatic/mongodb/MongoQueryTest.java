@@ -111,7 +111,7 @@ public class MongoQueryTest extends MongoBaseTest {
 	@UsingDataSet(loadStrategy = LoadStrategyEnum.CLEAN_INSERT)
 	public void shouldFindOneCommentAuthor() throws IOException {
 		// when
-		final BlogEntry blogEntry = blogEntryCollection.filter(e -> e.comments.author.equals("anonymous"))
+		final BlogEntry blogEntry = blogEntryCollection.filter(e -> e.comments.elementMatch(c -> c.author.equals("anonymous")))
 				.first();
 		// then
 		assertThat(blogEntry).isNotNull().has(new Condition<BlogEntry>() {

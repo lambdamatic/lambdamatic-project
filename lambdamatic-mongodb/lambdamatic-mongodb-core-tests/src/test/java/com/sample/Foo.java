@@ -11,6 +11,7 @@ package com.sample;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -43,10 +44,12 @@ public class Foo {
 		private Date date;
 		private Bar bar;
 		private List<Bar> barList;
+		private Map<String, Bar> barMap;
 		private EnumBar[] enumBarArray;
 		private List<String> stringList;
 		private Set<String> stringSet;
 		private String[] stringArray;
+		private Map<String, String> stringMap;
 
 		public FooBuilder withId(final ObjectId id) {
 			this.id = id;
@@ -123,6 +126,11 @@ public class Foo {
 			return this;
 		}
 
+		public FooBuilder withBarMap(final Map<String, Bar> barMap) {
+			this.barMap = barMap;
+			return this;
+		}
+
 		public FooBuilder withEnumBarArray(final EnumBar... values) {
 			this.enumBarArray = values;
 			return this;
@@ -140,6 +148,11 @@ public class Foo {
 
 		public FooBuilder withStringArray(final String... values) {
 			this.stringArray = values;
+			return this;
+		}
+
+		public FooBuilder withStringMap(final Map<String, String> stringMap) {
+			this.stringMap = stringMap;
 			return this;
 		}
 
@@ -188,6 +201,9 @@ public class Foo {
 	@DocumentField
 	private List<Bar> barList;
 
+	@DocumentField
+	private Map<String, Bar> barMap;
+
 	private Bar bar;
 
 	@DocumentField
@@ -200,6 +216,8 @@ public class Foo {
 	private Set<String> stringSet;
 
 	private String[] stringArray;
+
+	private Map<String, String> stringMap;
 
 	public Foo() {
 
@@ -222,10 +240,12 @@ public class Foo {
 		this.date = fooBuilder.date;
 		this.bar = fooBuilder.bar;
 		this.barList = fooBuilder.barList;
+		this.barMap = fooBuilder.barMap;
 		this.enumBarArray = fooBuilder.enumBarArray;
 		this.stringList = fooBuilder.stringList;
 		this.stringSet = fooBuilder.stringSet;
 		this.stringArray = fooBuilder.stringArray;
+		this.stringMap = fooBuilder.stringMap;
 	}
 
 	/**
@@ -416,6 +436,10 @@ public class Foo {
 		return barList;
 	}
 
+	public Map<String, Bar> getBarMap() {
+		return barMap;
+	}
+	
 	public void setBar(Bar bar) {
 		this.bar = bar;
 	}
@@ -452,6 +476,14 @@ public class Foo {
 		this.stringSet = stringSet;
 	}
 
+	public Map<String, String> getStringMap() {
+		return stringMap;
+	}
+
+	public void setStringMap(Map<String, String> stringMap) {
+		this.stringMap = stringMap;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -461,6 +493,7 @@ public class Foo {
 		int result = 1;
 		result = prime * result + ((bar == null) ? 0 : bar.hashCode());
 		result = prime * result + ((barList == null) ? 0 : barList.hashCode());
+		result = prime * result + ((barMap == null) ? 0 : barMap.hashCode());
 		result = prime * result + ((date == null) ? 0 : date.hashCode());
 		result = prime * result + Arrays.hashCode(enumBarArray);
 		result = prime * result + ((enumFoo == null) ? 0 : enumFoo.hashCode());
@@ -479,6 +512,7 @@ public class Foo {
 		result = prime * result + Arrays.hashCode(stringArray);
 		result = prime * result + ((stringField == null) ? 0 : stringField.hashCode());
 		result = prime * result + ((stringList == null) ? 0 : stringList.hashCode());
+		result = prime * result + ((stringMap == null) ? 0 : stringMap.hashCode());
 		result = prime * result + ((stringSet == null) ? 0 : stringSet.hashCode());
 		return result;
 	}
@@ -504,6 +538,11 @@ public class Foo {
 			if (other.barList != null)
 				return false;
 		} else if (!barList.equals(other.barList))
+			return false;
+		if (barMap == null) {
+			if (other.barMap != null)
+				return false;
+		} else if (!barMap.equals(other.barMap))
 			return false;
 		if (date == null) {
 			if (other.date != null)
@@ -552,6 +591,11 @@ public class Foo {
 				return false;
 		} else if (!stringList.equals(other.stringList))
 			return false;
+		if (stringMap == null) {
+			if (other.stringMap != null)
+				return false;
+		} else if (!stringMap.equals(other.stringMap))
+			return false;
 		if (stringSet == null) {
 			if (other.stringSet != null)
 				return false;
@@ -560,5 +604,4 @@ public class Foo {
 		return true;
 	}
 
-	
 }

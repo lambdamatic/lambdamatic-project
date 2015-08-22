@@ -307,7 +307,20 @@ public class EncoderUtils {
 			values.stream().forEach(v -> writeValue(writer, v, encoderContext, codecRegistry));
 			writer.writeEndArray();
 		}
-		// List and Sets
+		// Maps
+		else if (value instanceof Map) {
+			writer.writeStartArray(name);
+			@SuppressWarnings("unchecked")
+			final Map<String,?> values = (Map<String,?>) value;
+			values.entrySet().stream().forEach(e -> {
+				writer.writeStartDocument();
+				writeNamedValue(writer, e.getKey(), e.getValue(), encoderContext, codecRegistry);	
+				writer.writeEndDocument();
+			});
+			writer.writeEndArray();
+		}
+		
+		// Arrays
 		else if (value.getClass().isArray()) {
 			writer.writeStartArray(name);
 			final Object[] values = (Object[]) value;

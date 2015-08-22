@@ -9,8 +9,8 @@ import java.util.Set;
 import org.lambdamatic.mongodb.FilterExpression;
 
 /**
- * MongoDB operation available on a given Document field of type Array in MongoDB (mapped as a {@link List} or
- * {@link Set} in Java to specify a query filter.
+ * MongoDB operation available on a given Document field of type Array in MongoDB mapped as a {@link List} or
+ * {@link Set} in Java.
  * 
  * @param T
  *            can be a {@link QueryMetadata} or a simple Java Type (String, Enum, etc.)
@@ -43,8 +43,21 @@ public interface QueryArray<T> {
 	 *      documentation</a>
 	 */
 	@MongoOperation(MongoOperator.ELEMEMT_MATCH)
-	public boolean elementMatch(final FilterExpression<T> expression);
+	public boolean elementMatch(FilterExpression<T> expression);
 
+	/**
+	 * Matches documents that contain an array field with at least one element that matches the specified query
+	 * expression.
+	 * 
+	 * @param index the index of the element in the underlying array in MongoDB
+	 * @param expression
+	 *            the query in the form of a lambda expression
+	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/elemMatch/#op._S_elemMatch">MongoDB
+	 *      documentation</a>
+	 */
+	@MongoOperation(MongoOperator.ELEMEMT_MATCH)
+	public boolean elementMatch(int index, FilterExpression<T> expression);
+	
 	/**
 	 * Matches any array with the number of elements specified by the argument.
 	 * 
@@ -54,5 +67,5 @@ public interface QueryArray<T> {
 	 */
 	@MongoOperation(MongoOperator.SIZE)
 	public boolean hasSize(long size);
-
+	
 }

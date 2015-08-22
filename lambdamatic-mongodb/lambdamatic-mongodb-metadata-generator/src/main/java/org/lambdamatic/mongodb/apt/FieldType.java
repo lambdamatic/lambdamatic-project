@@ -5,8 +5,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ClassUtils;
+import org.lambdamatic.mongodb.exceptions.ConversionException;
 
 /**
  * A field type to be used in the class templates. Provides the simple Java type name along with all types to declare as
@@ -64,21 +66,19 @@ public class FieldType {
 			this.requiredTypes.add(javaType.getName());
 		}
 		if (!parameterTypes.isEmpty()) {
-			simpleNameBuilder.append('<');
-			parameterTypes.stream().forEach(p -> {
+			simpleNameBuilder.append('<').append(parameterTypes.stream().map(p -> {
 				if (p instanceof String) {
 					final String fullyQualifiedName = (String) p;
-					simpleNameBuilder.append(ClassUtils.getShortClassName(fullyQualifiedName)).append(", ");
 					this.requiredTypes.add(fullyQualifiedName);
+					return ClassUtils.getShortClassName(fullyQualifiedName);
 				} else if (p instanceof FieldType) {
 					final FieldType fieldType = (FieldType) p;
-					simpleNameBuilder.append(fieldType.getSimpleName()).append(", ");
 					this.requiredTypes.addAll(fieldType.getRequiredTypes());
+					return fieldType.getSimpleName();
+				} else {
+					throw new ConversionException("Unexpected Type argument: " + p.getClass().getName());
 				}
-			});
-			// little hack: there's an extra ", " sequence that needs to be remove from the simpleNameBuilder
-			simpleNameBuilder.delete(simpleNameBuilder.length() - 2, simpleNameBuilder.length());
-			simpleNameBuilder.append('>');
+			}).collect(Collectors.joining(", "))).append('>');
 		}
 		this.simpleName = simpleNameBuilder.toString();
 	}

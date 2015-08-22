@@ -19,6 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.bson.BsonDocument;
@@ -64,17 +66,17 @@ public class DocumentEncoder {
 		reader.readStartDocument();
 		while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
 			String fieldName = reader.readName();
-			keyValuePairs.put(fieldName, new BsonElement(fieldName, readValue(reader, decoderContext)));
+			keyValuePairs.put(fieldName, new BsonElement(fieldName, readBsonValue(reader, decoderContext)));
 		}
 		reader.readEndDocument();
-		// now, convert the map key-pairs into an instance of the target document
+		// now, convert the map of key-value pairs into an instance of the target document
 		final T domainDocument = getTargetClass(keyValuePairs);
 		final Map<String, Field> bindings = BindingService.getInstance().getBindings(domainDocument.getClass());
 		for (Iterator<String> iterator = keyValuePairs.keySet().iterator(); iterator.hasNext();) {
 			final String key = iterator.next();
 			final Field field = bindings.get(key);
 			if (field == null) {
-				LOGGER.debug("Field '{}' does not exist in class '{}'", key, targetClass.getName());
+				LOGGER.debug("Field '{}' does not exist in class '{}'", key, domainDocument.getClass());
 				continue;
 			}
 			final Object fieldValue = getValue(keyValuePairs.get(key), field.getType());
@@ -125,8 +127,6 @@ public class DocumentEncoder {
 		return this.targetClass.getName();
 	}
 
-	
-
 	/**
 	 * Converts the given {@code value} to the given {@code type}
 	 * 
@@ -136,6 +136,8 @@ public class DocumentEncoder {
 	 *            the value to convert
 	 * @return the converted value
 	 */
+	//TODO do we really need this method ?
+	//@Deprecated
 	private Object convert(final Object value, final Class<?> targetType) {
 		// enum field
 		if (targetType.isEnum() && value instanceof String) {
@@ -157,6 +159,10 @@ public class DocumentEncoder {
 		// Set of embedded values/documents
 		else if (Set.class.isAssignableFrom(targetType)) {
 			return (Set<?>) value;
+		}
+		// Set of embedded values/documents
+		else if (Map.class.isAssignableFrom(targetType)) {
+			return (Map<?,?>) value;
 		}
 		// array of embedded values/documents
 		else if (targetType.isArray()) {
@@ -200,8 +206,8 @@ public class DocumentEncoder {
 				if (value instanceof Location) {
 					return value;
 				} else {
-					return new LocationCodec(this.codecRegistry)
-							.decode(new BsonDocumentReader((BsonDocument) value), DecoderContext.builder().build());
+					return new LocationCodec(this.codecRegistry).decode(new BsonDocumentReader((BsonDocument) value),
+							DecoderContext.builder().build());
 				}
 			}
 		}
@@ -219,7 +225,7 @@ public class DocumentEncoder {
 	 */
 	protected Object getValue(final BsonElement bsonElement, final Class<?> expectedType) {
 		if (bsonElement != null) {
-			final Object bsonValue = getValue(bsonElement.getValue(), expectedType);
+			final Object bsonValue = decodeValue(bsonElement.getValue(), expectedType);
 			return convert(bsonValue, expectedType);
 		}
 		return null;
@@ -232,18 +238,31 @@ public class DocumentEncoder {
 	 *            the element to inspect
 	 * @return the wrapped value
 	 */
-	public Object getValue(final BsonValue bsonValue, final Class<?> expectedType) {
+	public Object decodeValue(final BsonValue bsonValue, final Class<?> expectedType) {
 		if (bsonValue != null) {
 			switch (bsonValue.getBsonType()) {
 			case ARRAY:
 				if (List.class.isAssignableFrom(expectedType)) {
-					return bsonValue.asArray().getValues().stream().map(v -> getValue(v, expectedType))
+					return bsonValue.asArray().getValues().stream().map(v -> decodeValue(v, null))
 							.collect(Collectors.toList());
 				} else if (Set.class.isAssignableFrom(expectedType)) {
-					return bsonValue.asArray().getValues().stream().map(v -> getValue(v, expectedType))
+					return bsonValue.asArray().getValues().stream().map(v -> decodeValue(v, null))
 							.collect(Collectors.toSet());
-				} else {
-					return bsonValue.asArray().getValues().stream().map(v -> getValue(v, expectedType))
+				} else if (Map.class.isAssignableFrom(expectedType)) {
+					return bsonValue.asArray().getValues().stream()
+							.collect(Collectors.<BsonValue, Object, Object,TreeMap> toMap(
+									// retrieve name of the first element in the document
+									k -> readFirstName(k), // the document
+									// retrieve value of the first element in the document
+									v -> readFirstValue(v),
+									// binary operator (see Collectors#throwingMerger()
+									(k1, k2) -> { throw new IllegalStateException(String.format("Duplicate key %s", k1)); },
+									// map supplier
+									TreeMap::new
+									));
+				} else if (expectedType.isArray()) {
+					return bsonValue.asArray().getValues().stream()
+							.map(v -> decodeValue(v, expectedType.getComponentType()))
 							.toArray(size -> (Object[]) Array.newInstance(expectedType.getComponentType(), size));
 				}
 			case BINARY:
@@ -279,16 +298,12 @@ public class DocumentEncoder {
 			case DOCUMENT:
 				final BsonDocument bsonDocument = (BsonDocument) bsonValue;
 				if (expectedType == Location.class) {
-					return new LocationCodec(this.codecRegistry)
-							.decode(new BsonDocumentReader(bsonDocument), DecoderContext.builder().build());
+					return new LocationCodec(this.codecRegistry).decode(new BsonDocumentReader(bsonDocument),
+							DecoderContext.builder().build());
 				} else {
 					return new DocumentCodec<>(expectedType, this.codecRegistry)
 							.decode(new BsonDocumentReader(bsonDocument), DecoderContext.builder().build());
 				}
-			case END_OF_DOCUMENT:
-			case UNDEFINED:
-			case MAX_KEY:
-			case MIN_KEY:
 			default:
 				throw new ConversionException(
 						"Unexpected BSON Element value of type '" + bsonValue.getBsonType() + "'");
@@ -306,10 +321,56 @@ public class DocumentEncoder {
 	 *            the context
 	 * @return the non-null value read from the reader
 	 */
-	public BsonValue readValue(final BsonReader reader, final DecoderContext decoderContext) {
+	public BsonValue readBsonValue(final BsonReader reader, final DecoderContext decoderContext) {
 		final Class<? extends BsonValue> classForBsonType = BsonValueCodecProvider
 				.getClassForBsonType(reader.getCurrentBsonType());
 		final Codec<? extends BsonValue> codec = codecRegistry.get(classForBsonType);
 		return codec.decode(reader, decoderContext);
 	}
+
+	/**
+	 * Reads the first name in the given {@link BsonValue}, assuming that it is a {@link BsonDocument}
+	 * 
+	 * @param bsonValue
+	 *            the BsonDocument to read
+	 * @return the first name
+	 */
+	private Object readFirstName(final BsonValue bsonValue) {
+		if (bsonValue == null) {
+			throw new ConversionException("Expected a BsonDocument but the given value was a null");
+
+		} else if (!bsonValue.isDocument()) {
+			throw new ConversionException(
+					"Expected a BsonDocument but the given value was a " + bsonValue.getBsonType().name());
+		}
+		try (final BsonDocumentReader reader = new BsonDocumentReader((BsonDocument) bsonValue)) {
+			reader.readStartDocument();
+			final String name = reader.readName();
+			return name;
+		}
+	}
+
+	/**
+	 * Reads the first value in the given {@link BsonValue}, assuming that it is a {@link BsonDocument}
+	 * 
+	 * @param bsonValue
+	 *            the BsonDocument to read
+	 * @return the first value
+	 */
+	private Object readFirstValue(final BsonValue bsonValue) {
+		if (bsonValue == null) {
+			throw new ConversionException("Expected a BsonDocument but the given value was a null");
+
+		} else if (!bsonValue.isDocument()) {
+			throw new ConversionException(
+					"Expected a BsonDocument but the given value was a " + bsonValue.getBsonType().name());
+		}
+		try (final BsonDocumentReader reader = new BsonDocumentReader((BsonDocument) bsonValue)) {
+			reader.readStartDocument();
+			reader.readName();
+			final Object value = decodeValue(readBsonValue(reader, DecoderContext.builder().build()), null);
+			return value;
+		}
+	}
 }
+

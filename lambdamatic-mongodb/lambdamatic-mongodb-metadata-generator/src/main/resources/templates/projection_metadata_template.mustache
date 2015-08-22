@@ -1,20 +1,23 @@
 package {{packageName}};
 
 import javax.annotation.Generated;
-import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
+
+import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentField;
+import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
+import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 
 {{#imports}}
 import {{name}};
 {{/imports}}
 /**
- * The {@link ProjectionMetadata} class associated with the {@link {{domainClassName}}} domain class annotated with {@link Document}.
+ * The {@link ProjectionMetadata} class associated with the {@link {{domainClassName}}} domain class 
+ * annotated with {@link Document} or {@link EmbeddedDocument}.
  *
- * <strong>Note:</strong>
- * <p>This class is not meant to be extended nor instantiated.</p>
+ * <p><strong>Note:</strong> This class is not meant to be extended by the user.</p>
  */
 @Generated(value="{{processorClassName}}")
-public abstract class {{projectionMetadataClassName}} implements ProjectionMetadata<{{domainClassName}}> {
+public abstract class {{generatedSimpleClassName}} implements ProjectionMetadata<{{domainClassName}}> {
 
 {{#projectionFields}}
     @DocumentField(name="{{documentFieldName}}")

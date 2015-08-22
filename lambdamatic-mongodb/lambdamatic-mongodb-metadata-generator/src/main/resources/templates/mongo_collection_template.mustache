@@ -13,9 +13,9 @@ import com.mongodb.MongoClient;
  *
  */
 @Generated(value="{{processorClassName}}")
-public class {{mongoCollectionClassName}} extends LambdamaticMongoCollectionImpl<{{domainClassName}}, {{queryMetadataClassName}}, {{projectionMetadataClassName}}, {{updateMetadataClassName}}> {
+public class {{generatedSimpleClassName}} extends LambdamaticMongoCollectionImpl<{{domainClassName}}, {{queryMetadataClassName}}, {{projectionMetadataClassName}}, {{updateMetadataClassName}}> {
 
-	public {{mongoCollectionClassName}}(final MongoClient mongoClient, final String databaseName) {
+	public {{generatedSimpleClassName}}(final MongoClient mongoClient, final String databaseName) {
 		super(mongoClient, databaseName, "{{mongoCollectionName}}", {{domainClassName}}.class);
 	}
 

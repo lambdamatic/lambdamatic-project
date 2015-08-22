@@ -30,6 +30,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.lambdamatic.SerializableConsumer;
+import org.lambdamatic.mongodb.internal.codecs.utils.ParameterizedDataset;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,34 +70,23 @@ public class UpdateExpressionCodecTest {
 		getCodecLogger().setLevel(previousLoggerLevel);
 	}
 
-	/**
-	 * Utility method that makes the JUnit parameters declaration much more readable.
-	 * 
-	 * @param lambdaExpression
-	 *            the {@link FunctionalInterface} to encode
-	 * @param bson
-	 *            the expected result
-	 * @return
-	 */
-	private static Object[] match(final SerializableConsumer<UFoo> lambdaExpression, final String bson) {
-		return new Object[] {
-				lambdaExpression, bson };
-	}
-
 	@Parameters(name = "[{index}] {1}")
 	public static Object[][] data() {
-		final Bar bar = new Bar("foo", 1);
-		return new Object[][] {
-				match(foo -> {
-					foo.stringField = "foo";
-				} , "{$set: {stringField: 'foo'}}"), match(foo -> {
-					foo.primitiveIntField++;
-				} , "{$inc: {primitiveIntField: 1}}"), match(foo -> {
-					foo.barList.push(new Bar("foo", 1));
-				} , "{$push: {barList: {_targetClass : 'com.sample.Bar', stringField: 'foo', primitiveIntField: 1}}}"),
-				match(foo -> {
-					foo.barList.push(bar);
-				} , "{$push: {barList: {_targetClass : 'com.sample.Bar', stringField: 'foo', primitiveIntField: 1}}}"), };
+		final Bar bar = new Bar("javaObject", 1);
+		final ParameterizedDataset<SerializableConsumer<UFoo>> data = new ParameterizedDataset<>();
+		data.match(foo -> {
+			foo.stringField = "javaObject";
+		} , "{$set: {stringField: 'javaObject'}}");
+		data.match(foo -> {
+			foo.primitiveIntField++;
+		} , "{$inc: {primitiveIntField: 1}}");
+		data.match(foo -> {
+			foo.barList.push(new Bar("javaObject", 1));
+		} , "{$push: {barList: {_targetClass : 'com.sample.Bar', stringField: 'javaObject', primitiveIntField: 1}}}");
+		data.match(foo -> {
+			foo.barList.push(bar);
+		} , "{$push: {barList: {_targetClass : 'com.sample.Bar', stringField: 'javaObject', primitiveIntField: 1}}}");
+		return data.toArray();
 	}
 
 	@Parameter(0)

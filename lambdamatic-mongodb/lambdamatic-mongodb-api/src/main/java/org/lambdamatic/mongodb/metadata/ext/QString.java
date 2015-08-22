@@ -11,6 +11,7 @@ import org.lambdamatic.mongodb.metadata.QueryField;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
+//FIXME: what is it for ???
 public interface QString extends QueryField<String> {
 
 }

@@ -1,21 +1,24 @@
 package {{packageName}};
 
 import javax.annotation.Generated;
+
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
+import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.DocumentField;
+import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 
 {{#imports}}
 import {{name}};
 {{/imports}}
 
 /**
- * The {@link QueryMetadata} class associated with the {@link {{domainClassName}}} domain class.
+ * The {@link QueryMetadata} class associated with the {@link {{domainClassName}}} domain class 
+ * annotated with {@link Document} or {@link EmbeddedDocument}.
  *
- * <strong>Note:</strong>
- * <p>This class is not meant to be extended nor instantiated.</p>
+ * <p><strong>Note:</strong> This class is not meant to be extended by the user.</p>
  */
 @Generated(value="{{processorClassName}}")
-public abstract class {{queryMetadataClassName}} implements QueryMetadata<{{domainClassName}}> {
+public abstract class {{generatedSimpleClassName}} implements QueryMetadata<{{domainClassName}}> {
 
 {{#queryFields}}
     @DocumentField(name="{{documentFieldName}}")

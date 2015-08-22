@@ -61,13 +61,13 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
 		return this;
 	}
 
-	public ClassAssertion isImplementing(final Class<?> expectedGenericInterface, final Class<?> parameterType) {
+	public ClassAssertion isImplementing(final Class<?> expectedGenericInterface, final Class<?>... parameterTypes) {
 		isNotNull();
 		boolean match = Stream.of(actual.getGenericInterfaces())
 				.filter(i -> i instanceof ParameterizedType).map(i -> (ParameterizedType) i)
 				.filter(i -> i.getRawType().getTypeName().equals(expectedGenericInterface.getName()))
-				.filter(i -> i.getActualTypeArguments().length == 1).map(i -> i.getActualTypeArguments()[0])
-				.anyMatch(t -> t.equals(parameterType));
+				.filter(i -> i.getActualTypeArguments().length == parameterTypes.length)
+				.anyMatch(i -> Arrays.deepEquals(parameterTypes, i.getActualTypeArguments()));
 		if (!match) {
 			failWithMessage("Expected field <%s> to implement <%s> but it only implements <%s>.", actual.getName(), expectedGenericInterface, actual.getGenericInterfaces());
 		}

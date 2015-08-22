@@ -11,6 +11,7 @@ import org.lambdamatic.mongodb.metadata.QueryArray;
  * @author Xavier Coulon <xcoulon@redhat.com>
  *
  */
+//FIXME: what is it for ???
 public interface QStringArray extends QString, QueryArray<QString> {
 
 }

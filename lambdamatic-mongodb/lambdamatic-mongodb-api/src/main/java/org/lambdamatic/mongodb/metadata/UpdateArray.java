@@ -8,7 +8,7 @@ import java.util.Set;
 
 /**
  * MongoDB operation available on a given Document field of type Array in MongoDB (mapped as a {@link List} or
- * {@link Set} in Java to specify a query filter.
+ * {@link Set} in Java to specify an update.
  * 
  * @param T
  *            can be a {@link UpdateMetadata} or a simple Java Type (String, Enum, etc.)

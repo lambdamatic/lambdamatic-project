@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
 import org.bson.BsonReader;
@@ -33,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.lambdamatic.mongodb.internal.codecs.utils.ParameterizedDataset;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,58 +85,75 @@ public class DocumentCodecTest {
 	@Parameters(name = "[{index}] {0}")
 	public static Object[][] data() {
 		final Date date = new Date();
-		final Object[][] data = new Object[][] {
-				new Object[] { "Basic document",
-						new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
-								.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2)
-								.withDate(date).build(),
-						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
-								+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
-								+ "}, location:{type:'Point', coordinates:[40.1, -70.2]}}" },
-				new Object[] { "Document with list of String",
-						new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
-								.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2)
-								.withDate(date).withStringList("bar", "baz", "foo").build(),
-						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
-								+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
-								+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
-								+ "stringList:['bar', 'baz', 'foo']}" },
-				new Object[] { "Document with set of String",
-						new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
-								.withPrimitiveIntField(42)
-								.withEnumFoo(
-										EnumFoo.FOO)
-								.withLocation(40.1, -70.2).withDate(date).withStringSet("bar", "baz", "foo").build(),
-						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
-								+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
-								+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
-								+ "stringSet:['bar', 'baz', 'foo']}" },
-				new Object[] { "Document with Array of String",
-						new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
-								.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2)
-								.withDate(date).withStringArray("bar", "baz", "foo").build(),
-						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
-								+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
-								+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
-								+ "stringArray:['bar', 'baz', 'foo']}" },
-				
-				new Object[] { "Document with Array of embedded documents",
-						new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withBarList(new Bar("foo", 1)).build(),
-						"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', "
-								+ "barList:[{_targetClass: 'com.sample.Bar', stringField:'foo' , primitiveIntField:1}]}" },
-				
-		};
-		return data;
+		final ParameterizedDataset<Object> data = new ParameterizedDataset<>();
+		data.match("Basic document",
+				new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
+						.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2).withDate(date)
+						.build(),
+				"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
+						+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
+						+ "}, location:{type:'Point', coordinates:[40.1, -70.2]}}");
+		data.match("Document with list of String",
+				new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
+						.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2).withDate(date)
+						.withStringList("bar", "baz", "javaObject").build(),
+				"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
+						+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
+						+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
+						+ "stringList:['bar', 'baz', 'javaObject']}");
+		data.match("Document with set of String",
+				new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
+						.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2).withDate(date)
+						.withStringSet("bar", "baz", "javaObject").build(),
+				"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
+						+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
+						+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
+						+ "stringSet:['bar', 'baz', 'javaObject']}");
+		data.match("Document with Array of String",
+				new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
+						.withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2).withDate(date)
+						.withStringArray("bar", "baz", "javaObject").build(),
+				"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
+						+ "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
+						+ "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
+						+ "stringArray:['bar', 'baz', 'javaObject']}");
+		data.match("Document with Array of embedded documents",
+				new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withBarList(new Bar("javaObject", 1))
+						.build(),
+				"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', "
+						+ "barList:[{_targetClass: 'com.sample.Bar', stringField:'javaObject' , primitiveIntField:1}]}");
+
+		final Map<String, String> stringMap = new TreeMap<>();
+		stringMap.put("bar", "BAR");
+		stringMap.put("baz", "BAZ");
+		stringMap.put("foo", "FOO");
+		data.match("Document with a Map of Strings",
+				new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringMap(stringMap)
+						.build(),
+				"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', "
+						+ "stringMap:[{bar:'BAR'}, {baz:'BAZ'},{foo:'FOO'}]}");
+		
+		final Map<String, Bar> barMap = new TreeMap<>();
+		barMap.put("bar", new Bar("BAR", 1));
+		barMap.put("baz", new Bar("BAZ", 2));
+		barMap.put("foo", new Bar("FOO", 3));
+		data.match("Document with a Map of Bars",
+				new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withBarMap(barMap)
+						.build(),
+				"{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', "
+						+ "barMap:[{bar:{_targetClass: 'com.sample.Bar', stringField:'BAR' , primitiveIntField:1}}, {baz:{_targetClass: 'com.sample.Bar', stringField:'BAZ' , primitiveIntField:2}},{foo:{_targetClass: 'com.sample.Bar', stringField:'FOO' , primitiveIntField:3}}]}");
+
+		return data.toArray();
 	}
 
 	@Parameter(0)
 	public String title;
 
 	@Parameter(1)
-	public Object foo; // may be a list of documents
+	public Object javaObject; // may be a list of documents
 
 	@Parameter(2)
-	public String expectedJson;
+	public String jsonValue;
 
 	@Test
 	public void shouldEncodeDocumentWithLogging() throws IOException, JSONException {
@@ -148,22 +168,21 @@ public class DocumentCodecTest {
 	}
 
 	private void shouldEncodeDocument() throws UnsupportedEncodingException, IOException, JSONException {
-		Assume.assumeThat(foo, CoreMatchers.instanceOf(Foo.class));
+		Assume.assumeThat(javaObject, CoreMatchers.instanceOf(Foo.class));
 		// given
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		final BsonWriter bsonWriter = new JsonWriter(new OutputStreamWriter(outputStream, "UTF-8"));
 		final EncoderContext context = EncoderContext.builder().isEncodingCollectibleDocument(true).build();
 		// when
-		new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY).encode(bsonWriter, (Foo) foo,
-				context);
+		new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY).encode(bsonWriter, (Foo) javaObject, context);
 		// then
 		final String actualJson = IOUtils.toString(outputStream.toByteArray(), "UTF-8");
-		LOGGER.debug("Comparing \nexpected: {} vs \nactual: {}", expectedJson, actualJson);
-		JSONAssert.assertEquals(expectedJson, actualJson, true);
+		LOGGER.debug("Comparing \nexpected: {} vs \nactual: {}", jsonValue, actualJson);
+		JSONAssert.assertEquals(jsonValue, actualJson, true);
 	}
 
 	@Test
-	public void shouldDecodeFooDocumentWithLogging() throws IOException, JSONException {
+	public void shouldDecodeDocumentWithLogging() throws IOException, JSONException {
 		getCodecLogger().setLevel(Level.DEBUG);
 		shouldDecodeDocument(true);
 	}
@@ -176,13 +195,13 @@ public class DocumentCodecTest {
 
 	private void shouldDecodeDocument(boolean loggerEnabled) {
 		// given
-		final BsonReader bsonReader = new JsonReader(expectedJson);
+		final BsonReader bsonReader = new JsonReader(jsonValue);
 		final DecoderContext decoderContext = DecoderContext.builder().build();
 		// when
-		final Foo actualFoo = new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY)
-				.decode(bsonReader, decoderContext);
+		final Foo actual = new DocumentCodec<Foo>(Foo.class, DEFAULT_CODEC_REGISTRY).decode(bsonReader,
+				decoderContext);
 		// then
-		assertEquals(foo, actualFoo);
+		assertEquals(javaObject, actual);
 	}
 
 }

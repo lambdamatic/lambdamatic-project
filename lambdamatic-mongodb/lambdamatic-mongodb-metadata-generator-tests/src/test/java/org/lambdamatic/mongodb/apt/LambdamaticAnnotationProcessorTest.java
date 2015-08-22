@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
@@ -25,10 +26,13 @@ import org.lambdamatic.mongodb.internal.configuration.MongoClientConfiguration;
 import org.lambdamatic.mongodb.metadata.LocationField;
 import org.lambdamatic.mongodb.metadata.ProjectionArray;
 import org.lambdamatic.mongodb.metadata.ProjectionField;
+import org.lambdamatic.mongodb.metadata.ProjectionMap;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryField;
+import org.lambdamatic.mongodb.metadata.QueryMap;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
+import org.lambdamatic.mongodb.metadata.ext.QString;
 import org.lambdamatic.mongodb.metadata.ext.QStringArray;
 
 import com.mongodb.MongoClient;
@@ -68,52 +72,63 @@ public class LambdamaticAnnotationProcessorTest {
 		// transientStringField: annotated with @Transient, should not be here
 		ClassAssertion.assertThat(fooQueryClass).hasNoField("transientStringField");
 		// primitiveByteField: on @DocumentField annotation: should use class field name as document field name
-		FieldAssertion.assertThat(fooQueryClass, "primitiveByteField").isParameterizedType(QueryField.class, Byte.class).isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveByteField");
+		FieldAssertion.assertThat(fooQueryClass, "primitiveByteField").isParameterizedType(QueryField.class, Byte.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
+				.hasAttributeValue("name", "primitiveByteField");
 		// byteField: metadata field is primitive type instead of class wrapper
-		FieldAssertion.assertThat(fooQueryClass, "byteField").isParameterizedType(QueryField.class, Byte.class).isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "byteField");
+		FieldAssertion.assertThat(fooQueryClass, "byteField").isParameterizedType(QueryField.class, Byte.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "byteField");
 		// primitiveShortField
-		FieldAssertion.assertThat(fooQueryClass, "primitiveShortField").isParameterizedType(QueryField.class, Short.class).isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooQueryClass, "primitiveShortField")
+				.isParameterizedType(QueryField.class, Short.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveShortField");
 		// shortField: metadata field is primitive type instead of class wrapper
-		FieldAssertion.assertThat(fooQueryClass, "shortField").isParameterizedType(QueryField.class, Short.class).isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "shortField");
+		FieldAssertion.assertThat(fooQueryClass, "shortField").isParameterizedType(QueryField.class, Short.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "shortField");
 		// primitiveIntField
-		FieldAssertion.assertThat(fooQueryClass, "primitiveIntField").isParameterizedType(QueryField.class, Integer.class).isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooQueryClass, "primitiveIntField")
+				.isParameterizedType(QueryField.class, Integer.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveIntField");
 		// integerField: metadata field is primitive type instead of class wrapper
-		FieldAssertion.assertThat(fooQueryClass, "integerField").isParameterizedType(QueryField.class, Integer.class).isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "integerField");
+		FieldAssertion.assertThat(fooQueryClass, "integerField").isParameterizedType(QueryField.class, Integer.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
+				.hasAttributeValue("name", "integerField");
 		// primitiveLongField
-		FieldAssertion.assertThat(fooQueryClass, "primitiveLongField").isParameterizedType(QueryField.class, Long.class).isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveLongField");
+		FieldAssertion.assertThat(fooQueryClass, "primitiveLongField").isParameterizedType(QueryField.class, Long.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
+				.hasAttributeValue("name", "primitiveLongField");
 		// longField: metadata field is primitive type instead of class wrapper
-		FieldAssertion.assertThat(fooQueryClass, "longField").isParameterizedType(QueryField.class, Long.class).isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "longField");
+		FieldAssertion.assertThat(fooQueryClass, "longField").isParameterizedType(QueryField.class, Long.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "longField");
 		// primitiveFloatField
-		FieldAssertion.assertThat(fooQueryClass, "primitiveFloatField").isParameterizedType(QueryField.class, Float.class).isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooQueryClass, "primitiveFloatField")
+				.isParameterizedType(QueryField.class, Float.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveFloatField");
 		// floatField: metadata field is primitive type instead of class wrapper
-		FieldAssertion.assertThat(fooQueryClass, "floatField").isParameterizedType(QueryField.class, Float.class).isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "floatField");
+		FieldAssertion.assertThat(fooQueryClass, "floatField").isParameterizedType(QueryField.class, Float.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "floatField");
 		// primitiveDoubleField
-		FieldAssertion.assertThat(fooQueryClass, "primitiveDoubleField").isParameterizedType(QueryField.class, Double.class).isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooQueryClass, "primitiveDoubleField")
+				.isParameterizedType(QueryField.class, Double.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveDoubleField");
 		// doubleField: metadata field is primitive type instead of class wrapper
-		FieldAssertion.assertThat(fooQueryClass, "doubleField").isParameterizedType(QueryField.class, Double.class).isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "doubleField");
+		FieldAssertion.assertThat(fooQueryClass, "doubleField").isParameterizedType(QueryField.class, Double.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "doubleField");
 		// primitiveBooleanField
-		FieldAssertion.assertThat(fooQueryClass, "primitiveBooleanField").isParameterizedType(QueryField.class, Boolean.class).isNotFinal()
-				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveBooleanField");
+		FieldAssertion.assertThat(fooQueryClass, "primitiveBooleanField")
+				.isParameterizedType(QueryField.class, Boolean.class).isNotFinal().isNotStatic()
+				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveBooleanField");
 		// booleanField: metadata field is primitive type instead of class wrapper
-		FieldAssertion.assertThat(fooQueryClass, "booleanField").isParameterizedType(QueryField.class, Boolean.class).isNotFinal().isNotStatic()
-				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "booleanField");
+		FieldAssertion.assertThat(fooQueryClass, "booleanField").isParameterizedType(QueryField.class, Boolean.class)
+				.isNotFinal().isNotStatic().hasAnnotation(DocumentField.class)
+				.hasAttributeValue("name", "booleanField");
 		// primitiveCharField
-		FieldAssertion.assertThat(fooQueryClass, "primitiveCharField").isParameterizedType(QueryField.class, Character.class).isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooQueryClass, "primitiveCharField")
+				.isParameterizedType(QueryField.class, Character.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "primitiveCharField");
 		// characterField: metadata field is primitive type instead of class wrapper
-		FieldAssertion.assertThat(fooQueryClass, "characterField").isParameterizedType(QueryField.class, Character.class).isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooQueryClass, "characterField")
+				.isParameterizedType(QueryField.class, Character.class).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "characterField");
 		// location
 		FieldAssertion.assertThat(fooQueryClass, "location").isType(LocationField.class).isNotFinal().isNotStatic()
@@ -125,20 +140,22 @@ public class LambdamaticAnnotationProcessorTest {
 		FieldAssertion.assertThat(fooQueryClass, "bar").isType("com.sample.QBar").isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "bar");
 		// barList
-		FieldAssertion.assertThat(fooQueryClass, "barList").isType("com.sample.QBarArray").isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooQueryClass, "barList").isParameterizedType(QueryArray.class, ClassUtils.getClass("com.sample.QBar")).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "barList");
-		final Class<?> barArrayClass = Class.forName("com.sample.QBarArray");
-		ClassAssertion.assertThat(barArrayClass).isAbstract()
-				.isImplementing(QueryArray.class, ClassUtils.getClass("com.sample.QBar"))
-				.isExtending(ClassUtils.getClass("com.sample.QBar"));
-
+		// barMap
+		FieldAssertion.assertThat(fooQueryClass, "barMap").isParameterizedType(QueryMap.class, String.class, Class.forName("com.sample.QBar")).isNotFinal().isNotStatic()
+				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "barMap");
 		// enumBarArray
 		FieldAssertion.assertThat(fooQueryClass, "enumBarArray")
 				.isParameterizedType(QueryArray.class, ClassUtils.getClass("com.sample.EnumBar")).isNotFinal()
 				.isNotStatic().hasAnnotation(DocumentField.class).hasAttributeValue("name", "enumBarArray");
 		// stringSet
-		FieldAssertion.assertThat(fooQueryClass, "stringSet").isType(QStringArray.class).isNotFinal().isNotStatic()
+		FieldAssertion.assertThat(fooQueryClass, "stringSet").isParameterizedType(QueryArray.class, TypeUtils.parameterize(QueryField.class, String.class)).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "stringSet");
+		// stringMap
+		FieldAssertion.assertThat(fooQueryClass, "stringMap")
+				.isParameterizedType(QueryMap.class, String.class, TypeUtils.parameterize(QueryField.class, String.class)).isNotFinal().isNotStatic()
+				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "stringMap");
 	}
 
 	@Test
@@ -210,6 +227,10 @@ public class LambdamaticAnnotationProcessorTest {
 		FieldAssertion.assertThat(fooProjectionClass, "barList")
 				.isParameterizedType(ProjectionArray.class, Class.forName("com.sample.QBar")).isNotFinal().isNotStatic()
 				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "barList");
+		// barMap
+		FieldAssertion.assertThat(fooProjectionClass, "barMap")
+				.isParameterizedType(ProjectionMap.class, String.class, Class.forName("com.sample.QBar")).isNotFinal().isNotStatic()
+				.hasAnnotation(DocumentField.class).hasAttributeValue("name", "barMap");
 		// enumBarArray
 		FieldAssertion.assertThat(fooProjectionClass, "enumBarArray")
 				.isParameterizedType(ProjectionArray.class, TypeUtils.parameterize(QueryField.class, EnumBar.class))

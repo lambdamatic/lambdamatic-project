@@ -23,6 +23,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.lambdamatic.SerializableConsumer;
 import org.lambdamatic.mongodb.Projection;
+import org.lambdamatic.mongodb.internal.codecs.utils.ParameterizedDataset;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.Logger;
@@ -64,39 +65,25 @@ public class ProjectionExpressionCodecTest {
 		getCodecLogger().setLevel(previousLoggerLevel);
 	}
 
-	/**
-	 * Utility method that makes the JUnit parameters declaration much more readable.
-	 * 
-	 * @param lambdaExpression
-	 *            the {@link FunctionalInterface} to encode
-	 * @param bson
-	 *            the expected result
-	 * @return
-	 */
-	private static Object[] match(final SerializableConsumer<PFoo> lambdaExpression, final String bson) {
-		return new Object[] {
-				lambdaExpression, bson };
-	}
-
 	@Parameters(name = "[{index}] {1}")
 	public static Object[][] data() {
-		return new Object[][] {
-				match(foo -> Projection.include(foo.stringField), "{stringField: 1, _id: 0}"),
-				match(foo -> Projection.include(foo.stringField, foo.id), "{stringField: 1, _id: 1}"),
-				match(foo -> Projection.include(foo.stringField, foo.location),
-						"{stringField: 1, location: 1, _id: 0}"),
-				match(foo -> Projection.include(foo.id, foo.stringField, foo.location),
-						"{stringField: 1, location: 1, _id: 1}"),
-				// @see http://docs.mongodb.org/manual/reference/operator/projection/elemMatch/
-				match(foo -> Projection.include(foo.id, foo.barList.elementMatch(b -> b.stringField.equals("bar")),
-						foo.location),
-						"{barList: { $elemMatch: { stringField: 'bar' } }, location: 1, _id: 1}"),
-				match(foo -> Projection.include(foo.barList.elementMatch(b -> b.stringField.equals("bar")),
-						foo.location), "{barList: { $elemMatch: { stringField: 'bar' } }, location: 1, _id: 0}"),
-				match(foo -> Projection.include(foo.barList.elementMatch(b -> b.stringField.equals("bar"))),
-						"{barList: { $elemMatch: { stringField: 'bar' } }, _id: 0}"),
+		final ParameterizedDataset<SerializableConsumer<PFoo>> data = new ParameterizedDataset<>();
 
-		};
+		data.match(foo -> Projection.include(foo.stringField), "{stringField: 1, _id: 0}");
+		data.match(foo -> Projection.include(foo.stringField, foo.id), "{stringField: 1, _id: 1}");
+		data.match(foo -> Projection.include(foo.stringField, foo.location),
+						"{stringField: 1, location: 1, _id: 0}");
+		data.match(foo -> Projection.include(foo.id, foo.stringField, foo.location),
+						"{stringField: 1, location: 1, _id: 1}");
+		// @see http://docs.mongodb.org/manual/reference/operator/projection/elemMatch/
+		data.match(foo -> Projection.include(foo.id, foo.barList.elementMatch(b -> b.stringField.equals("bar")),
+						foo.location),
+						"{barList: { $elemMatch: { stringField: 'bar' } }, location: 1, _id: 1}");
+		data.match(foo -> Projection.include(foo.barList.elementMatch(b -> b.stringField.equals("bar")),
+						foo.location), "{barList: { $elemMatch: { stringField: 'bar' } }, location: 1, _id: 0}");
+		data.match(foo -> Projection.include(foo.barList.elementMatch(b -> b.stringField.equals("bar"))),
+						"{barList: { $elemMatch: { stringField: 'bar' } }, _id: 0}");
+		return data.toArray();
 	}
 
 	@Parameter(0)

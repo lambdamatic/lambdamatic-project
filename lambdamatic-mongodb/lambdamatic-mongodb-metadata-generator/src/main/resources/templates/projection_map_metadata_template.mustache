@@ -4,15 +4,15 @@ import javax.annotation.Generated;
 
 import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
-import org.lambdamatic.mongodb.metadata.UpdateArray;
+import org.lambdamatic.mongodb.metadata.ProjectionMap;
 
 /**
- * The {@link UpdateArray} class associated with the {@link {{domainClassName}}} domain class 
+ * The {@link ProjectionMap} class associated with the {@link {{domainClassName}}} domain class 
  * annotated with {@link Document} or {@link EmbeddedDocument}.
  *
  * <p><strong>Note:</strong> This class is not meant to be extended by the user.</p>
  */
 @Generated(value="{{processorClassName}}")
-public abstract class {{generatedSimpleClassName}} implements UpdateArray<{{domainClassName}}> {
+public abstract class {{generatedSimpleClassName}} implements ProjectionMap<{{keyClassName}}, {{valueClassName}}> {
 
 }
