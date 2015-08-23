@@ -210,7 +210,6 @@ public class SerializableConsumerExpressionBytecodeAnalyzerTest {
 			}
 			assertThat(resultExpression.getBody()).containsExactly(expectationStatements.toArray(new Statement[0]));
 		}
-
 	}
 
 }

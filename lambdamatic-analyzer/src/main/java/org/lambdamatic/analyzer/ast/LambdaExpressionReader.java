@@ -27,14 +27,14 @@ import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
 import org.lambdamatic.analyzer.ast.node.CapturedArgumentRef;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.ControlFlowStatement;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.ExpressionStatement;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
-import org.lambdamatic.analyzer.ast.node.CompoundExpression;
-import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
@@ -85,8 +85,8 @@ public class LambdaExpressionReader {
 	 */
 	private static final class ClassTypeRetriever extends SignatureVisitor {
 
-		/** the className (once visited). */
-		private String className = null;
+		/** the type (once resolved). */
+		private Class<?> type = null;
 
 		/**
 		 * Constructor
@@ -94,24 +94,52 @@ public class LambdaExpressionReader {
 		private ClassTypeRetriever() {
 			super(Opcodes.ASM5);
 		}
-
-		@Override
-		public void visitClassType(String name) {
-			this.className = name;
-			super.visitClassType(name);
+		
+		public Class<?> getType() {
+			return type;
 		}
-
-		/**
-		 * @return the {@link Class} matching the {@code className} in the visited signature.
-		 */
-		private Class<?> getClassType() {
+		
+		@Override
+		public void visitClassType(final String className) {
 			try {
-				return Class.forName(className.replace("/", "."));
+				this.type = Class.forName(className.replace("/", "."));
 			} catch (final ClassNotFoundException e) {
 				throw new AnalyzeException("Failed to retrieve class with name " + className, e);
 			}
 		}
-
+		
+		@Override
+		public void visitBaseType(final char descriptor) {
+			switch (Type.getType(Character.toString(descriptor)).getSort()) {
+			case Type.VOID:
+				this.type = void.class;
+				break;
+			case Type.BYTE:
+				this.type = byte.class;
+				break;
+			case Type.BOOLEAN:
+				this.type = boolean.class;
+				break;
+			case Type.SHORT:
+				this.type = short.class;
+				break;
+			case Type.INT:
+				this.type = int.class;
+				break;
+			case Type.DOUBLE:
+				this.type = double.class;
+				break;
+			case Type.FLOAT:
+				this.type = float.class;
+				break;
+			case Type.LONG:
+				this.type = long.class;
+				break;
+			default:
+				throw new AnalyzeException("Failed to retrieve primitive class with descriptor '" + descriptor + "'");
+			}
+		}
+		
 	}
 
 	/** The usual Logger. */
@@ -399,7 +427,7 @@ public class LambdaExpressionReader {
 		final SignatureReader signatureReader = new SignatureReader(desc);
 		final ClassTypeRetriever classTypeRetriever = new ClassTypeRetriever();
 		signatureReader.accept(classTypeRetriever);
-		return classTypeRetriever.getClassType();
+		return classTypeRetriever.getType();
 	}
 
 	/**
@@ -935,8 +963,8 @@ public class LambdaExpressionReader {
 		
 		public List<LocalVariable> toLocalVariables() {
 			return this.localVariableNodes.stream().limit(initialSize)
-			.filter(v -> v != null && !v.name.equals("this"))
-			.map(var -> new LocalVariable(var.index, var.name, readSignature(var.desc)))
+			//.filter(v -> v != null && !v.name.equals("this"))
+			.map(var -> (var != null && !var.name.equals("this")) ? new LocalVariable(var.index, var.name, readSignature(var.desc)) : null)
 			.collect(Collectors.toList());		}
 
 		public LocalVariableNode load(final int index) {

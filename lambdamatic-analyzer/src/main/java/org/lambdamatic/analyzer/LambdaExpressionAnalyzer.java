@@ -227,7 +227,8 @@ public class LambdaExpressionAnalyzer {
 		final List<Statement> lambdaExpressionStatements = bytecode.getLeft();
 		final List<Statement> processedBlock = lambdaExpressionStatements.stream().map(s -> thinOut(s))
 				.map(s -> simplify(s)).collect(Collectors.toList());
-		final LocalVariable lambdaExpressionArgument = lambdaExpressionArguments.get(0);
+		// first argument that is not a captured argument.
+		final LocalVariable lambdaExpressionArgument = lambdaExpressionArguments.get(lambdaInfo.getCapturedArguments().size());
 		return new LambdaExpression(processedBlock, lambdaExpressionArgument.getJavaType(),
 				lambdaExpressionArgument.getName());
 	}
