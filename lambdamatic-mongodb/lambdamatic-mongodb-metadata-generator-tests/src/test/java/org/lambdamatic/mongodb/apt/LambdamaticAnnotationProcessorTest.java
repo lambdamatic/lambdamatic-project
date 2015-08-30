@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
@@ -32,8 +31,6 @@ import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryField;
 import org.lambdamatic.mongodb.metadata.QueryMap;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
-import org.lambdamatic.mongodb.metadata.ext.QString;
-import org.lambdamatic.mongodb.metadata.ext.QStringArray;
 
 import com.mongodb.MongoClient;
 import com.sample.Bar;

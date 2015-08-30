@@ -5,9 +5,7 @@ package org.lambdamatic.mongodb.apt;
 
 import org.lambdamatic.mongodb.metadata.ProjectionField;
 import org.lambdamatic.mongodb.metadata.ProjectionMetadata;
-import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryField;
-import org.lambdamatic.mongodb.metadata.QueryMap;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.lambdamatic.mongodb.metadata.UpdateMetadata;
 
@@ -50,23 +48,6 @@ public interface Constants {
 	/** Name of the template file for {@link QueryMetadata} classes. */
 	public static String QUERY_METADATA_TEMPLATE = "query_metadata_template.mustache";
 	
-	/** Suffix to use for the generated {@link QueryArray} classes. */
-	public static String QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX = "Array";
-	
-	/** Name of the template file for arrays of {@link QueryMetadata} classes. */
-	public static String QUERY_ARRAY_METADATA_TEMPLATE = "query_array_metadata_template.mustache";
-	
-	/** Name of the template file for arrays of {@link QueryMetadata} classes. */
-	public static String QUERY_MAP_METADATA_TEMPLATE = "query_map_metadata_template.mustache";
-	
-	/** Suffix to use for the generated {@link QueryMap} classes. */
-	public static String QUERY_MAP_METADATA_CLASSNAME_SUFFIX = "Map";
-	
-	/**
-	 * constant to identify the fully qualified names of the {@link QueryMap} type parameters.
-	 */
-	public static String QUERY_MAP_TYPE_PARAMETER_CLASS_NAMES = "queryMapTypeParameterClassNames";
-	
 	/** constant to identify the list of {@link ProjectionField}. */
 	public static String PROJECTION_FIELDS = "projectionFields";
 	
@@ -79,20 +60,8 @@ public interface Constants {
 	/** Suffix to use for the generated {@link ProjectionMetadata} classes. */
 	public static String PROJECTION_METADATA_CLASSNAME_PREFIX = "P";
 	
-	/** Suffix to use for the generated {@link ProjectionArray} classes. */
-	public static String PROJECTION_ARRAY_METADATA_CLASSNAME_SUFFIX = "Array";
-	
-	/** Suffix to use for the generated {@link ProjectionMap} classes. */
-	public static String PROJECTION_MAP_METADATA_CLASSNAME_SUFFIX = "Map";
-
 	/** Name of the template file for {@link ProjectionMetadata} classes. */
 	public static String PROJECTION_METADATA_TEMPLATE = "projection_metadata_template.mustache";
-	
-	/** Name of the template file for {@link ProjectionMetadata} classes. */
-	public static String PROJECTION_ARRAY_METADATA_TEMPLATE = "projection_array_metadata_template.mustache";
-	
-	/** Name of the template file for {@link ProjectionMetadata} classes. */
-	public static String PROJECTION_MAP_METADATA_TEMPLATE = "projection_map_metadata_template.mustache";
 	
 	/** constant to identify the list of {@link UpdateField}. */
 	public static String UPDATE_FIELDS = "updateFields";
@@ -106,20 +75,8 @@ public interface Constants {
 	/** Suffix to use for the generated {@link UpdateMetadata} classes. */
 	public static String UPDATE_METADATA_CLASSNAME_PREFIX = "U";
 	
-	/** Suffix to use for the generated {@link QueryArray} classes. */
-	public static String UPDATE_ARRAY_METADATA_CLASSNAME_SUFFIX = "Array";
-	
-	/** Suffix to use for the generated {@link QueryArray} classes. */
-	public static String UPDATE_MAP_METADATA_CLASSNAME_SUFFIX = "Map";
-	
 	/** Name of the template file for {@link UpdateMetadata} classes. */
 	public static String UPDATE_METADATA_TEMPLATE = "update_metadata_template.mustache";
-	
-	/** Name of the template file for arrays of {@link UpdateMetadata} classes. */
-	public static String UPDATE_ARRAY_METADATA_TEMPLATE = "update_array_metadata_template.mustache";
-	
-	/** Name of the template file for arrays of {@link UpdateMetadata} classes. */
-	public static String UPDATE_MAP_METADATA_TEMPLATE = "update_map_metadata_template.mustache";
 	
 	/** constant to identify the fully qualified name of the collection name. */
 	public static String MONGO_COLLECTION_NAME = "mongoCollectionName";

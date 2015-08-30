@@ -49,32 +49,6 @@ public class DocumentAnnotationProcessor extends BaseAnnotationProcessor {
 		generateMongoCollectionProducerSourceCode(domainElement, templateContextProperties);
 	}
 
-	// @Override
-	// protected Map<String, Object> initializeTemplateContextProperties(final TypeElement domainElement) {
-	// final Map<String, Object> templateContextProperties = super.initializeTemplateContextProperties(domainElement);
-	// final Map<Class<?>, List<? extends FieldMetadata>> allFields = getMetadataFields(domainElement);
-	// templateContextProperties.put(Constants.QUERY_FIELDS, allFields.get(QueryMetadata.class));
-	// templateContextProperties.put(Constants.QUERY_METADATA_CLASS_NAME,
-	// generateQueryMetadataSimpleClassName(domainElement));
-	// templateContextProperties.put(Constants.QUERY_ARRAY_METADATA_CLASS_NAME,
-	// generateQueryArrayMetadataSimpleClassName(domainElement));
-	// templateContextProperties.put(Constants.PROJECTION_FIELDS, allFields.get(ProjectionMetadata.class));
-	// templateContextProperties.put(Constants.PROJECTION_METADATA_CLASS_NAME,
-	// generateProjectionMetadataSimpleClassName(domainElement));
-	// templateContextProperties.put(Constants.UPDATE_FIELDS, allFields.get(UpdateMetadata.class));
-	// templateContextProperties.put(Constants.UPDATE_METADATA_CLASS_NAME,
-	// generateUpdateMetadataSimpleClassName(domainElement));
-	// templateContextProperties.put(Constants.UPDATE_ARRAY_METADATA_CLASS_NAME,
-	// generateUpdateArrayMetadataSimpleClassName(domainElement));
-	// final Document documentAnnotation = domainElement.getAnnotation(Document.class);
-	// templateContextProperties.put(Constants.MONGO_COLLECTION_NAME, documentAnnotation.collection());
-	// templateContextProperties.put(Constants.MONGO_COLLECTION_CLASS_NAME,
-	// generateMongoCollectionSimpleClassName(domainElement));
-	// templateContextProperties.put(Constants.MONGO_COLLECTION_PRODUCER_CLASS_NAME,
-	// generateMongoCollectionProducerSimpleClassName(domainElement));
-	// return templateContextProperties;
-	// }
-	//
 	/**
 	 * Generates the {@code LambdamaticMongoCollection} implementation source code for the underlying MongoDB
 	 * collection.

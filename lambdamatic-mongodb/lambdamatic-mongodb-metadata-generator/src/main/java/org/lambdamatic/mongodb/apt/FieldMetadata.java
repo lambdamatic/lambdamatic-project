@@ -32,7 +32,6 @@ import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.lambdamatic.mongodb.metadata.UpdateArray;
 import org.lambdamatic.mongodb.metadata.UpdateMap;
 import org.lambdamatic.mongodb.metadata.UpdateMetadata;
-import org.lambdamatic.mongodb.metadata.ext.QStringArray;
 
 public class FieldMetadata {
 
@@ -326,35 +325,6 @@ public class FieldMetadata {
 	}
 
 	/**
-	 * @return the fully qualified name of the {@link QueryMetadata} class corresponding to the given {@link Element}
-	 * @param elementTypeName the fully qualified name of the Element to use
-	 */
-	private static String getQueryArrayMetadataType(final String elementTypeName) {
-		switch (elementTypeName) {
-		//FIXME: implements other base types
-		case "java.lang.String":
-			return QStringArray.class.getName();
-		default:
-			final String packageName = ClassUtils.getPackageCanonicalName(elementTypeName.toString());
-			final String shortClassName = Constants.QUERY_METADATA_CLASSNAME_PREFIX
-					+ ClassUtils.getShortClassName(elementTypeName.toString()) + Constants.QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX;
-			return packageName + '.' + shortClassName;
-		}
-	}
-
-	/**
-	 * @return the fully qualified name of the {@link QueryMetadata} class corresponding to the given {@link Element}
-	 * @param keyTypeName the fully qualified name of the Key to use
-	 * @param valueTypeName the fully qualified name of the Value to use
-	 */
-	private static String getQueryMapMetadataType(final String keyTypeName, final String valueTypeName) {
-			final String packageName = ClassUtils.getPackageCanonicalName(keyTypeName.toString());
-			final String shortClassName = Constants.QUERY_METADATA_CLASSNAME_PREFIX
-					+ ClassUtils.getShortClassName(keyTypeName.toString()) + Constants.QUERY_ARRAY_METADATA_CLASSNAME_SUFFIX;
-			return packageName + '.' + shortClassName;
-	}
-	
-	/**
 	 * Returns the fully qualified name of the type of the given {@link VariableElement}, or {@code null} if it was not
 	 * a known or supported type.
 	 * 
@@ -479,23 +449,6 @@ public class FieldMetadata {
 		final String shortClassName = Constants.UPDATE_METADATA_CLASSNAME_PREFIX
 				+ ClassUtils.getShortClassName(elementTypeName.toString());
 		return packageName + '.' + shortClassName;
-	}
-
-	/**
-	 * @return the fully qualified name of the {@link UpdateMetadata} class corresponding to the given {@link Element}
-	 * @param elementTypeName the fully qualified name of the Element to use
-	 */
-	private static String getUpdateArrayMetadataType(final String elementTypeName) {
-		switch (elementTypeName) {
-		//FIXME: implements other base types, or use generics ?
-		case "java.lang.String":
-			return QStringArray.class.getName();
-		default:
-			final String packageName = ClassUtils.getPackageCanonicalName(elementTypeName.toString());
-			final String shortClassName = Constants.UPDATE_METADATA_CLASSNAME_PREFIX
-					+ ClassUtils.getShortClassName(elementTypeName.toString()) + Constants.UPDATE_ARRAY_METADATA_CLASSNAME_SUFFIX;
-			return packageName + '.' + shortClassName;
-		}
 	}
 
 	private static Class<?> getSimilarDeclaredType(final PrimitiveType variableType) {
