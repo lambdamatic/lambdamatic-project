@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.bson.BsonDocument;
@@ -238,6 +237,7 @@ public class DocumentEncoder {
 	 *            the element to inspect
 	 * @return the wrapped value
 	 */
+	@SuppressWarnings("unchecked")
 	public Object decodeValue(final BsonValue bsonValue, final Class<?> expectedType) {
 		if (bsonValue != null) {
 			switch (bsonValue.getBsonType()) {

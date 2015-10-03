@@ -12,7 +12,7 @@ import org.lambdamatic.mongodb.FilterExpression;
  * 
  * @author Xavier Coulon <xcoulon@redhat.com>
  */
-public interface QueryMap<K,V> {
+public interface QueryMap<Key,DomainMetadata> {
 
 	/**
 	 * Matches any array with the number of elements specified by the argument.
@@ -22,20 +22,22 @@ public interface QueryMap<K,V> {
 	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/size/#op._S_size">MongoDB documentation</a>
 	 */
 	@MongoOperation(MongoOperator.SIZE)
-	public boolean hasSize(long size);
+	public boolean size(long size);
 	
 	/**
 	 * Checks if any value indexed with <code>index</code> in the Map matches the given <code>expression</code>
-	 * @param expression
-	 * @return
+	 * @param expression the {@link FilterExpression}   
+	 * @return <code>true</code> if an element matches 
 	 */
-	public boolean elementMatch(final K index, final FilterExpression<V> expression);
+	@MongoOperation(MongoOperator.ELEMEMT_MATCH)
+	public boolean elementMatch(final FilterExpression<DomainMetadata> expression);
 
 	/**
-	 * Checks if any value indexed with <code>index</code> in the Map matches the given <code>expression</code>
-	 * @param expression
-	 * @return
+	 * Accessing a specific element in the domain {@link Map}.
+	 * @param key the key of the element in the {@link Map}
+	 * @return the desired element 
 	 */
-	public boolean elementMatch(final int position, final K index, final FilterExpression<V> expression);
+	@ArrayElementAccessor
+	public abstract DomainMetadata get(Key key);
 
 }

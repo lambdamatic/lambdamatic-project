@@ -9,7 +9,7 @@ import com.mongodb.MongoClient;
 
 public abstract class MongoBaseTest {
 
-	public static final String DATABASE_NAME = "tests";
+	public static final String DATABASE_NAME = "unittests";
 
 	private MongoClient mongoClient = new MongoClient();
 

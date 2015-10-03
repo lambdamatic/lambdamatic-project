@@ -10,7 +10,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to indicate the class that should be processed by the {@link CompilationAndAnnotationProcessingRule}
+ * TemplateAnnotation to indicate the class that should be processed by the {@link CompilationAndAnnotationProcessingRule}
  * 
  * @author Xavier Coulon
  *

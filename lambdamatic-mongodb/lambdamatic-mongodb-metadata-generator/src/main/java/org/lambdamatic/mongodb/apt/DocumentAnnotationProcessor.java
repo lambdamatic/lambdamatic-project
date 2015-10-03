@@ -1,11 +1,16 @@
-/**
- * 
- */
+/*******************************************************************************
+ * Copyright (c) 2015 Red Hat.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Red Hat - Initial Contribution
+ *******************************************************************************/
 package org.lambdamatic.mongodb.apt;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -13,9 +18,9 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 
 import org.lambdamatic.mongodb.annotations.BaseDocument;
-import org.lambdamatic.mongodb.annotations.Document;
-
-import com.github.mustachejava.Mustache;
+import org.lambdamatic.mongodb.apt.template.MetadataTemplateContext;
+import org.lambdamatic.mongodb.apt.template.MongoCollectionProducerTemplateContext;
+import org.lambdamatic.mongodb.apt.template.MongoCollectionTemplateContext;
 
 /**
  * Processor for classes annotated with {@code Document} or {@link BaseDocument}. Generates their associated metadata
@@ -29,100 +34,13 @@ import com.github.mustachejava.Mustache;
 		"org.lambdamatic.mongodb.annotations.Document" })
 public class DocumentAnnotationProcessor extends BaseAnnotationProcessor {
 
-	/**
-	 * Constructor
-	 * 
-	 * @throws IOException
-	 *             if templates could not be loaded.
-	 */
-	public DocumentAnnotationProcessor() throws IOException {
-		super();
-	}
-
 	@Override
-	protected void doProcess(final TypeElement domainElement, final Map<String, Object> templateContextProperties)
-			throws IOException {
-		generateQueryMetadataSourceCode(domainElement, templateContextProperties);
-		generateProjectionMetadataSourceCode(domainElement, templateContextProperties);
-		generateUpdateMetadataSourceCode(domainElement, templateContextProperties);
-		generateMongoCollectionSourceCode(domainElement, templateContextProperties);
-		generateMongoCollectionProducerSourceCode(domainElement, templateContextProperties);
-	}
-
-	/**
-	 * Generates the {@code LambdamaticMongoCollection} implementation source code for the underlying MongoDB
-	 * collection.
-	 * 
-	 * @param domainElement
-	 *            the type element from which the name will be generated
-	 * @param templateContextProperties
-	 *            all properties to use when running the engine to generate the source code.
-	 * @param template
-	 *            the {@link Mustache} template to use
-	 * 
-	 * @throws IOException
-	 */
-	private void generateMongoCollectionSourceCode(final TypeElement domainElement,
-			final Map<String, Object> baseTemplateContext) throws IOException {
-		final Map<String, Object> templateContext = new HashMap<>(baseTemplateContext);
-		final Document documentAnnotation = domainElement.getAnnotation(Document.class);
-		templateContext.put(Constants.GENERATED_SIMPLE_CLASS_NAME,
-				generateMongoCollectionSimpleClassName(domainElement));
-		templateContext.put(Constants.MONGO_COLLECTION_NAME, documentAnnotation.collection());
-		templateContext.put(Constants.QUERY_METADATA_CLASS_NAME, createQueryMetadataSimpleClassName(domainElement));
-		templateContext.put(Constants.PROJECTION_METADATA_CLASS_NAME, createProjectionMetadataSimpleClassName(domainElement));
-		templateContext.put(Constants.UPDATE_METADATA_CLASS_NAME, createUpdateMetadataSimpleClassName(domainElement));
-		final Mustache template = getTemplate(Constants.MONGO_COLLECTION_TEMPLATE);
-		generateSourceCode(template, templateContext);
-	}
-
-	/**
-	 * Generates the CDI Producer for the {@code LambdamaticMongoCollection} implementation.
-	 * 
-	 * @param domainElement
-	 *            the type element from which the name will be generated
-	 * @param templateContextProperties
-	 *            all properties to use when running the engine to generate the source code.
-	 * @param template
-	 *            the {@link Mustache} template to use
-	 * 
-	 * @throws IOException
-	 */
-	private void generateMongoCollectionProducerSourceCode(final TypeElement domainElement,
-			final Map<String, Object> baseTemplateContext) throws IOException {
-		final Map<String, Object> templateContext = new HashMap<>(baseTemplateContext);
-		final Document documentAnnotation = domainElement.getAnnotation(Document.class);
-		templateContext.put(Constants.MONGO_COLLECTION_NAME, documentAnnotation.collection());
-		templateContext.put(Constants.MONGO_COLLECTION_CLASS_NAME, generateMongoCollectionSimpleClassName(domainElement));
-		templateContext.put(Constants.GENERATED_SIMPLE_CLASS_NAME,
-				generateMongoCollectionProducerSimpleClassName(domainElement));
-		final Mustache template = getTemplate(Constants.MONGO_COLLECTION_PRODUCER_TEMPLATE);
-		generateSourceCode(template, templateContext);
-	}
-
-	/**
-	 * Builds the simple name of the LambdamaticMongoCollection class associated with the given {@code typeElement}
-	 * 
-	 * @param typeElement
-	 *            the type element from which the name will be generated
-	 * @return the simple name of the given type element, followed by
-	 *         {@link Constants#MONGO_COLLECTION_CLASSNAME_SUFFIX}.
-	 */
-	private static String generateMongoCollectionSimpleClassName(final TypeElement typeElement) {
-		return typeElement.getSimpleName().toString() + Constants.MONGO_COLLECTION_CLASSNAME_SUFFIX;
-	}
-
-	/**
-	 * Builds the simple name of the LambdamaticMongoCollection producer class associated with the given
-	 * {@code typeElement}
-	 * 
-	 * @param typeElement
-	 *            the type element from which the name will be generated
-	 * @return the simple name of the given type element, followed by
-	 *         {@link Constants#MONGO_COLLECTION_PRODUCER_CLASSNAME_SUFFIX}.
-	 */
-	private static String generateMongoCollectionProducerSimpleClassName(final TypeElement typeElement) {
-		return typeElement.getSimpleName().toString() + Constants.MONGO_COLLECTION_PRODUCER_CLASSNAME_SUFFIX;
+	protected void doProcess(final TypeElement domainType) throws IOException {
+		generateSourceCode(MetadataTemplateContext.createQueryMetadataTemplateContext(domainType, this));
+		generateSourceCode(MetadataTemplateContext.createProjectionMetadataTemplateContext(domainType, this));
+		generateSourceCode(MetadataTemplateContext.createUpdateMetadataTemplateContext(domainType, this));
+		generateSourceCode(new MongoCollectionTemplateContext(domainType, this));
+		generateSourceCode(new MongoCollectionProducerTemplateContext(domainType, this));
 	}
 
 }

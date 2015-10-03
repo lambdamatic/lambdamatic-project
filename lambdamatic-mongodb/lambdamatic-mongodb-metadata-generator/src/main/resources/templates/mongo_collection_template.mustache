@@ -2,6 +2,7 @@ package {{packageName}};
 
 import javax.annotation.Generated;
 
+import org.lambdamatic.mongodb.annotations.Document;
 import org.lambdamatic.mongodb.LambdamaticMongoCollection;
 import org.lambdamatic.mongodb.internal.LambdamaticMongoCollectionImpl;
 
@@ -13,10 +14,13 @@ import com.mongodb.MongoClient;
  *
  */
 @Generated(value="{{processorClassName}}")
-public class {{generatedSimpleClassName}} extends LambdamaticMongoCollectionImpl<{{domainClassName}}, {{queryMetadataClassName}}, {{projectionMetadataClassName}}, {{updateMetadataClassName}}> {
+public class {{simpleClassName}} extends LambdamaticMongoCollectionImpl<{{domainClassName}}, {{queryMetadataClassName}}, {{projectionMetadataClassName}}, {{updateMetadataClassName}}> {
 
-	public {{generatedSimpleClassName}}(final MongoClient mongoClient, final String databaseName) {
-		super(mongoClient, databaseName, "{{mongoCollectionName}}", {{domainClassName}}.class);
+	/** The collection name, retrieved from the {@link Document} annotation on the {@link {{domainClassName}}} class. */
+	public static final String NAME = "{{collectionName}}";
+	
+	public {{simpleClassName}}(final MongoClient mongoClient, final String databaseName) {
+		super(mongoClient, databaseName, NAME, {{domainClassName}}.class);
 	}
 
 }

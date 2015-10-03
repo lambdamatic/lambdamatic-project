@@ -64,7 +64,7 @@ public class StringLiteral extends ObjectInstance {
 	 */
 	@Override
 	public String toString() {
-		return "\"" + getValue() + "\"";
+		return getValue();
 	}
 
 }

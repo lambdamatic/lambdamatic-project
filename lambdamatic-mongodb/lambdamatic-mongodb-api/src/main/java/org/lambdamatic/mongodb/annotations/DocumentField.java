@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * @author Xavier Coulon <xcoulon@redhat.com>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.METHOD})
 public @interface DocumentField {
 
 	/**

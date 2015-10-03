@@ -26,7 +26,7 @@ public class FileAssertion extends AbstractAssert<FileAssertion, File>{
 	/** The file content.*/
 	private final String content;
 	
-	protected FileAssertion(final File actual) throws FileNotFoundException, IOException {
+	private FileAssertion(final File actual) throws FileNotFoundException, IOException {
 		super(actual, FileAssertion.class);
 		this.content = IOUtils.toString(new FileInputStream(actual));
 	}

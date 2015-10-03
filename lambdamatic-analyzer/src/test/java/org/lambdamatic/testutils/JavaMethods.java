@@ -5,6 +5,7 @@ package org.lambdamatic.testutils;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.lambdamatic.SerializablePredicate;
@@ -44,6 +45,8 @@ public class JavaMethods {
 	public static Method TestPojo_matches_TestPojo;
 	public static Method List_size;
 	public static Method List_add;
+	public static Method List_get;
+	public static Method Map_get;
 	public static Method Character_valueOf;
 	
 	static {
@@ -73,6 +76,8 @@ public class JavaMethods {
 			TestPojo_matches_TestPojo = TestPojo.class.getMethod("matches", TestPojo[].class);
 			List_size = List.class.getMethod("size");
 			List_add = List.class.getMethod("add", Object.class);
+			List_get = List.class.getMethod("get", int.class);
+			Map_get = Map.class.getMethod("get", Object.class);
 			Character_valueOf = Character.class.getMethod("valueOf", char.class);
 
 		} catch (NoSuchMethodException | SecurityException e) {

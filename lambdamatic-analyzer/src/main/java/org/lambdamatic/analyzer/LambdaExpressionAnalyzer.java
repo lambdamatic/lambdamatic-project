@@ -139,8 +139,6 @@ public class LambdaExpressionAnalyzer {
 												+ ((serializedLambda.getCapturedArg(i) != null) ? "' ("
 														+ serializedLambda.getCapturedArg(i).getClass().getName() + ")"
 														: "")));
-				serializedLambda.getCapturedArgCount();
-
 				return new SerializedLambdaInfo(serializedLambda);
 			}
 		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {

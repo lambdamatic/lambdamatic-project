@@ -4,12 +4,11 @@ import javax.annotation.Generated;
 
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.lambdamatic.mongodb.annotations.Document;
-import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 
-{{#imports}}
-import {{name}};
-{{/imports}}
+{{#requiredImports}}
+import {{.}};
+{{/requiredImports}}
 
 /**
  * The {@link QueryMetadata} class associated with the {@link {{domainClassName}}} domain class 
@@ -18,11 +17,24 @@ import {{name}};
  * <p><strong>Note:</strong> This class is not meant to be extended by the user.</p>
  */
 @Generated(value="{{processorClassName}}")
-public abstract class {{generatedSimpleClassName}} implements QueryMetadata<{{domainClassName}}> {
+{{#annotations}}
+    {{{.}}}
+{{/annotations}}
+public abstract class {{simpleClassName}} implements QueryMetadata<{{domainClassName}}> {
 
-{{#queryFields}}
-    @DocumentField(name="{{documentFieldName}}")
+{{#fields}}
+{{#annotations}}
+    {{{.}}}
+{{/annotations}}
  	public {{& javaFieldType.simpleName}} {{javaFieldName}};
 
-{{/queryFields}}  
+{{/fields}}  
+{{#methods}}
+{{#annotations}}
+ 	{{{.}}}
+{{/annotations}}
+ 	public abstract {{{returnType.simpleName}}} {{methodName}}({{{parameterType.simpleName}}} {{parameterName}});
+
+{{/methods}}  
+
 }

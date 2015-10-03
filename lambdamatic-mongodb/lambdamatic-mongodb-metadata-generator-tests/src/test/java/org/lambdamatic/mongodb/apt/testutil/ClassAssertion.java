@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 import org.assertj.core.api.AbstractAssert;
 
 /**
- * Specific assertJ {@link AbstractAssert} for {@link Type} objects
+ * Specific assertJ {@link AbstractAssert} for {@link TemplateType} objects
  * 
  * @author Xavier Coulon
  *

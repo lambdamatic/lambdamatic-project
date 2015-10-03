@@ -235,6 +235,8 @@ public class Foo {
 
 	private EnumBar[] enumBarArray;
 
+	private Bar[] barArray;
+
 	private List<String> stringList;
 
 	private Set<String> stringSet;
@@ -474,6 +476,14 @@ public class Foo {
 
 	public void setEnumBarArray(EnumBar[] enumBarArray) {
 		this.enumBarArray = enumBarArray;
+	}
+	
+	public Bar[] getBarArray() {
+		return barArray;
+	}
+	
+	public void setBarArray(Bar[] barArray) {
+		this.barArray = barArray;
 	}
 
 	public List<String> getStringList() {

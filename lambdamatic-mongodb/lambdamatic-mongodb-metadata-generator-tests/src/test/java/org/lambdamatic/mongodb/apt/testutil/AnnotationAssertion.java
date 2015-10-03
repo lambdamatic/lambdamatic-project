@@ -14,7 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.assertj.core.api.AbstractAssert;
 
 /**
- * Specific assertJ {@link AbstractAssert} for {@link Annotation} objects.
+ * Specific assertJ {@link AbstractAssert} for {@link TemplateAnnotation} objects.
  * 
  * @author Xavier Coulon
  *

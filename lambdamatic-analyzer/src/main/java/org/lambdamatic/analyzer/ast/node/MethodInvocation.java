@@ -29,26 +29,22 @@ public class MethodInvocation extends ComplexExpression {
 
 	/** the arguments passed as parameters during the call. */
 	private final List<Expression> arguments;
+	
+	/** the actual return type (preserving data from generics if available) */
+	private final Class<?> returnType;
 
 	/**
 	 * Full constructor.
 	 * 
-	 * <p>
-	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
-	 * </p>
-	 * 
 	 * @param source
 	 *            the expression on which the method call is applied.
-	 * @param javaMethod
-	 *            the Java {@link Method} to be called.
-	 * @param returnType
-	 * 				the returned Java type of the underlying method.
+	 * @param methodName
+	 *            the name of the called method.
 	 * @param arguments
 	 *            the arguments passed as parameters during the call.
 	 */
-	public MethodInvocation(final Expression sourceExpression, final Method javaMethod, 
-			final Expression... arguments) {
-		this(generateId(), sourceExpression, javaMethod, Arrays.asList(arguments), false);
+	public MethodInvocation(final Expression sourceExpression, final Method javaMethod, final Expression... arguments) {
+		this(sourceExpression, javaMethod, javaMethod.getReturnType(), Arrays.asList(arguments));
 	}
 
 	/**
@@ -62,10 +58,9 @@ public class MethodInvocation extends ComplexExpression {
 	 *            the returned Java type of the underlying method.
 	 * @param arguments
 	 *            the arguments passed as parameters during the call.
-	 * @param argTypes 
 	 */
-	public MethodInvocation(final Expression sourceExpression, final Method javaMethod, final List<Expression> arguments) {
-		this(generateId(), sourceExpression, javaMethod, arguments, false);
+	public MethodInvocation(final Expression sourceExpression, final Method javaMethod, final Class<?> returnType, final List<Expression> arguments) {
+		this(generateId(), sourceExpression, javaMethod, returnType, arguments, false);
 	}
 
 	/**
@@ -77,14 +72,17 @@ public class MethodInvocation extends ComplexExpression {
 	 *            the expression on which the method call is applied.
 	 * @param javaMethod
 	 *            the actual Java {@link Method} being called.
+	 * @param returnType
+	 *            the returned Java type of the underlying method.
 	 * @param arguments
 	 *            the arguments passed as parameters during the call.
 	 */
-	public MethodInvocation(final int id, final Expression sourceExpression, final Method javaMethod, final List<Expression> arguments,
+	public MethodInvocation(final int id, final Expression sourceExpression, final Method javaMethod, final Class<?> returnType, final List<Expression> arguments,
 			final boolean inverted) {
 		super(id, inverted);
 		setSourceExpression(sourceExpression);
 		this.javaMethod = javaMethod;
+		this.returnType = returnType;
 		this.arguments = arguments;
 		this.arguments.stream().forEach(e -> e.setParent(this));
 	}
@@ -101,7 +99,7 @@ public class MethodInvocation extends ComplexExpression {
 	 */
 	@Override
 	public MethodInvocation duplicate(int id) {
-		return new MethodInvocation(id, getSource().duplicate(), this.javaMethod,
+		return new MethodInvocation(id, getSource().duplicate(), this.javaMethod, this.returnType,
 				Expression.duplicateExpressions(this.arguments), isInverted());
 	}
 	
@@ -145,7 +143,7 @@ public class MethodInvocation extends ComplexExpression {
 	 * @return the returned {@link Class} of the underlying Java {@link Method}.
 	 */
 	public Class<?> getReturnType() {
-		return this.javaMethod.getReturnType();
+		return this.returnType;
 	}
 	
 	/**
@@ -265,7 +263,7 @@ public class MethodInvocation extends ComplexExpression {
 	 */
 	@Override
 	public MethodInvocation inverse() {
-		return new MethodInvocation(generateId(), source, javaMethod,
+		return new MethodInvocation(generateId(), source, javaMethod, this.returnType,
 				Expression.duplicateExpressions(this.arguments), !isInverted());
 	};
 

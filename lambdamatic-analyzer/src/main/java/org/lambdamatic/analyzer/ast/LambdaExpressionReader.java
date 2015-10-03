@@ -291,7 +291,8 @@ public class LambdaExpressionReader {
 						final Expression sourceExpression = expressionStack.pop();
 						final Method javaMethod = ReflectionUtils.findJavaMethod(sourceExpression.getJavaType(),
 								methodInsnNode.name, parameterTypes);
-						final MethodInvocation invokedMethod = new MethodInvocation(sourceExpression, javaMethod, args);
+						final Class<?> returnType = findReturnType(insnCursor, javaMethod);
+						final MethodInvocation invokedMethod = new MethodInvocation(sourceExpression, javaMethod, returnType, args);
 						expressionStack.add(invokedMethod);
 					}
 					break;
@@ -301,8 +302,9 @@ public class LambdaExpressionReader {
 						final Class<?> sourceClass = Class.forName(type.getClassName());
 						final Method javaMethod = ReflectionUtils.findJavaMethod(sourceClass, methodInsnNode.name,
 								parameterTypes);
+						final Class<?> returnType = findReturnType(insnCursor, javaMethod);
 						final MethodInvocation invokedStaticMethod = new MethodInvocation(new ClassLiteral(sourceClass),
-								javaMethod, args);
+								javaMethod, returnType, args);
 						expressionStack.add(invokedStaticMethod);
 					} catch (ClassNotFoundException e) {
 						throw new AnalyzeException("Failed to retrieve class for " + methodInsnNode.owner, e);
@@ -353,6 +355,31 @@ public class LambdaExpressionReader {
 			insnCursor.next();
 		}
 		return statements;
+	}
+
+	/**
+	 * Checks if an operation of type OpsCode.CHECKCAST is following this operation, in which case it
+	 * provides valuable info about the actual returned type of the method
+	 * @param insnCursor the {@link InsnCursor}
+	 * @param javaMethod the current Java {@link Method}
+	 * @return
+	 */
+	private Class<?> findReturnType(final InsnCursor insnCursor, final Method javaMethod) {
+		if(insnCursor.hasNext()) {
+			final AbstractInsnNode nextOp = insnCursor.getNext();
+			if(nextOp.getOpcode() == Opcodes.CHECKCAST) {
+				final TypeInsnNode checkCastInsnNode = (TypeInsnNode) nextOp;
+				try {
+					return Class.forName(Type.getObjectType(checkCastInsnNode.desc).getClassName());
+				} catch (ClassNotFoundException e) {
+					throw new AnalyzeException("Failed to retrieve class for " + checkCastInsnNode.desc, e);
+				}
+			} else {
+				// move cursor position backwards 
+				insnCursor.getPrevious();
+			}
+		} 
+		return javaMethod.getReturnType();
 	}
 
 	/**

@@ -11,17 +11,19 @@ import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.codecs.EncoderContext;
 import org.lambdamatic.SerializablePredicate;
+import org.lambdamatic.analyzer.ast.node.ArrayElementAccess;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
-import org.lambdamatic.analyzer.ast.node.CompoundExpression;
-import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.mongodb.exceptions.ConversionException;
+import org.lambdamatic.mongodb.metadata.ArrayElementAccessor;
 import org.lambdamatic.mongodb.metadata.MongoOperation;
 import org.lambdamatic.mongodb.metadata.MongoOperator;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
@@ -163,25 +165,28 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 	@Override
 	public boolean visitMethodInvocationExpression(final MethodInvocation methodInvocation) {
 		final Method method = methodInvocation.getJavaMethod();
-		final MongoOperation annotation = method.getAnnotation(MongoOperation.class);
-		if (annotation != null) {
+		final MongoOperation operationAnnotation = method.getAnnotation(MongoOperation.class);
+		final ArrayElementAccessor arrayAccessorAnnotation = method.getAnnotation(ArrayElementAccessor.class);
+		if (operationAnnotation != null) {
 			// FIXME: support other operands
 			// FIXME: use $not: http://docs.mongodb.org/manual/reference/operator/query/not/#op._S_not
 			if (!this.nestedExpression) {
 				writer.writeStartDocument();
 			}
-			switch (annotation.value()) {
+			switch (operationAnnotation.value()) {
 			case GEO_WITHIN:
 				writeGeoWithin(methodInvocation.getSource(), methodInvocation.getArguments(),
 						methodInvocation.isInverted());
 				break;
 			default:
-				writeOperation(annotation.value(), methodInvocation.getSource(), methodInvocation.getArguments().get(0),
+				writeOperation(operationAnnotation.value(), methodInvocation.getSource(), methodInvocation.getArguments().get(0),
 						methodInvocation.isInverted());
 			}
 			if (!this.nestedExpression) {
 				writer.writeEndDocument();
 			}
+		} else if(arrayAccessorAnnotation != null) {
+			methodInvocation.getParent().replaceElement(methodInvocation, new ArrayElementAccess(methodInvocation));
 		} else {
 			methodInvocation.getParent().replaceElement(methodInvocation,
 					ExpressionFactory.getExpression(methodInvocation.evaluate()));
@@ -233,7 +238,7 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			writer.writeEndDocument();
 		} else {
 		// simplified formula for EQUALS operator
-		if (operator == MongoOperator.EQUALS) {
+		if (operator == MongoOperator.EQUALS && key != null) {
 			EncoderUtils.writeNamedExpression(writer, key, valueExpr);
 		} else {
 			if (key != null && !this.nestedExpression) {
@@ -400,6 +405,8 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 			return extractKey((LocalVariable) expr);
 		case FIELD_ACCESS:
 			return extractKey((FieldAccess) expr);
+		case ARRAY_ELEMENT_ACCESS:
+			return extractKey((ArrayElementAccess) expr);
 		default:
 			return null;
 		}
@@ -422,6 +429,17 @@ class FilterExpressionEncoder extends ExpressionVisitor {
 		final String fieldName = expr.getFieldName();
 		final String documentFieldName = EncoderUtils.getDocumentFieldName(expr.getSource().getJavaType(), fieldName);
 		builder.append(documentFieldName);
+		return builder.toString();
+	}
+
+	private String extractKey(final ArrayElementAccess expr) {
+		final StringBuilder builder = new StringBuilder();
+		final String target = extractKey(expr.getSourceField());
+		if (target != null) {
+			builder.append(target).append('.');
+		}
+		final String fieldName = expr.getIndex();
+		builder.append(fieldName);
 		return builder.toString();
 	}
 

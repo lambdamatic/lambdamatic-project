@@ -60,7 +60,6 @@ public class FilterExpressionCodecTest {
 
 		// $eq
 		data.match(foo -> foo.primitiveByteField.equals(1), "{primitiveByteField: 1}");
-
 		data.match(foo -> foo.primitiveByteField.equals(1), "{primitiveByteField: 1}");
 		data.match(foo -> foo.primitiveBooleanField.equals(true), "{primitiveBooleanField: true}");
 		data.match(foo -> foo.primitiveBooleanField.equals(true), "{primitiveBooleanField: true}");
@@ -75,6 +74,7 @@ public class FilterExpressionCodecTest {
 		data.match(foo -> foo.primitiveCharField.equals('A'), "{primitiveCharField: 'A'}");
 		data.match(foo -> foo.stringField.equals("John"), "{stringField: 'John'}");
 		data.match(foo -> foo.stringField.equals(f.getStringField()), "{stringField: 'javaObject'}");
+		
 		// $ne
 		data.match(foo -> foo.stringField.notEquals(f.getStringField()), "{stringField: { $ne: 'javaObject'}}");
 		data.match(foo -> !foo.stringField.equals(f.getStringField()), "{$not:{stringField: 'javaObject'}}");
@@ -129,11 +129,34 @@ public class FilterExpressionCodecTest {
 		// polygon with single (closed) ring defined by an array of points
 		data.match(foo -> foo.location.geoWithin(singleRing),
 				"{location: { $geoWithin: { $geometry: {type: 'Polygon', coordinates: [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]] } } } }");
-		// element match on array
-		data.match(foo -> foo.stringList.elementMatch(s -> s.greaterThan("bar") && s.lessThan("javaObject")),
-				"{stringList: { $elemMatch: {$gt: 'bar', $lt: 'javaObject' }}}");
+		
+		// element match on list (stored in a JSON Array)
+		data.match(foo -> foo.stringList.elementMatch(e -> e.equals("bar")),
+				"{stringList: {$elemMatch:{$eq:'bar'}}}");
+		data.match(foo -> foo.stringList.elementMatch(e -> e.greaterThan("bar") && e.lessThan("javaObject")),
+				"{stringList: {$elemMatch:{$gt: 'bar', $lt: 'javaObject' }}}");
 		data.match(foo -> foo.barList.elementMatch(b -> b.stringField.equals("javaObject")),
-				"{barList: { $elemMatch: {stringField: 'javaObject' }}}");
+				"{'barList': {$elemMatch:{stringField:'javaObject'}}}");
+		// element match on a specific (indexed) element of list (stored in a JSON Array)
+		data.match(foo -> foo.stringList.get(0).equals("bar"),
+				"{'stringList.0':'bar'}");
+		data.match(foo -> foo.stringList.get(0).greaterThan("bar") && foo.stringList.get(0).lessThan("javaObject"),
+				"{$and:[{'stringList.0': {$gt: 'bar'}}, {'stringList.0': {$lt: 'javaObject' }}]}");
+		data.match(foo -> foo.barList.get(1).stringField.equals("javaObject"),
+				"{'barList.1.stringField': 'javaObject' }");
+		
+		// element match on map (stored as a JSON array of nested objects with a single field)
+		data.match(foo -> foo.stringMap.elementMatch(s -> s.greaterThan("bar") && s.lessThan("javaObject")),
+				"{stringMap: { $elemMatch: {$gt: 'bar', $lt: 'javaObject' }}}");
+		data.match(foo -> foo.barMap.elementMatch(b -> b.stringField.equals("javaObject")),
+				"{barMap: { $elemMatch: {stringField: 'javaObject' }}}");
+		// element match on a specific (indexed) element of map (stored as a JSON array of nested objects with a single field)
+		data.match(foo -> foo.stringMap.get("entry").greaterThan("bar") && foo.stringMap.get("entry").lessThan("javaObject"),
+				"{$and:[{'stringMap.entry':{$gt: 'bar'}}, {'stringMap.entry':{$lt: 'javaObject' }}]}");
+		data.match(foo -> foo.barMap.get("entry").stringField.equals("javaObject"),
+				"{'barMap.entry.stringField': 'javaObject' }}}");
+		
+		
 		// nested documents
 		data.match(foo -> foo.bar.enumBar.equals(EnumBar.BAR), "{bar.enumBar: 'BAR'}");
 		// testing combination of operators
