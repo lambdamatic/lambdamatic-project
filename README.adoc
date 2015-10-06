@@ -1,15 +1,45 @@
-= Lambdamatic: Query MongoDB with Lambda Expressions
+= Lambdamatic: Managing data on MongoDB with Lambda Expressions
+
+Lambdamatic is an open source Object-Document Mapper for MongoDB written in Java.
+
+== Introduction
+
+*Lambdamatic* is provides a *Stream-ish DSL* based on *Lambda expressions*
+for managing data on MongoDB with a very high level of abstraction.
+
+Under the cover, Lambdamatic analyses the _meaning_ of the user-defined Lambda Expressions
+and converts them into BSON documents which are sent to the server by the MongoDB Java client.
+The returned BSON documents are then converted back into domain objects by a
+DocumentCodec that understands annotations defined on the domain classes (à la JPA).
+
+The strength of Lambdamatic is in its built-in support for Lambda Expressions to define how
+data should be queried or updated. This core feature results in an *expressive* and *type-safe*
+API for the users, who can focus on the _what_ rather than the _how_ of the operations
+that should be performed on the datastore.
+
+Lambdamatic also integrates smoothly with CDI to run in Java EE environments, as explained
+in chapter 6 (CDI Integration).
+
+== License
+
+Lambdamatic is made available under the terms of the Eclipse Public License v1.0 which accompanies this distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
 
 == Status
 
-Prototype (with its share of missing features and bugs)
+Version 0.1 is coming soon (tm).
 
+== Configuration
 
-== Project Configuration
+=== Requirements
+
+Since Lambdamatic relies on Lambda Expressions, Java 8 is required.
+Lambdamatic depends on ASM 5.0 and MongoDB Java Driver 3.1.
+
+=== Maven settings
 
 In your `pom.xml`, add the following dependency:
 
-[code,xml]
+[source,xml]
 ----
 <dependency>
   <groupId>org.lambdamatic</groupId>
@@ -21,15 +51,15 @@ In your `pom.xml`, add the following dependency:
 
 then, configure the following build plugins:
 
-[code,xml]
+[source,xml]
 ----
 <plugin>
   <artifactId>maven-compiler-plugin</artifactId>
   <version>${version.plugin.compiler}</version>
   <configuration>
-    <source>${maven.compiler.source}</source>
-    <target>${maven.compiler.target}</target>
-    <encoding>${project.build.sourceEncoding}</encoding>
+    <source>1.8</source>
+    <target>1.8</target>
+    <encoding>UTF-8</encoding>
     <compilerArgument>-proc:none</compilerArgument>
   </configuration>
 </plugin>
@@ -49,17 +79,23 @@ then, configure the following build plugins:
 </plugin>
 ----
 
-== Querying Documents
+Once this is done, Eclipse users may want to install
+https://github.com/jbosstools/m2e-apt[the m2e-apt plugin] to let the IDE invoke
+the Lambdamatic Annotation Processor each time a domain class is saved.
 
-Once this is done, if you use Eclipse, you should install
-https://github.com/jbosstools/m2e-apt[the m2e-apt plugin] to let Eclipse invoke
-the Lambdamatic Annotation Processor each time a class annotated with `@Document`
-is saved.
+=== MongoDB client configuration
 
-Once this is done, you can annotate your domain class with `@Document` and its
-fields with `@DocumentId`/`@DocumentField` as follow:
+*TODO*
 
-[code,java]
+== Document Mapping
+
+=== Annotations
+
+Domain classes must be annotated with `@Document` and their
+fields with `@DocumentId` for the document id and optionally with
+`@DocumentField` as follow:
+
+[source,java]
 ----
 package com.example.domain;
 
@@ -72,32 +108,25 @@ public class BikeStation {
   @DocumentField
   private String stationName;
 
-  @DocumentField
+  @DocumentField(name="available")
   private int availableDocks;
-
-  @DocumentField
-  private int totalDocks;
-
-  @DocumentField
-  private int availableBikes;
-
-  @DocumentField
-  private Location location;
-
-  @DocumentField
-  private BikeStationStatus status;
-
-  @DocumentField
-  private boolean testStation;
-
-  @DocumentField
-  private Date executionTime;
 
   ...
 }
 ----
 
-From the class above, the Lambdamatic's annotation processor will generate the following classes:
+if `@DocumentField` is missing, the class field is mapped to a document field
+with the same name. The `@DocumentField` `name` attribute may be used to customize
+the name of the field in the MongoDB document.
+
+Embedded documents (also called 'sub-documents') must be annotated with
+`@EmbeddedDocument`. The same rules for field annotations apply, except that
+the `@DocumentId` should not be used.
+
+A field annotated with `@TransientField` is not mapped and considered as `transient`
+during the encoding and decoding phases.
+
+From the class above, the Lambdamatic's annotation processor generates the following classes:
 
 - `com.example.domain.QBikeStation`
 - `com.example.domain.PBikeStation`
@@ -106,10 +135,58 @@ From the class above, the Lambdamatic's annotation processor will generate the f
 - `com.example.domain.BikeStationCollectionProducer`
 
 These classes are located in the `target/generated-sources/apt` folder of your project.
+The role of each of these classes will be explained in the following sections.
 
-In your code, you can now write queries as follow to find all `BikeStation` that are `IN_SERVICE`:
+=== Supported data types
 
-[code,java]
+The following data types are supported by Lambdamatic:
+
+- primitive types
+- `java.lang.String` and `java.lang.Date`
+- enumerations
+- classes annotated with `@EmbeddedDocument` are mapped as BSON sub-documents
+- `List`, `Set` of classes annotated with `@EmbeddedDocument` are mapped
+  as BSON arrays of documents
+- `Map` of classes annotated with `@EmbeddedDocument` are mapped
+  as BSON arrays of documents indexed with a key (limited to `java.lang.String` or any number)
+
+== Managing Documents in MongoDB
+
+For each domin class annotated with `@Document`, a class with the same name and suffixed
+with `Collection` is generated in the same package.
+These 'Collection' classes are the entry points for manipulating documents on MongoDB.
+They provide a fluent API somehow similar to the Java 8 `Stream` API even though the data
+is processed on MongoDB rather than in-memory.
+
+This fluent API provides support for inserting, querying with projections and updating
+documents. Queries, projections and updates operations are described using `Predicate`
+and `Consumer` arguments, yet the parameter type of these expressions is _not_ the domain class
+itself but one of its generated sibling, prefixed with `Q` for queries,
+`P` for projections and `U` for updates.
+Using such a technique provides a well-defined API for each type of operation.
+
+=== Creating Documents in MongoDB
+
+==== Inserting
+
+*TODO*
+
+==== Upserting
+
+MongoDB also provides an `upsert` operation, meaning that if a document with the same id
+does not exist it is created, otherwise it is updated.
+
+*TODO*
+
+=== Querying Documents in MongoDB
+
+==== Queries
+
+Queries are written in the form of `Predicate`
+
+Users can write queries as follow to find all `BikeStation` that are `IN_SERVICE`:
+
+[source,java]
 ----
 public List<BikeStation> findWithin(final List<Location> corners) {
   return bikeStationCollection.filter(
@@ -118,10 +195,14 @@ public List<BikeStation> findWithin(final List<Location> corners) {
 }
 ----
 
-or even more interestingly, you can leverage MongoDB's geosearch capabilities to find
-all `BikeStation` that are `IN_SERVICE` and within an area:
+===== Operators
 
-[code,java]
+===== Geo-searching
+
+More interestingly, you can leverage MongoDB's geosearch capabilities to find
+all `BikeStation` that are `IN_SERVICE` and within a given area:
+
+[source,java]
 ----
 import org.lambdamatic.mongodb.types.geospatial.Location;
 ...
@@ -133,14 +214,28 @@ public List<BikeStation> findWithin(final Location[] corners) {
 }
 ----
 
+The `Location` class is a special data-type provided by Lambdamatic. It is converted
+into a custom BSON document or query document.
 
-See the https://github.com/lambdamatic/lambdamatic-mongodb-citibikesnyc[NYC Bikes sample application] for more details.
+See the https://github.com/lambdamatic/lambdamatic-mongodb-citibikesnyc[NYC Bike Stations sample application] for more details.
 
-=== Projections
+===== Combining Operators
 
-In some cases, you may not want to retrieve all the documents'fields from MongoDB,
-but just the ones you want to display in the UI. Lambdamatic supports `Projection`
-as well, using the following syntax:
+
+===== Queries on Collections
+
+*TODO*
+
+===== Queries on Maps
+
+*TODO*
+
+
+==== Projections
+
+In some cases, users do not want to retrieve all the documents'fields from MongoDB,
+but only the ones that need to be processed in the business layer or displayed in the UI.
+Lambdamatic supports projection as well, using the following syntax:
 
 [code,java]
 ----
@@ -154,62 +249,112 @@ return bikeStationCollection.filter(s -> s.status.equals(BikeStationStatus.IN_SE
     .toList();
 ----
 
-== Updating Documents
+The `projection` is defined by a second Lambda Expression where _all_ the fields to be included
+or excluded are specified (all other fields including the `@DocumentId` are excluded or included, respectively).
 
-=== Full replacement
-Lambdamatic supports 2 modes to update entities. The first one is the full-replacement mode:
+===== Projections on Collections
 
-[code,java]
+*TODO*
+
+===== Projections on Maps
+
+This feature is not implemented yet.
+
+=== Updating Documents in MongoDB
+
+Lambdamatic supports operations to update documents. Contrarily to JPA whose `EntityManager'
+handles transparently all the changes in the domain classes in the session, Lambdamatic provides
+two ways to update data.
+
+==== Full replacement
+The first way is the full-replacement mode:
+
+[source,java]
 ----
 blogEntryCollection.replace(blogEntry);
 ----
 
-In this case, the document whose `id` is the one given in `blogEntry` will be
-replaced with the given `blogEntry`.
+In this case, the document whose `id` is the one given in `blogEntry` is
+replaced with the given `blogEntry`. This is a _full_ replacement, meaning that all previous
+fields are removed and replaced with the given ones.
 
-=== Partial replacement
+==== Partial replacement
 
 The second mode to update an existing document is by specifying the fields that need
-to be updated............................................................................
+to be updated and _how_ they need to be updated:
 
-[code,java]
+[source,java]
 ----
 Date now = new Date();
 blogEntryCollection.filter(e -> e.id.equals("1")).forEach(e -> {
-      e.lastUpdate = today;
+      e.lastUpdate = now;
 			e.commentsNumber++;
 			e.comments.push(comment);
 		});
 ----
- in the example above, the document in the `blogEntryCollection` whose `id` is `1`
- will be updated in the following manner:
 
- - `lastUpdate` field will be set to `now`,
- - `commentsNumber` field will be incremented by `1`
- - the given `comment` sub-document will be added in the array of `comments`
+ In the example above, the document in the `blogEntryCollection` whose `id` is `1`
+ is updated in the following manner:
 
+ - `lastUpdate` field is set to `now`,
+ - `commentsNumber` field is incremented by `1`
+ - the given `comment` sub-document is appended in the `comments` array.
 
-== Installation/Build
+ ==== Updating on Collections
 
-Lambdamatic is not available on Maven repositories, so you'll need to build it.
-Run
+ *TODO*
 
-[code]
-----
-mvn clean install
-----
+ ==== Updating on Maps
 
-(requires a mongod instance running and listening on default port 27017)
+ This feature is not implemented yet.
 
-or
+ == CDI Integration
 
-[code]
-----
-mvn clean install -DskiptTests=true
-----
+ As shown above, for each class annotated with `@Document` , Lambdamatic annotation
+ processor generates 5 classes including a CDI Producer:
 
-if you don't want to run the tests
+ [source,java]
+ ----
+ @Generated(value="org.lambdamatic.mongodb.apt.DocumentAnnotationProcessor")
+ @ApplicationScoped
+ public class BikeStationCollectionProducer  {
 
-== License
+     @Produces
+     public BikeStationCollection getBikeStationCollection(final MongoClient mongoClient, final MongoClientConfiguration mongoClientConfiguration) {
+     	return new BikeStationCollection(mongoClient, mongoClientConfiguration.getDatabaseName());
+     }
+ }
+ ----
 
-This program is made available under the terms of the Eclipse Public License v1.0 which accompanies this distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
+ This CDI Producer is named after the domain class (suffixed with `CollectionProducer`)
+ and is declared in the same package as the domain class.
+
+ With such a CDI Producer available, it suffice to annotate the generated `collection`
+ class with `@Inject` in a CDI bean to get accesss to the Lambdamatic type-safe API for
+  a give collection (ie, a type of document associated with a domain class):
+
+ [source,java]
+ ----
+ @Singleton
+ @Startup
+ public class BikeStationsStorageService {
+
+ 	@Inject
+ 	private BikeStationCollection bikeStationCollection;
+
+   ...
+ }
+ ----
+
+== Contribution
+
+Lambdamatic is open source !
+Contributions in the form of https://github.com/lambdamatic/lambdamatic-project/pulls[pull requests] or https://github.com/lambdamatic/lambdamatic-project/issues[feature requests (and bug reports)]
+are welcome.
+
+== Example Applications
+
+The NYC Bike Stations sample application is available on
+https://github.com/lambdamatic/lambdamatic-mongodb-example-citibikesnyc[].
+
+The Blog sample application is available on https://github.com/lambdamatic/lambdamatic-mongodb-example-blog[]
