@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Red Hat. All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which accompanies this
+ * distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors: Red Hat - Initial Contribution
+ *******************************************************************************/
+
 package org.lambdamatic.analyzer.ast;
 
 import java.util.ArrayList;
@@ -14,56 +22,59 @@ import org.lambdamatic.analyzer.ast.node.StatementVisitor;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 
 /**
- * Custom {@link StatementVisitor} that will retrieve all branches of the
- * bytecode AST that end with a {@link ReturnStatement} leaf node whose value is
- * {@link Boolean#TRUE}, an {@link CompoundExpression} leaf node or a {@link MethodInvocation} leaf node.
+ * Custom {@link StatementVisitor} that will retrieve all branches of the bytecode AST that end with
+ * a {@link ReturnStatement} leaf node whose value is {@link Boolean#TRUE}, an
+ * {@link CompoundExpression} leaf node or a {@link MethodInvocation} leaf node.
  * 
  * @author xcoulon
  * 
  */
 public class ReturnTruePathFilter extends StatementVisitor {
 
-	private final List<ReturnStatement> returnStmts = new ArrayList<>();
+  private final List<ReturnStatement> returnStmts = new ArrayList<>();
 
-	@Override
-	public boolean visitReturnStatement(final ReturnStatement returnStatement) {
-		final Expression returnExpression = returnStatement.getExpression();
-		switch (returnExpression.getExpressionType()) {
-		case BOOLEAN_LITERAL:
-			final BooleanLiteral booleanLiteral = (BooleanLiteral)returnExpression;
-			if (booleanLiteral.getValue().equals(true)) {
-				getReturnStmts().add(returnStatement);
-			}
-			break;
-		case NUMBER_LITERAL:
-			final NumberLiteral numberLiteral = (NumberLiteral)returnExpression;
-			if (numberLiteral.getValue().equals(1)) {
-				getReturnStmts().add(returnStatement);
-			}
-			break;
-		case COMPOUND:
-		case METHOD_INVOCATION:
-		case FIELD_ACCESS:
-			getReturnStmts().add(returnStatement);
-			break;
-		default:
-			throw new AnalyzeException("Unsupported expression type ("
-					+ returnExpression.getExpressionType().toString() + ") in return statement '"
-					+ returnStatement.toString() + "'");
-		}
+  @Override
+  public boolean visitReturnStatement(final ReturnStatement returnStatement) {
+    final Expression returnExpression = returnStatement.getExpression();
+    switch (returnExpression.getExpressionType()) {
+      case BOOLEAN_LITERAL:
+        final BooleanLiteral booleanLiteral = (BooleanLiteral) returnExpression;
+        if (booleanLiteral.getValue().equals(true)) {
+          getReturnStmts().add(returnStatement);
+        }
+        break;
+      case NUMBER_LITERAL:
+        final NumberLiteral numberLiteral = (NumberLiteral) returnExpression;
+        if (numberLiteral.getValue().equals(1)) {
+          getReturnStmts().add(returnStatement);
+        }
+        break;
+      case COMPOUND:
+      case METHOD_INVOCATION:
+      case FIELD_ACCESS:
+        getReturnStmts().add(returnStatement);
+        break;
+      default:
+        throw new AnalyzeException(
+            "Unsupported expression type (" + returnExpression.getExpressionType().toString()
+                + ") in return statement '" + returnStatement.toString() + "'");
+    }
 
-		// no need to carry on.
-		return false;
-	}
+    // no need to carry on.
+    return false;
+  }
 
-	@Override
-	public boolean visitExpressionStatement(final ExpressionStatement expression) {
-		// no need to visit child nodes of an Expression here.
-		return false;
-	}
+  @Override
+  public boolean visitExpressionStatement(final ExpressionStatement expression) {
+    // no need to visit child nodes of an Expression here.
+    return false;
+  }
 
-	public List<ReturnStatement> getReturnStmts() {
-		return returnStmts;
-	}
+  /**
+   * @return the list of statements that end with a <code>return true</code>.
+   */
+  public List<ReturnStatement> getReturnStmts() {
+    return this.returnStmts;
+  }
 }
 

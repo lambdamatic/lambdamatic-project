@@ -1,13 +1,11 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2015 Red Hat. All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which accompanies this
+ * distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *     Red Hat - Initial Contribution
+ * Contributors: Red Hat - Initial Contribution
  *******************************************************************************/
+
 package org.lambdamatic.mongodb.apt;
 
 import java.io.IOException;
@@ -23,24 +21,26 @@ import org.lambdamatic.mongodb.apt.template.MongoCollectionProducerTemplateConte
 import org.lambdamatic.mongodb.apt.template.MongoCollectionTemplateContext;
 
 /**
- * Processor for classes annotated with {@code Document} or {@link BaseDocument}. Generates their associated metadata
- * Java classes in the target folder given in the constructor.
+ * Processor for classes annotated with {@code Document} or {@link BaseDocument}. Generates their
+ * associated metadata Java classes in the target folder given in the constructor.
  * 
- * @author Xavier Coulon <xcoulon@redhat.com>
+ * @author Xavier Coulon
  *
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@SupportedAnnotationTypes({
-		"org.lambdamatic.mongodb.annotations.Document" })
+@SupportedAnnotationTypes({"org.lambdamatic.mongodb.annotations.Document"})
 public class DocumentAnnotationProcessor extends BaseAnnotationProcessor {
 
-	@Override
-	protected void doProcess(final TypeElement domainType) throws IOException {
-		generateSourceCode(MetadataTemplateContext.createQueryMetadataTemplateContext(domainType, this));
-		generateSourceCode(MetadataTemplateContext.createProjectionMetadataTemplateContext(domainType, this));
-		generateSourceCode(MetadataTemplateContext.createUpdateMetadataTemplateContext(domainType, this));
-		generateSourceCode(new MongoCollectionTemplateContext(domainType, this));
-		generateSourceCode(new MongoCollectionProducerTemplateContext(domainType, this));
-	}
+  @Override
+  protected void doProcess(final TypeElement domainType) throws IOException {
+    generateSourceCode(
+        MetadataTemplateContext.createQueryMetadataTemplateContext(domainType, this));
+    generateSourceCode(
+        MetadataTemplateContext.createProjectionMetadataTemplateContext(domainType, this));
+    generateSourceCode(
+        MetadataTemplateContext.createUpdateMetadataTemplateContext(domainType, this));
+    generateSourceCode(new MongoCollectionTemplateContext(domainType, this));
+    generateSourceCode(new MongoCollectionProducerTemplateContext(domainType, this));
+  }
 
 }

@@ -1,6 +1,11 @@
-/**
- * 
- */
+/*******************************************************************************
+ * Copyright (c) 2015 Red Hat. All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which accompanies this
+ * distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors: Red Hat - Initial Contribution
+ *******************************************************************************/
+
 package org.lambdamatic.analyzer.ast.node;
 
 import java.lang.invoke.SerializedLambda;
@@ -8,161 +13,128 @@ import java.lang.invoke.SerializedLambda;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 
 /**
- * Not an actual {@link CapturedArgument}, but just a reference (for further processing) to a {@link CapturedArgument}.
- * The raw Expression that will be kept in cache will use these {@link CapturedArgumentRef} until it is evaluated with
- * the actual {@link CapturedArgument}.
+ * Not an actual {@link CapturedArgument}, but just a reference (for further processing) to a
+ * {@link CapturedArgument}. The raw Expression that will be kept in cache will use these
+ * {@link CapturedArgumentRef} until it is evaluated with the actual {@link CapturedArgument}.
  * 
- * @author Xavier Coulon <xcoulon@redhat.com>
+ * @author Xavier Coulon
  *
  */
 public class CapturedArgumentRef extends Expression {
 
-	/** index of the {@link CapturedArgument} in the {@link SerializedLambda}. */
-	private final int index;
-	/** the Java type of the referenced Java value. */
-	private final Class<?> javaType;
+  /**
+   * index of the {@link CapturedArgument} in the {@link SerializedLambda}.
+   */
+  private final int index;
+  /** the Java type of the referenced Java value. */
+  private final Class<?> javaType;
 
-	/**
-	 * Constructor
-	 * 
-	 * <p>
-	 * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
-	 * </p>
-	 * 
-	 * @param index
-	 *            the captured value index
-	 * @param javaType
-	 *            the actual type of the captured argument 
-	 */
-	public CapturedArgumentRef(final int index, final Class<?> javaType) {
-		this(generateId(), index, javaType, false);
-	}
+  /**
+   * Constructor
+   * 
+   * <p>
+   * Note: the synthetic {@code id} is generated and the inversion flag is set to {@code false}.
+   * </p>
+   * 
+   * @param index the captured value index
+   * @param javaType the actual type of the captured argument
+   */
+  public CapturedArgumentRef(final int index, final Class<?> javaType) {
+    this(generateId(), index, javaType, false);
+  }
 
-	/**
-	 * Full constructor with given id
-	 * 
-	 * @param id
-	 *            the synthetic id of this {@link Expression}.
-	 * @param javaType
-	 *            the actual type of the captured argument 
-	 * @param inverted
-	 *            the inversion flag of this {@link Expression}.
-	 */
-	public CapturedArgumentRef(final int id, final int index, final Class<?> javaType, final boolean inverted) {
-		super(id, inverted);
-		this.index = index;
-		this.javaType = javaType;
-	}
+  /**
+   * Full constructor with given id.
+   * 
+   * @param id the synthetic id of this {@link Expression}
+   * @param index the index in of the argument in the local variables table
+   * @param javaType the actual type of the captured argument
+   * @param inverted the inversion flag of this {@link Expression}
+   */
+  public CapturedArgumentRef(final int id, final int index, final Class<?> javaType,
+      final boolean inverted) {
+    super(id, inverted);
+    this.index = index;
+    this.javaType = javaType;
+  }
 
-	@Override
-	public ComplexExpression getParent() {
-		return (ComplexExpression) super.getParent();
-	}
+  @Override
+  public ComplexExpression getParent() {
+    return (ComplexExpression) super.getParent();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)
-	 */
-	@Override
-	public CapturedArgumentRef duplicate(int id) {
-		return new CapturedArgumentRef(id, this.index, this.javaType, isInverted());
-	}
+  @Override
+  public CapturedArgumentRef duplicate(int id) {
+    return new CapturedArgumentRef(id, this.index, this.javaType, isInverted());
+  }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
-	 */
-	@Override
-	public CapturedArgumentRef duplicate() {
-		return duplicate(generateId());
-	}
+  @Override
+  public CapturedArgumentRef duplicate() {
+    return duplicate(generateId());
+  }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getValue()
-	 */
-	@Override
-	public Object getValue() {
-		throw new AnalyzeException("Capture Argument reference does not hold any value by itself.");
-	}
+  @Override
+  public Object getValue() {
+    throw new AnalyzeException("Capture Argument reference does not hold any value by itself.");
+  }
 
-	/**
-	 * @return the index of the captured argument
-	 * @see SerializedLambda#getCapturedArg(int)
-	 */
-	public int getArgumentIndex() {
-		return index;
-	}
+  /**
+   * @return the index of the captured argument.
+   * @see SerializedLambda#getCapturedArg(int)
+   */
+  public int getArgumentIndex() {
+    return this.index;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ExpressionType getExpressionType() {
-		return ExpressionType.CAPTURED_ARGUMENT_REF;
-	}
+  @Override
+  public ExpressionType getExpressionType() {
+    return ExpressionType.CAPTURED_ARGUMENT_REF;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#getJavaType()
-	 */
-	@Override
-	public Class<?> getJavaType() {
-		return this.javaType;
-	}
+  @Override
+  public Class<?> getJavaType() {
+    return this.javaType;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @see org.lambdamatic.analyzer.ast.node.Expression#canBeInverted()
-	 */
-	@Override
-	public boolean canBeInverted() {
-		return false;
-	}
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.lambdamatic.analyzer.ast.node.Expression#canBeInverted()
+   */
+  @Override
+  public boolean canBeInverted() {
+    return false;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return "<CapturedArgument#" + index + ">";
-	}
+  @Override
+  public String toString() {
+    return "<CapturedArgument#" + this.index + ">";
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + index;
-		return result;
-	}
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + this.index;
+    return result;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		CapturedArgumentRef other = (CapturedArgumentRef) obj;
-		if (index != other.index)
-			return false;
-		return true;
-	}
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    CapturedArgumentRef other = (CapturedArgumentRef) obj;
+    if (this.index != other.index) {
+      return false;
+    }
+    return true;
+  }
 
 }

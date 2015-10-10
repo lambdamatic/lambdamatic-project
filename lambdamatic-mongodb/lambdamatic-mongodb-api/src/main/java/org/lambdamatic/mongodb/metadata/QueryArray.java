@@ -1,6 +1,11 @@
-/**
- * 
- */
+/*******************************************************************************
+ * Copyright (c) 2015 Red Hat. All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which accompanies this
+ * distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors: Red Hat - Initial Contribution
+ *******************************************************************************/
+
 package org.lambdamatic.mongodb.metadata;
 
 import java.util.Collection;
@@ -10,57 +15,62 @@ import java.util.Set;
 import org.lambdamatic.mongodb.FilterExpression;
 
 /**
- * MongoDB operation available on a given Document field of type Array in MongoDB mapped as a {@link List} or
- * {@link Set} in Java.
+ * MongoDB operation available on a given Document field of type Array in MongoDB mapped as a
+ * {@link List} or {@link Set} in Java.
  * 
- * @param T
- *            can be a {@link QueryMetadata} or a simple Java Type (String, Enum, etc.)
+ * @param <DomainMetadata> can be a {@link QueryMetadata} or a simple Java Type (String, Enum, etc.)
  *
- * @author Xavier Coulon <xcoulon@redhat.com>
+ * @author Xavier Coulon
  */
 // TODO: verify that query operation such as below work (ie: compile and convert)
 // db.test.insert({tags:[{name:"foo", score:1}, {name:"bar", score:2}]} )
-// db.test.find({"tags.name":"bar", "tags.score":{$gt:1}}, {"tags.$":1}) // find tag with 'name' == 'bar' OR 'score' > 1
+// db.test.find({"tags.name":"bar", "tags.score":{$gt:1}}, {"tags.$":1}) // find tag with 'name' ==
+// 'bar' OR 'score' > 1
 // and db.test.find({tags : { $elemMatch : { name : "foo", score : 1}}})
 public interface QueryArray<DomainMetadata> {
 
-	/**
-	 * Matches arrays that contain <strong>all elements</strong> specified in parameter.
-	 * 
-	 * @param values
-	 *            the specified values to match.
-	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/all/#op._S_all">MongoDB documentation</a>
-	 */
-	@MongoOperation(MongoOperator.ALL)
-	public boolean matchAll(Object values); // FIXME: use matchesAll(T... values) instead ?
+  /**
+   * Matches arrays that contain <strong>all elements</strong> specified in parameter.
+   * 
+   * @param values the specified values to match.
+   * @return a boolean so that this method can be used in a {@link FilterExpression}
+   * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/all/#op._S_all">MongoDB
+   *      documentation</a>
+   */
+  @MongoOperation(MongoOperator.ALL)
+  public boolean matchAll(Object values); // FIXME: use matchesAll(T... values) instead ?
 
-	/**
-	 * Matches documents that contain <strong>at least one element</strong> that <strong>fully matches the given query expression</strong>.
-	 * 
-	 * @param expression
-	 *            the query in the form of a lambda expression
-	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/elemMatch/#op._S_elemMatch">MongoDB
-	 *      documentation</a>
-	 */
-	@MongoOperation(MongoOperator.ELEMEMT_MATCH)
-	public boolean elementMatch(FilterExpression<DomainMetadata> expression);
+  /**
+   * Matches documents that contain <strong>at least one element</strong> that <strong>fully matches
+   * the given query expression</strong>.
+   * 
+   * @param expression the query in the form of a lambda expression
+   * @return a boolean so that this method can be used in a {@link FilterExpression}
+   * @see <a href=
+   *      "http://docs.mongodb.org/manual/reference/operator/query/elemMatch/#op._S_elemMatch">
+   *      MongoDB documentation</a>
+   */
+  @MongoOperation(MongoOperator.ELEMEMT_MATCH)
+  public boolean elementMatch(FilterExpression<DomainMetadata> expression);
 
-	/**
-	 * Matches any array with the number of elements specified by the argument.
-	 * 
-	 * @param size
-	 *            the number of elements to match
-	 * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/size/#op._S_size">MongoDB documentation</a>
-	 */
-	@MongoOperation(MongoOperator.SIZE)
-	public boolean size(long size);
+  /**
+   * Matches any array with the number of elements specified by the argument.
+   * 
+   * @param size the number of elements to match
+   * @return a boolean so that this method can be used in a {@link FilterExpression}
+   * @see <a href="http://docs.mongodb.org/manual/reference/operator/query/size/#op._S_size">MongoDB
+   *      documentation</a>
+   */
+  @MongoOperation(MongoOperator.SIZE)
+  public boolean size(long size);
 
-	/**
-	 * Accessing a specific element in the domain {@link Collection}.
-	 * @param index the index of the element in the {@link Collection}
-	 * @return the desired element 
-	 */
-	@ArrayElementAccessor
-	public abstract DomainMetadata get(int index);
-	
+  /**
+   * Accessing a specific element in the domain {@link Collection}.
+   * 
+   * @param index the index of the element in the {@link Collection}
+   * @return the desired element
+   */
+  @ArrayElementAccessor
+  public abstract DomainMetadata get(int index);
+
 }
