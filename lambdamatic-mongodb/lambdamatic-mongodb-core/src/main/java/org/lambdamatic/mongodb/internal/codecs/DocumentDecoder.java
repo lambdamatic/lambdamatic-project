@@ -44,9 +44,9 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Xavier Coulon
  */
-public class DocumentEncoder {
+public class DocumentDecoder {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DocumentEncoder.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DocumentDecoder.class);
 
   private final CodecRegistry codecRegistry;
 
@@ -58,7 +58,7 @@ public class DocumentEncoder {
    * @param targetClass the actual target class to encode
    * @param codecRegistry the associated CodecRegistry that will provide the appropriate codec
    */
-  public DocumentEncoder(final Class<?> targetClass, final CodecRegistry codecRegistry) {
+  public DocumentDecoder(final Class<?> targetClass, final CodecRegistry codecRegistry) {
     this.targetClass = targetClass;
     this.codecRegistry = codecRegistry;
   }
@@ -206,17 +206,16 @@ public class DocumentEncoder {
           return value.toString();
         case "org.bson.types.ObjectId":
           return new ObjectId(value.toString());
-        case "java.util.Date":
-          return new Date((long) value);
         case "org.lambdamatic.mongodb.types.geospatial.Location":
           if (value instanceof Location) {
             return value;
-          } else {
-            try (final BsonDocumentReader reader = new BsonDocumentReader((BsonDocument) value)) {
-              return new LocationCodec(this.codecRegistry).decode(reader,
-                  DecoderContext.builder().build());
-            }
+          } 
+          try (final BsonDocumentReader reader = new BsonDocumentReader((BsonDocument) value)) {
+            return new LocationCodec(this.codecRegistry).decode(reader,
+                DecoderContext.builder().build());
           }
+        case "java.util.Date":
+          return new Date((long) value);
         default:
           // will throw ConversionException
           break;

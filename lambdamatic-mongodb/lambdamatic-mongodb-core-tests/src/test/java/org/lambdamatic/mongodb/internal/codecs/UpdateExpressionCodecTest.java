@@ -39,7 +39,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 
 /**
- * @author xcoulon
+ * Testing the {@link UpdateExpressionCodec}.
  *
  */
 @RunWith(Parameterized.class)
@@ -67,6 +67,9 @@ public class UpdateExpressionCodecTest {
     getCodecLogger().setLevel(previousLoggerLevel);
   }
 
+  /**
+   * @return the data to use in the tests.
+   */
   @Parameters(name = "[{index}] {1}")
   public static Object[][] data() {
     final Bar bar = new Bar("javaObject", 1);
@@ -79,10 +82,12 @@ public class UpdateExpressionCodecTest {
     } , "{$inc: {primitiveIntField: 1}}");
     data.match(foo -> {
       foo.barList.push(new Bar("javaObject", 1));
-    } , "{$push: {barList: {_targetClass : 'com.sample.Bar', stringField: 'javaObject', primitiveIntField: 1}}}");
+    } , "{$push: {barList: {_targetClass : 'com.sample.Bar', "
+        + "stringField: 'javaObject', primitiveIntField: 1}}}");
     data.match(foo -> {
       foo.barList.push(bar);
-    } , "{$push: {barList: {_targetClass : 'com.sample.Bar', stringField: 'javaObject', primitiveIntField: 1}}}");
+    } , "{$push: {barList: {_targetClass : 'com.sample.Bar', "
+        + "stringField: 'javaObject', primitiveIntField: 1}}}");
     return data.toArray();
   }
 

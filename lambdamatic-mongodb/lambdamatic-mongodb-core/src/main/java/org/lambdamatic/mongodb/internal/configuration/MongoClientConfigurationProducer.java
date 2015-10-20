@@ -44,7 +44,7 @@ public class MongoClientConfigurationProducer {
   @SuppressWarnings("static-method")
   @Produces
   @Default
-  public MongoClientConfiguration getMongoDBClientConfiguration() throws IOException {
+  public MongoClientConfiguration getMongoClientConfiguration() throws IOException {
     try (
         final InputStream jsonConfigFile =
             Thread.currentThread().getContextClassLoader().getResourceAsStream("config.json");
@@ -52,9 +52,9 @@ public class MongoClientConfigurationProducer {
       final JsonObject root = (JsonObject) reader.read();
       final String databaseName = ((JsonString) root.get("databaseName")).getString();
       LOGGER.debug("Database name: {}", databaseName);
-      final MongoClientConfiguration mongoDBClientConfiguration =
+      final MongoClientConfiguration mongoClientConfiguration =
           new MongoClientConfiguration(databaseName);
-      return mongoDBClientConfiguration;
+      return mongoClientConfiguration;
     }
   }
 

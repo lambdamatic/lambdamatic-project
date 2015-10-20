@@ -107,7 +107,7 @@ public class DocumentCodec<DomainType>
    */
   @Override
   public DomainType decode(final BsonReader reader, final DecoderContext decoderContext) {
-    final DocumentEncoder encoder = new DocumentEncoder(this.targetClass, this.codecRegistry);
+    final DocumentDecoder encoder = new DocumentDecoder(this.targetClass, this.codecRegistry);
     // code adapted from "org.bson.codecs.BsonDocumentCodec"
     return encoder.decodeDocument(reader, decoderContext);
   }

@@ -6,10 +6,6 @@
 
 package com.sample;
 
-/**
- * @author Xavier Coulon
- *
- */
 public enum EnumFoo {
 
   FOO, BAR, BAZ;

@@ -26,7 +26,7 @@ import com.sample.BlogEntryCollection;
 import com.sample.BlogEntryComment;
 
 /**
- * Testing the Update operations
+ * Testing the Update operations.
  * 
  * @author Xavier Coulon
  *

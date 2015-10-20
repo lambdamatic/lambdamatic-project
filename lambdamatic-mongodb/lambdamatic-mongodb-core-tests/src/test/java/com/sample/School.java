@@ -5,9 +5,6 @@
  *
  * Contributors: Red Hat - Initial Contribution
  *******************************************************************************/
-/**
- * 
- */
 
 package com.sample;
 
@@ -27,28 +24,28 @@ public class School {
   private List<Student> students;
 
   /**
-   * @return the zipcode
+   * @return the zipcode.
    */
   public String getZipcode() {
     return zipcode;
   }
 
   /**
-   * @param zipcode the zipcode to set
+   * @param zipcode the zipcode to set.
    */
   public void setZipcode(String zipcode) {
     this.zipcode = zipcode;
   }
 
   /**
-   * @return the students
+   * @return the students.
    */
   public List<Student> getStudents() {
     return students;
   }
 
   /**
-   * @param students the students to set
+   * @param students the students to set.
    */
   public void setStudents(List<Student> students) {
     this.students = students;

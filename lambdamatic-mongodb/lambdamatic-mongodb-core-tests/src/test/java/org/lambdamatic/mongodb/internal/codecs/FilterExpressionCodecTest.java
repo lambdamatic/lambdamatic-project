@@ -5,9 +5,6 @@
  *
  * Contributors: Red Hat - Initial Contribution
  *******************************************************************************/
-/**
- * 
- */
 
 package org.lambdamatic.mongodb.internal.codecs;
 
@@ -47,7 +44,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 
 /**
- * Testing the {@link FilterExpressionCodec}
+ * Testing the {@link FilterExpressionCodec}.
  * 
  * @author Xavier Coulon
  *
@@ -58,6 +55,9 @@ public class FilterExpressionCodecTest {
   private static final org.slf4j.Logger LOGGER =
       LoggerFactory.getLogger(FilterExpressionCodecTest.class);
 
+  /**
+   * @return the data to use.
+   */
   @Parameters(name = "[{index}] {1}")
   public static Object[][] data() {
     final Foo f = new FooBuilder().withStringField("javaObject").build();
@@ -79,7 +79,7 @@ public class FilterExpressionCodecTest {
     data.match(foo -> foo.primitiveShortField.equals(1), "{primitiveShortField: 1}");
     data.match(foo -> foo.primitiveIntField.equals(1), "{primitiveIntField: 1}");
     data.match(foo -> foo.primitiveFloatField.equals(1), "{primitiveFloatField: 1}");
-    data.match(foo -> foo.primitiveLongField.equals(1l), "{primitiveLongField: {$numberLong:'1'}}");
+    data.match(foo -> foo.primitiveLongField.equals(1L), "{primitiveLongField: {$numberLong:'1'}}");
     data.match(foo -> foo.primitiveDoubleField.equals(1d), "{primitiveDoubleField: 1}");
     data.match(foo -> foo.primitiveCharField.equals('A'), "{primitiveCharField: 'A'}");
     data.match(foo -> foo.stringField.equals("John"), "{stringField: 'John'}");
@@ -154,7 +154,8 @@ public class FilterExpressionCodecTest {
 
     // polygon with single (closed) ring defined by an array of points
     data.match(foo -> foo.location.geoWithin(singleRing),
-        "{location: { $geoWithin: { $geometry: {type: 'Polygon', coordinates: [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]] } } } }");
+        "{location: { $geoWithin: { $geometry: {type: 'Polygon', "
+        + "coordinates: [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]] } } } }");
 
     // element match on list (stored in a JSON Array)
     data.match(foo -> foo.stringList.elementMatch(e -> e.equals("bar")),
@@ -217,16 +218,19 @@ public class FilterExpressionCodecTest {
     data.match(
         foo -> (foo.primitiveIntField.notEquals(42) && !foo.enumFoo.equals(EnumFoo.FOO))
             || !foo.stringField.equals("john"),
-        "{$or: [{$and:[{primitiveIntField: {$ne: 42}}, {$not:{enumFoo:'FOO'}}]},  {$not:{stringField:'john'}}]}");
+        "{$or: [{$and:[{primitiveIntField: {$ne: 42}}, {$not:{enumFoo:'FOO'}}]},  "
+        + "{$not:{stringField:'john'}}]}");
     return data.toArray();
   }
 
   private final SerializablePredicate<QFoo> expr;
+  
   private final String expectedJSON;
+  
   private static Level previousLoggerLevel;
 
   /**
-   * Test contructor
+   * Test contructor.
    * 
    * @param expr the {@link SerializablePredicate} to convert
    * @param expectedJSON the expected JSON output

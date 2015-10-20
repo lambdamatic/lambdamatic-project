@@ -27,7 +27,6 @@ public class ParameterizedDataset<T> {
    * @param title the test title
    * @param object the domain object to encode
    * @param bson the expected result
-   * @return
    */
   public void match(final String title, final T object, final String bson) {
     data.add(new Object[] {title, object, bson});
@@ -38,7 +37,6 @@ public class ParameterizedDataset<T> {
    * 
    * @param object the domain object to encode
    * @param bson the expected result
-   * @return
    */
   public void match(final T object, final String bson) {
     data.add(new Object[] {object, bson});

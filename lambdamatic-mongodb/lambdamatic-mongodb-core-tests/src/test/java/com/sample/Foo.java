@@ -19,35 +19,55 @@ import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.DocumentId;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 
-/**
- * @author Xavier Coulon
- *
- */
+import com.sample.Bar.BarBuilder;
+
 @Document(collection = "foo")
 public class Foo {
 
   public static class FooBuilder {
     private ObjectId id;
+    
     private String stringField;
+    
     private byte primitiveByteField;
+    
     private short primitiveShortField;
+    
     private int primitiveIntField;
+    
     private long primitiveLongField;
+    
     private float primitiveFloatField;
+    
     private double primitiveDoubleField;
+    
     private boolean primitiveBooleanField;
+    
     private char primitiveCharField;
+    
     private EnumFoo enumFoo;
+    
     private Location location;
+    
     private Date date;
+    
     private Bar bar;
+    
     private List<Bar> barList;
+    
     private Map<String, Bar> barMap;
+    
     private EnumBar[] enumBarArray;
+    
     private List<String> stringList;
+    
     private Set<String> stringSet;
+    
     private String[] stringArray;
+    
     private Map<String, String> stringMap;
+    
+    private byte[] bytes;
 
     public FooBuilder withId(final ObjectId id) {
       this.id = id;
@@ -154,6 +174,11 @@ public class Foo {
       return this;
     }
 
+    public FooBuilder withBinary(byte[] bytes) {
+      this.bytes = bytes;
+      return this;
+    }
+    
     public Foo build() {
       return new Foo(this);
     }
@@ -216,11 +241,18 @@ public class Foo {
   private String[] stringArray;
 
   private Map<String, String> stringMap;
+  
+  @DocumentField(name = "raw_content")
+  private byte[] bytes;
 
   public Foo() {
 
   }
 
+  /**
+   * Constructor.
+   * @param fooBuilder the builder
+   */
   public Foo(final FooBuilder fooBuilder) {
     this.id = fooBuilder.id;
     this.enumFoo = fooBuilder.enumFoo;
@@ -244,172 +276,101 @@ public class Foo {
     this.stringSet = fooBuilder.stringSet;
     this.stringArray = fooBuilder.stringArray;
     this.stringMap = fooBuilder.stringMap;
+    this.bytes = fooBuilder.bytes;
   }
 
-  /**
-   * @return the id
-   */
   public ObjectId getId() {
     return id;
   }
 
-  /**
-   * @param id the id to set
-   */
   public void setId(ObjectId id) {
     this.id = id;
   }
 
-  /**
-   * @return the stringField
-   */
   public String getStringField() {
     return stringField;
   }
 
-  /**
-   * @param stringField the stringField to set
-   */
   public void setStringField(String stringField) {
     this.stringField = stringField;
   }
 
-  /**
-   * @return the primitiveByteField
-   */
   public byte getPrimitiveByteField() {
     return primitiveByteField;
   }
 
-  /**
-   * @param primitiveByteField the primitiveByteField to set
-   */
   public void setPrimitiveByteField(byte primitiveByteField) {
     this.primitiveByteField = primitiveByteField;
   }
 
-  /**
-   * @return the primitiveShortField
-   */
   public short getPrimitiveShortField() {
     return primitiveShortField;
   }
 
-  /**
-   * @param primitiveShortField the primitiveShortField to set
-   */
   public void setPrimitiveShortField(short primitiveShortField) {
     this.primitiveShortField = primitiveShortField;
   }
 
-  /**
-   * @return the primitiveIntField
-   */
   public int getPrimitiveIntField() {
     return primitiveIntField;
   }
 
-  /**
-   * @param primitiveIntField the primitiveIntField to set
-   */
   public void setPrimitiveIntField(int primitiveIntField) {
     this.primitiveIntField = primitiveIntField;
   }
 
-  /**
-   * @return the primitiveLongField
-   */
   public long getPrimitiveLongField() {
     return primitiveLongField;
   }
 
-  /**
-   * @param primitiveLongField the primitiveLongField to set
-   */
   public void setPrimitiveLongField(long primitiveLongField) {
     this.primitiveLongField = primitiveLongField;
   }
 
-  /**
-   * @return the primitiveFloatField
-   */
   public float getPrimitiveFloatField() {
     return primitiveFloatField;
   }
 
-  /**
-   * @param primitiveFloatField the primitiveFloatField to set
-   */
   public void setPrimitiveFloatField(float primitiveFloatField) {
     this.primitiveFloatField = primitiveFloatField;
   }
 
-  /**
-   * @return the primitiveDoubleField
-   */
   public double getPrimitiveDoubleField() {
     return primitiveDoubleField;
   }
 
-  /**
-   * @param primitiveDoubleField the primitiveDoubleField to set
-   */
   public void setPrimitiveDoubleField(double primitiveDoubleField) {
     this.primitiveDoubleField = primitiveDoubleField;
   }
 
-  /**
-   * @return the primitiveBooleanField
-   */
   public boolean isPrimitiveBooleanField() {
     return primitiveBooleanField;
   }
 
-  /**
-   * @param primitiveBooleanField the primitiveBooleanField to set
-   */
   public void setPrimitiveBooleanField(boolean primitiveBooleanField) {
     this.primitiveBooleanField = primitiveBooleanField;
   }
 
-  /**
-   * @return the primitiveCharField
-   */
   public char getPrimitiveCharField() {
     return primitiveCharField;
   }
 
-  /**
-   * @param primitiveCharField the primitiveCharField to set
-   */
   public void setPrimitiveCharField(char primitiveCharField) {
     this.primitiveCharField = primitiveCharField;
   }
 
-  /**
-   * @return the enumFoo
-   */
   public EnumFoo getEnumFoo() {
     return enumFoo;
   }
 
-  /**
-   * @param enumFoo the enumFoo to set
-   */
   public void setEnumFoo(EnumFoo enumFoo) {
     this.enumFoo = enumFoo;
   }
 
-  /**
-   * @return the location
-   */
   public Location getLocation() {
     return location;
   }
 
-  /**
-   * @param location the location to set
-   */
   public void setLocation(Location location) {
     this.location = location;
   }
@@ -470,11 +431,14 @@ public class Foo {
     this.stringMap = stringMap;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
+  public byte[] getBytes() {
+    return bytes;
+  }
+  
+  public void setBytes(byte[] bytes) {
+    this.bytes = bytes;
+  }
+  
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -505,94 +469,123 @@ public class Foo {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     Foo other = (Foo) obj;
     if (bar == null) {
-      if (other.bar != null)
+      if (other.bar != null) {
         return false;
-    } else if (!bar.equals(other.bar))
+      }
+    } else if (!bar.equals(other.bar)) {
       return false;
+    }
     if (barList == null) {
-      if (other.barList != null)
+      if (other.barList != null) {
         return false;
-    } else if (!barList.equals(other.barList))
+      }
+    } else if (!barList.equals(other.barList)) {
       return false;
+    }
     if (barMap == null) {
-      if (other.barMap != null)
+      if (other.barMap != null) {
         return false;
-    } else if (!barMap.equals(other.barMap))
+      }
+    } else if (!barMap.equals(other.barMap)) {
       return false;
+    }
     if (date == null) {
-      if (other.date != null)
+      if (other.date != null) {
         return false;
-    } else if (!date.equals(other.date))
+      }
+    } else if (!date.equals(other.date)) {
       return false;
-    if (!Arrays.equals(enumBarArray, other.enumBarArray))
+    }
+    if (!Arrays.equals(enumBarArray, other.enumBarArray)) {
       return false;
-    if (enumFoo != other.enumFoo)
+    }
+    if (enumFoo != other.enumFoo) {
       return false;
+    }
     if (id == null) {
-      if (other.id != null)
+      if (other.id != null) {
         return false;
-    } else if (!id.equals(other.id))
+      }
+    } else if (!id.equals(other.id)) {
       return false;
+    }
     if (location == null) {
-      if (other.location != null)
+      if (other.location != null) {
         return false;
-    } else if (!location.equals(other.location))
+      }
+    } else if (!location.equals(other.location)) {
       return false;
-    if (primitiveBooleanField != other.primitiveBooleanField)
+    }
+    if (primitiveBooleanField != other.primitiveBooleanField) {
       return false;
-    if (primitiveByteField != other.primitiveByteField)
+    }
+    if (primitiveByteField != other.primitiveByteField) {
       return false;
-    if (primitiveCharField != other.primitiveCharField)
+    }
+    if (primitiveCharField != other.primitiveCharField) {
       return false;
-    if (Double.doubleToLongBits(primitiveDoubleField) != Double
-        .doubleToLongBits(other.primitiveDoubleField))
+    }
+    if (Double.doubleToLongBits(primitiveDoubleField) != Double 
+        .doubleToLongBits(other.primitiveDoubleField)) {
       return false;
+    }
     if (Float.floatToIntBits(primitiveFloatField) != Float
-        .floatToIntBits(other.primitiveFloatField))
+        .floatToIntBits(other.primitiveFloatField)) {
       return false;
-    if (primitiveIntField != other.primitiveIntField)
+    }
+    if (primitiveIntField != other.primitiveIntField) {
       return false;
-    if (primitiveLongField != other.primitiveLongField)
+    }
+    if (primitiveLongField != other.primitiveLongField) {
       return false;
-    if (primitiveShortField != other.primitiveShortField)
+    }
+    if (primitiveShortField != other.primitiveShortField) {
       return false;
-    if (!Arrays.equals(stringArray, other.stringArray))
+    }
+    if (!Arrays.equals(stringArray, other.stringArray)) {
       return false;
+    }
     if (stringField == null) {
-      if (other.stringField != null)
+      if (other.stringField != null) {
         return false;
-    } else if (!stringField.equals(other.stringField))
+      }
+    } else if (!stringField.equals(other.stringField)) {
       return false;
+    }
     if (stringList == null) {
-      if (other.stringList != null)
+      if (other.stringList != null) {
         return false;
-    } else if (!stringList.equals(other.stringList))
+      }
+    } else if (!stringList.equals(other.stringList)) {
       return false;
+    }
     if (stringMap == null) {
-      if (other.stringMap != null)
+      if (other.stringMap != null) {
         return false;
-    } else if (!stringMap.equals(other.stringMap))
+      }
+    } else if (!stringMap.equals(other.stringMap)) {
       return false;
+    }
     if (stringSet == null) {
-      if (other.stringSet != null)
+      if (other.stringSet != null) {
         return false;
-    } else if (!stringSet.equals(other.stringSet))
+      }
+    } else if (!stringSet.equals(other.stringSet)) {
       return false;
+    }
     return true;
   }
 

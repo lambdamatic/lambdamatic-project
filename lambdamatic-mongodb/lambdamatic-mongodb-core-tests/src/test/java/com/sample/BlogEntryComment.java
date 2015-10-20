@@ -12,12 +12,6 @@ import java.util.Date;
 
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 
-/**
- * A comment on a {@link BlogEntry}
- * 
- * @author xcoulon
- *
- */
 @EmbeddedDocument
 public class BlogEntryComment {
 
@@ -31,9 +25,11 @@ public class BlogEntryComment {
   private String content;
 
   /**
-   * @param author
-   * @param date
-   * @param content
+   * Constructor.
+   * 
+   * @param author the author
+   * @param date the date
+   * @param content the content
    */
   public BlogEntryComment(String author, Date date, String content) {
     super();
@@ -44,44 +40,26 @@ public class BlogEntryComment {
 
   public BlogEntryComment() {}
 
-  /**
-   * @return the author
-   */
   public String getAuthor() {
     return author;
   }
 
-  /**
-   * @param author the author to set
-   */
   public void setAuthor(String author) {
     this.author = author;
   }
 
-  /**
-   * @return the date
-   */
   public Date getDate() {
     return date;
   }
 
-  /**
-   * @param date the date to set
-   */
   public void setDate(Date date) {
     this.date = date;
   }
 
-  /**
-   * @return the content
-   */
   public String getContent() {
     return content;
   }
 
-  /**
-   * @param content the content to set
-   */
   public void setContent(String content) {
     this.content = content;
   }

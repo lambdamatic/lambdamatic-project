@@ -100,7 +100,7 @@ public class LocationCodec
   @Override
   public Location decode(final BsonReader reader, final DecoderContext decoderContext) {
     // code duplicated and adapted from "org.bson.codecs.BsonDocumentCodec"
-    final DocumentEncoder documentEncoder = new DocumentEncoder(Location.class, getCodecRegistry());
+    final DocumentDecoder documentEncoder = new DocumentDecoder(Location.class, getCodecRegistry());
     final Map<String, BsonElement> keyValuePairs = new HashMap<>();
     reader.readStartDocument();
     while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {

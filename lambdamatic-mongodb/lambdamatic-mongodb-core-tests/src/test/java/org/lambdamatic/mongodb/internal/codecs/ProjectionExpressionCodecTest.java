@@ -5,9 +5,6 @@
  *
  * Contributors: Red Hat - Initial Contribution
  *******************************************************************************/
-/**
- * 
- */
 
 package org.lambdamatic.mongodb.internal.codecs;
 
@@ -43,7 +40,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 
 /**
- * Testing the {@link ProjectionExpressionCodec}
+ * Testing the {@link ProjectionExpressionCodec}.
  * 
  * @author Xavier Coulon
  *
@@ -73,6 +70,9 @@ public class ProjectionExpressionCodecTest {
     getCodecLogger().setLevel(previousLoggerLevel);
   }
 
+  /**
+   * @return the data to use in the tests.
+   */
   @Parameters(name = "[{index}] {1}")
   public static Object[][] data() {
     final ParameterizedDataset<SerializableConsumer<PFoo>> data = new ParameterizedDataset<>();

@@ -25,19 +25,19 @@ public class MongoClientProducer {
   /**
    * CDI Producer method to create a new {@link MongoClient}.
    * 
-   * @param mongoDBClientConfiguration the configuration to use
+   * @param mongoClientConfiguration the configuration to use
    * @return a new instance of the {@link MongoClient}.
    */
   @SuppressWarnings("static-method")
   @Produces
   @Singleton
-  public MongoClient createMongoClient(MongoClientConfiguration mongoDBClientConfiguration) {
+  public MongoClient createMongoClient(MongoClientConfiguration mongoClientConfiguration) {
     MongoClient mongoClient = new MongoClient();
     return mongoClient;
   }
 
   /**
-   * Method called when the client is to be disposed
+   * Method called when the client is to be disposed.
    * 
    * @param mongoClient the {@link MongoClient} to dispose
    */

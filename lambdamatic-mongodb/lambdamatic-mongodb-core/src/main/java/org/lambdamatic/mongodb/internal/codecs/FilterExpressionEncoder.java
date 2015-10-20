@@ -160,7 +160,7 @@ class FilterExpressionEncoder
       try (
           final BsonDocumentWriter operandBsonWriter = new BsonDocumentWriter(operandDocument);
           final BsonDocumentReader operandBsonReader = new BsonDocumentReader(operandDocument);
-          ) {
+        ) {
         final FilterExpressionEncoder operandEncoder =
             new FilterExpressionEncoder(this.queryMetadataClass, this.queryMetadataVarName,
                 operandBsonWriter, this.encoderContext);

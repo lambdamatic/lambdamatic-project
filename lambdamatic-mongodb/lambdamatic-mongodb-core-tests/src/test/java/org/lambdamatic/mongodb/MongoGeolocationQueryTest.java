@@ -39,8 +39,11 @@ public class MongoGeolocationQueryTest extends MongoBaseTest {
     super(Foo.class);
   }
 
+  /**
+   * Test setup.
+   */
   @Before
-  public void setup() throws UnknownHostException {
+  public void setup()  {
     this.fooCollection = new FooCollection(getMongoClient(), DATABASE_NAME);
     // insert test data
     final Foo foo1 = new FooBuilder().withStringField("Item1").withLocation(40.72, -73.92).build();
@@ -49,8 +52,6 @@ public class MongoGeolocationQueryTest extends MongoBaseTest {
     final Foo foo4 = new FooBuilder().withStringField("Item4").withLocation(40.72, -73.92).build();
     final Foo foo5 = new FooBuilder().withStringField("Item5").withLocation(40.0, -73.0).build();
     this.fooCollection.add(foo1, foo2, foo3, foo4, foo5);
-    // mongoClient.getDatabase(DATABASE_NAME).getCollection(FOO_COLLECTION_NAME).createIndex("location",
-    // new CreateIndexOptions().twoDSphereIndexVersion(2));
   }
 
   @Test

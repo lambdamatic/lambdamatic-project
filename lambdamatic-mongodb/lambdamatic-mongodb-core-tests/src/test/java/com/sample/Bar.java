@@ -12,25 +12,33 @@ import org.lambdamatic.mongodb.annotations.DocumentField;
 import org.lambdamatic.mongodb.annotations.EmbeddedDocument;
 import org.lambdamatic.mongodb.types.geospatial.Location;
 
-/**
- * @author Xavier Coulon
- *
- */
 @EmbeddedDocument
 public class Bar {
 
   public static class BarBuilder {
+    
     private String stringField;
+    
     private byte primitiveByteField;
+    
     private short primitiveShortField;
+    
     private int primitiveIntField;
+    
     private long primitiveLongField;
+    
     private float primitiveFloatField;
+    
     private double primitiveDoubleField;
+    
     private boolean primitiveBooleanField;
+    
     private char primitiveCharField;
+    
     private EnumBar enumBar;
+    
     private Location location;
+    
     private Date date;
 
     public BarBuilder withPrimitiveByteField(final byte primitiveByteField) {
@@ -140,15 +148,21 @@ public class Bar {
   }
 
   /**
-   * @param stringField
-   * @param primitiveIntField
+   * Constructor.
+   * @param stringField the stringField
+   * @param primitiveIntField the primitiveIntField
    */
   public Bar(String stringField, int primitiveIntField) {
     super();
     this.stringField = stringField;
     this.primitiveIntField = primitiveIntField;
   }
-
+  
+  
+  /**
+   * Constructor.
+   * @param barBuilder the builder
+   */
   public Bar(final BarBuilder barBuilder) {
     this.enumBar = barBuilder.enumBar;
     this.location = barBuilder.location;
@@ -165,165 +179,94 @@ public class Bar {
     this.date = barBuilder.date;
   }
 
-  /**
-   * @return the stringField
-   */
   public String getStringField() {
     return stringField;
   }
 
-  /**
-   * @param stringField the stringField to set
-   */
   public void setStringField(String stringField) {
     this.stringField = stringField;
   }
 
-  /**
-   * @return the primitiveByteField
-   */
   public byte getPrimitiveByteField() {
     return primitiveByteField;
   }
 
-  /**
-   * @param primitiveByteField the primitiveByteField to set
-   */
   public void setPrimitiveByteField(byte primitiveByteField) {
     this.primitiveByteField = primitiveByteField;
   }
 
-  /**
-   * @return the primitiveShortField
-   */
   public short getPrimitiveShortField() {
     return primitiveShortField;
   }
 
-  /**
-   * @param primitiveShortField the primitiveShortField to set
-   */
   public void setPrimitiveShortField(short primitiveShortField) {
     this.primitiveShortField = primitiveShortField;
   }
 
-  /**
-   * @return the primitiveIntField
-   */
   public int getPrimitiveIntField() {
     return primitiveIntField;
   }
 
-  /**
-   * @param primitiveIntField the primitiveIntField to set
-   */
   public void setPrimitiveIntField(int primitiveIntField) {
     this.primitiveIntField = primitiveIntField;
   }
 
-  /**
-   * @return the primitiveLongField
-   */
   public long getPrimitiveLongField() {
     return primitiveLongField;
   }
 
-  /**
-   * @param primitiveLongField the primitiveLongField to set
-   */
   public void setPrimitiveLongField(long primitiveLongField) {
     this.primitiveLongField = primitiveLongField;
   }
 
-  /**
-   * @return the primitiveFloatField
-   */
   public float getPrimitiveFloatField() {
     return primitiveFloatField;
   }
 
-  /**
-   * @param primitiveFloatField the primitiveFloatField to set
-   */
   public void setPrimitiveFloatField(float primitiveFloatField) {
     this.primitiveFloatField = primitiveFloatField;
   }
 
-  /**
-   * @return the primitiveDoubleField
-   */
   public double getPrimitiveDoubleField() {
     return primitiveDoubleField;
   }
 
-  /**
-   * @param primitiveDoubleField the primitiveDoubleField to set
-   */
   public void setPrimitiveDoubleField(double primitiveDoubleField) {
     this.primitiveDoubleField = primitiveDoubleField;
   }
 
-  /**
-   * @return the primitiveBooleanField
-   */
   public boolean isPrimitiveBooleanField() {
     return primitiveBooleanField;
   }
 
-  /**
-   * @param primitiveBooleanField the primitiveBooleanField to set
-   */
   public void setPrimitiveBooleanField(boolean primitiveBooleanField) {
     this.primitiveBooleanField = primitiveBooleanField;
   }
 
-  /**
-   * @return the primitiveCharField
-   */
   public char getPrimitiveCharField() {
     return primitiveCharField;
   }
 
-  /**
-   * @param primitiveCharField the primitiveCharField to set
-   */
   public void setPrimitiveCharField(char primitiveCharField) {
     this.primitiveCharField = primitiveCharField;
   }
 
-  /**
-   * @return the enumBar
-   */
   public EnumBar getEnumBar() {
     return enumBar;
   }
 
-  /**
-   * @param enumBar the enumBar to set
-   */
   public void setEnumBar(EnumBar enumBar) {
     this.enumBar = enumBar;
   }
 
-  /**
-   * @return the location
-   */
   public Location getLocation() {
     return location;
   }
 
-  /**
-   * @param location the location to set
-   */
   public void setLocation(Location location) {
     this.location = location;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -344,50 +287,61 @@ public class Bar {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     Bar other = (Bar) obj;
-    if (enumBar != other.enumBar)
+    if (enumBar != other.enumBar) {
       return false;
+    }
     if (location == null) {
-      if (other.location != null)
+      if (other.location != null) {
         return false;
-    } else if (!location.equals(other.location))
+      }
+    } else if (!location.equals(other.location)) {
       return false;
-    if (primitiveBooleanField != other.primitiveBooleanField)
+    }
+    if (primitiveBooleanField != other.primitiveBooleanField) {
       return false;
-    if (primitiveByteField != other.primitiveByteField)
+    }
+    if (primitiveByteField != other.primitiveByteField) {
       return false;
-    if (primitiveCharField != other.primitiveCharField)
+    }
+    if (primitiveCharField != other.primitiveCharField) {
       return false;
+    }
     if (Double.doubleToLongBits(primitiveDoubleField) != Double
-        .doubleToLongBits(other.primitiveDoubleField))
+        .doubleToLongBits(other.primitiveDoubleField)) {
       return false;
+    }
     if (Float.floatToIntBits(primitiveFloatField) != Float
-        .floatToIntBits(other.primitiveFloatField))
+        .floatToIntBits(other.primitiveFloatField)) {
       return false;
-    if (primitiveIntField != other.primitiveIntField)
+    }
+    if (primitiveIntField != other.primitiveIntField) {
       return false;
-    if (primitiveLongField != other.primitiveLongField)
+    }
+    if (primitiveLongField != other.primitiveLongField) {
       return false;
-    if (primitiveShortField != other.primitiveShortField)
+    }
+    if (primitiveShortField != other.primitiveShortField) {
       return false;
+    }
     if (stringField == null) {
-      if (other.stringField != null)
+      if (other.stringField != null) {
         return false;
-    } else if (!stringField.equals(other.stringField))
+      }
+    } else if (!stringField.equals(other.stringField)) {
       return false;
+    }
     return true;
   }
 

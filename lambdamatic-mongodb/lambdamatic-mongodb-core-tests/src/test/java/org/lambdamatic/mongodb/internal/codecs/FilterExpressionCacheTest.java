@@ -5,9 +5,6 @@
  *
  * Contributors: Red Hat - Initial Contribution
  *******************************************************************************/
-/**
- * 
- */
 
 package org.lambdamatic.mongodb.internal.codecs;
 
@@ -47,8 +44,12 @@ public class FilterExpressionCacheTest {
       LoggerFactory.getLogger(FilterExpressionCodecTest.class);
 
   private LambdaExpressionAnalyzerListenerImpl listener;
+  
   private LambdaExpressionAnalyzer lambdaAnalyzer;
 
+  /**
+   * Register listener.
+   */
   @Before
   public void registerListener() {
     listener = new LambdaExpressionAnalyzerListenerImpl();

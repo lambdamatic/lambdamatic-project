@@ -5,9 +5,6 @@
  *
  * Contributors: Red Hat - Initial Contribution
  *******************************************************************************/
-/**
- * 
- */
 
 package org.lambdamatic.mongodb.internal.codecs;
 
@@ -59,7 +56,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 
 /**
- * Testing the {@link FilterExpressionCodec}
+ * Testing the {@link FilterExpressionCodec}.
  * 
  * @author xcoulon
  *
@@ -91,6 +88,9 @@ public class DocumentCodecTest {
     getCodecLogger().setLevel(previousLoggerLevel);
   }
 
+  /**
+   * @return the data to use.
+   */
   @Parameters(name = "[{index}] {0}")
   public static Object[][] data() {
     final Date date = new Date();
@@ -99,38 +99,39 @@ public class DocumentCodecTest {
         new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
             .withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2)
             .withDate(date).build(),
-        "{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
-            + "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
-            + "}, location:{type:'Point', coordinates:[40.1, -70.2]}}");
+        "{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', "
+            + "stringField:'jdoe', " + "primitiveIntField:42, enumFoo:'FOO', date: {$date:"
+            + date.getTime() + "}, location:{type:'Point', coordinates:[40.1, -70.2]}}");
     data.match("Document with list of String",
         new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
             .withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2)
             .withDate(date).withStringList("bar", "baz", "javaObject").build(),
-        "{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
-            + "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
-            + "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
+        "{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', "
+            + "stringField:'jdoe', " + "primitiveIntField:42, enumFoo:'FOO', date: {$date:"
+            + date.getTime() + "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
             + "stringList:['bar', 'baz', 'javaObject']}");
     data.match("Document with set of String",
         new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
             .withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2)
             .withDate(date).withStringSet("bar", "baz", "javaObject").build(),
-        "{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
-            + "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
-            + "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
+        "{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', "
+            + "stringField:'jdoe', " + "primitiveIntField:42, enumFoo:'FOO', date: {$date:"
+            + date.getTime() + "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
             + "stringSet:['bar', 'baz', 'javaObject']}");
     data.match("Document with Array of String",
         new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
             .withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2)
             .withDate(date).withStringArray("bar", "baz", "javaObject").build(),
-        "{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', stringField:'jdoe', "
-            + "primitiveIntField:42, enumFoo:'FOO', date: {$date:" + date.getTime()
-            + "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
+        "{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', "
+            + "stringField:'jdoe', " + "primitiveIntField:42, enumFoo:'FOO', date: {$date:"
+            + date.getTime() + "}, location:{type:'Point', coordinates:[40.1, -70.2]},"
             + "stringArray:['bar', 'baz', 'javaObject']}");
     data.match("Document with Array of embedded documents",
         new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59"))
             .withBarList(new Bar("javaObject", 1)).build(),
         "{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', "
-            + "barList:[{_targetClass: 'com.sample.Bar', stringField:'javaObject' , primitiveIntField:1}]}");
+            + "barList:[{_targetClass: 'com.sample.Bar', stringField:'javaObject', "
+            + "primitiveIntField:1}]}");
 
     final Map<String, String> stringMap = new TreeMap<>();
     stringMap.put("bar", "BAR");
@@ -150,7 +151,10 @@ public class DocumentCodecTest {
         new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withBarMap(barMap)
             .build(),
         "{_id : { $oid : '5459fed60986a72813eb2d59' }, _targetClass:'com.sample.Foo', "
-            + "barMap:[{bar:{_targetClass: 'com.sample.Bar', stringField:'BAR' , primitiveIntField:1}}, {baz:{_targetClass: 'com.sample.Bar', stringField:'BAZ' , primitiveIntField:2}},{foo:{_targetClass: 'com.sample.Bar', stringField:'FOO' , primitiveIntField:3}}]}");
+            + "barMap:[{bar:{_targetClass: 'com.sample.Bar', stringField:'BAR', "
+            + "primitiveIntField:1}}, "
+            + "{baz:{_targetClass: 'com.sample.Bar', stringField:'BAZ' , primitiveIntField:2}},"
+            + "{foo:{_targetClass: 'com.sample.Bar', stringField:'FOO' , primitiveIntField:3}}]}");
 
     return data.toArray();
   }

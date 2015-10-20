@@ -25,7 +25,7 @@ import com.sample.BlogEntryCollection;
 import com.sample.Foo;
 
 /**
- * Testing the MongoDB Lambda-based Fluent API
+ * Testing the MongoDB Lambda-based Fluent API.
  * 
  * @author Xavier Coulon
  *
