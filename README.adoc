@@ -267,6 +267,7 @@ handles transparently all the changes in the domain classes in the session, Lamb
 two ways to update data.
 
 ==== Full replacement
+
 The first way is the full-replacement mode:
 
 [source,java]
@@ -300,55 +301,56 @@ blogEntryCollection.filter(e -> e.id.equals("1")).forEach(e -> {
  - `commentsNumber` field is incremented by `1`
  - the given `comment` sub-document is appended in the `comments` array.
 
- ==== Updating on Collections
+==== Updating on Collections
 
- *TODO*
+*TODO*
 
- ==== Updating on Maps
+==== Updating on Maps
 
- This feature is not implemented yet.
+This feature is not implemented yet.
 
- == CDI Integration
+== CDI Integration
 
- As shown above, for each class annotated with `@Document` , Lambdamatic annotation
- processor generates 5 classes including a CDI Producer:
+As shown above, for each class annotated with `@Document` , Lambdamatic annotation
+processor generates 5 classes including a CDI Producer:
 
- [source,java]
- ----
- @Generated(value="org.lambdamatic.mongodb.apt.DocumentAnnotationProcessor")
- @ApplicationScoped
- public class BikeStationCollectionProducer  {
+[source,java]
+----
+@Generated(value="org.lambdamatic.mongodb.apt.DocumentAnnotationProcessor")
+@ApplicationScoped
+public class BikeStationCollectionProducer  {
 
-     @Produces
-     public BikeStationCollection getBikeStationCollection(final MongoClient mongoClient, final MongoClientConfiguration mongoClientConfiguration) {
-     	return new BikeStationCollection(mongoClient, mongoClientConfiguration.getDatabaseName());
-     }
- }
- ----
+   @Produces
+   public BikeStationCollection getBikeStationCollection(final MongoClient mongoClient, final MongoClientConfiguration mongoClientConfiguration) {
+   	return new BikeStationCollection(mongoClient, mongoClientConfiguration.getDatabaseName());
+   }
+}
+----
 
- This CDI Producer is named after the domain class (suffixed with `CollectionProducer`)
- and is declared in the same package as the domain class.
+This CDI Producer is named after the domain class (suffixed with `CollectionProducer`)
+and is declared in the same package as the domain class.
 
- With such a CDI Producer available, it suffice to annotate the generated `collection`
- class with `@Inject` in a CDI bean to get accesss to the Lambdamatic type-safe API for
-  a give collection (ie, a type of document associated with a domain class):
+With such a CDI Producer available, it suffice to annotate the generated `collection`
+class with `@Inject` in a CDI bean to get accesss to the Lambdamatic type-safe API for
+a give collection (ie, a type of document associated with a domain class):
 
- [source,java]
- ----
- @Singleton
- @Startup
- public class BikeStationsStorageService {
+[source,java]
+----
+@Singleton
+@Startup
+public class BikeStationsStorageService {
 
- 	@Inject
- 	private BikeStationCollection bikeStationCollection;
+	@Inject
+	private BikeStationCollection bikeStationCollection;
 
-   ...
- }
- ----
+ ...
+}
+----
 
 == Contribution
 
 Lambdamatic is open source !
+
 Contributions in the form of https://github.com/lambdamatic/lambdamatic-project/pulls[pull requests] or https://github.com/lambdamatic/lambdamatic-project/issues[feature requests (and bug reports)]
 are welcome.
 
