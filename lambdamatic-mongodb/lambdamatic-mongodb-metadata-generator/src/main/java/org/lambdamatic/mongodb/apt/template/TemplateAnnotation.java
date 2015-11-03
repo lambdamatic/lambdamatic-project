@@ -97,11 +97,11 @@ public class TemplateAnnotation extends TemplateElement {
     printBuilder.append('@').append(this.type.getSimpleName());
     final String attributesOutput = this.attributes.entrySet().stream().map(entry -> {
       if (entry.getValue() instanceof String) {
-        return entry.getKey() + "=\"" + entry.getValue() + "\"";
+        return entry.getKey() + " = \"" + entry.getValue() + "\"";
       } else if (entry.getValue() instanceof Class) {
-        return entry.getKey() + "=" + ((Class<?>) entry.getValue()).getName() + ".class";
+        return entry.getKey() + " = " + ((Class<?>) entry.getValue()).getName() + ".class";
       } else {
-        return entry.getKey() + "=" + entry.getValue();
+        return entry.getKey() + " = " + entry.getValue();
       }
     }).collect(Collectors.joining(", "));
     if (!attributesOutput.isEmpty()) {

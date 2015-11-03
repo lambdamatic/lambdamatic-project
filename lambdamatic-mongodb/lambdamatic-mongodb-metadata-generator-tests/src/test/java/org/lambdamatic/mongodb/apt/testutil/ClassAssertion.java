@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 import org.assertj.core.api.AbstractAssert;
 
 /**
- * Specific assertJ {@link AbstractAssert} for {@link TemplateType} objects
+ * Specific assertJ {@link AbstractAssert} for {@link TemplateType} objects.
  * 
  * @author Xavier Coulon
  *
@@ -33,6 +33,10 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
     return new ClassAssertion(actual);
   }
 
+  /**
+   * Verifies that the actual class is abstract.
+   * @return this {@link ClassAssertion} for fluent linking 
+   */
   public ClassAssertion isAbstract() {
     isNotNull();
     if (!Modifier.isAbstract(actual.getModifiers())) {
@@ -41,26 +45,10 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
     return this;
   }
 
-  public ClassAssertion isNotAbstract() {
-    isNotNull();
-    if (Modifier.isAbstract(actual.getModifiers())) {
-      failWithMessage("Expected class <%s> NOT to be abstract.", actual.getName());
-    }
-    return this;
-  }
-
-  public ClassAssertion isImplementing(final String expectedInterface) {
-    isNotNull();
-    final List<String> interfaces =
-        Stream.of(actual.getInterfaces()).map(Class::getName).collect(Collectors.toList());
-    if (!interfaces.contains(expectedInterface)) {
-      failWithMessage("Expected class <%s> to implement <%s> but it only implements <%s>.",
-          actual.getName(), expectedInterface, interfaces);
-    }
-    actual.getTypeParameters();
-    return this;
-  }
-
+  /**
+   * Verifies that the actual class given parameterized interface.
+   * @return this {@link ClassAssertion} for fluent linking 
+   */
   public ClassAssertion isImplementing(final Class<?> expectedGenericInterface,
       final Class<?>... parameterTypes) {
     isNotNull();
@@ -77,6 +65,10 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
     return this;
   }
 
+  /**
+   * Verifies that the actual class extends the given superclass.
+   * @return this {@link ClassAssertion} for fluent linking 
+   */
   public ClassAssertion isExtending(final String expectedSuperClass) {
     isNotNull();
     if (actual.getSuperclass() == null
@@ -88,17 +80,10 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
     return this;
   }
 
-  public ClassAssertion isExtending(final Class<?> expectedSuperClass) {
-    isNotNull();
-    final Type genericSuperclass = actual.getGenericSuperclass();
-    if (genericSuperclass == null
-        || !expectedSuperClass.getName().equals(genericSuperclass.getTypeName())) {
-      failWithMessage("Expected class <%s> to extend <%s> but it only extends <%s>.",
-          actual.getName(), expectedSuperClass, actual.getSuperclass());
-    }
-    return this;
-  }
-
+  /**
+   * Verifies that the actual class extends the given parameterized superclass.
+   * @return this {@link ClassAssertion} for fluent linking 
+   */
   public ClassAssertion isExtending(final Class<?> expectedSuperClass,
       final Class<?>... parameterTypes) {
     isNotNull();
@@ -117,6 +102,10 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
 
 
 
+  /**
+   * Verifies that the actual class extends has the given method.
+   * @return this {@link ClassAssertion} for fluent linking 
+   */
   public ClassAssertion hasMethod(final String methodName, final Class<?>... parameterTypes) {
     isNotNull();
     try {
@@ -129,6 +118,10 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
     return this;
   }
 
+  /**
+   * Verifies that the actual class extends hqs no field.
+   * @return this {@link ClassAssertion} for fluent linking 
+   */
   public ClassAssertion hasNoField(final String fieldName) {
     isNotNull();
     try {
@@ -136,15 +129,7 @@ public class ClassAssertion extends AbstractAssert<ClassAssertion, Class<?>> {
       failWithMessage("Did not expect class <%s> to have *public* field %s", actual.getName(),
           fieldName);
     } catch (NoSuchFieldException | SecurityException e) {
-    }
-    return this;
-  }
-
-  public ClassAssertion hasNoDeclaredField() {
-    isNotNull();
-    if (actual.getDeclaredFields().length > 0) {
-      failWithMessage("Expected class <%s> to have *no* declared field, but found %s",
-          actual.getName(), actual.getDeclaredFields());
+      // nothing to do
     }
     return this;
   }

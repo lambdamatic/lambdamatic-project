@@ -5,17 +5,18 @@
  *
  * Contributors: Red Hat - Initial Contribution
  *******************************************************************************/
-/**
- * 
- */
 
 package org.lambdamatic.mongodb.apt;
 
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.bson.types.ObjectId;
@@ -39,6 +40,10 @@ import org.lambdamatic.mongodb.metadata.QueryArray;
 import org.lambdamatic.mongodb.metadata.QueryField;
 import org.lambdamatic.mongodb.metadata.QueryMap;
 import org.lambdamatic.mongodb.metadata.QueryMetadata;
+import org.lambdamatic.mongodb.metadata.UpdateArray;
+import org.lambdamatic.mongodb.metadata.UpdateMap;
+import org.lambdamatic.mongodb.metadata.UpdateMetadata;
+import org.lambdamatic.mongodb.types.geospatial.Location;
 
 import com.mongodb.MongoClient;
 import com.sample.Bar;
@@ -48,7 +53,7 @@ import com.sample.EnumFoo;
 import com.sample.Foo;
 
 /**
- * Testing the {@link DocumentAnnotationProcessor}
+ * Testing the {@link DocumentAnnotationProcessor}.
  * 
  * @author Xavier Coulon
  *
@@ -184,6 +189,16 @@ public class LambdamaticAnnotationProcessorTest {
         .isParameterizedType(QueryMap.class, String.class,
             TypeUtils.parameterize(QueryField.class, String.class))
         .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "stringMap");
+    // bytes
+    FieldAssertion.assertThat(fooQueryClass, "bytes")
+        .isParameterizedType(QueryArray.class, TypeUtils.parameterize(QueryField.class, Byte.class))
+        .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "bytes");
+    // bytesList
+    FieldAssertion.assertThat(fooQueryClass, "bytesList")
+        .isParameterizedType(QueryArray.class,
+            TypeUtils.parameterize(QueryArray.class,
+                TypeUtils.parameterize(QueryField.class, Byte.class)))
+        .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "bytesList");
   }
 
   @Test
@@ -208,49 +223,39 @@ public class LambdamaticAnnotationProcessorTest {
     FieldAssertion.assertThat(fooProjectionClass, "primitiveByteField")
         .isType(ProjectionField.class).isNotFinal().isNotStatic()
         .hasAnnotation(DocumentField.class, "name", "primitiveByteField");
-
     // primitiveShortField
     FieldAssertion.assertThat(fooProjectionClass, "primitiveShortField")
         .isType(ProjectionField.class).isNotFinal().isNotStatic()
         .hasAnnotation(DocumentField.class, "name", "primitiveShortField");
-
     // primitiveIntField
     FieldAssertion.assertThat(fooProjectionClass, "primitiveIntField").isType(ProjectionField.class)
         .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "primitiveIntField");
-
     // primitiveLongField
     FieldAssertion.assertThat(fooProjectionClass, "primitiveLongField")
         .isType(ProjectionField.class).isNotFinal().isNotStatic()
         .hasAnnotation(DocumentField.class, "name", "primitiveLongField");
-
     // primitiveFloatField
     FieldAssertion.assertThat(fooProjectionClass, "primitiveFloatField")
         .isType(ProjectionField.class).isNotFinal().isNotStatic()
         .hasAnnotation(DocumentField.class, "name", "primitiveFloatField");
-
     // primitiveDoubleField
     FieldAssertion.assertThat(fooProjectionClass, "primitiveDoubleField")
         .isType(ProjectionField.class).isNotFinal().isNotStatic()
         .hasAnnotation(DocumentField.class, "name", "primitiveDoubleField");
-
     // primitiveBooleanField
     FieldAssertion.assertThat(fooProjectionClass, "primitiveBooleanField")
         .isType(ProjectionField.class).isNotFinal().isNotStatic()
         .hasAnnotation(DocumentField.class, "name", "primitiveBooleanField");
-
     // primitiveCharField
     FieldAssertion.assertThat(fooProjectionClass, "primitiveCharField")
         .isType(ProjectionField.class).isNotFinal().isNotStatic()
         .hasAnnotation(DocumentField.class, "name", "primitiveCharField");
-
     // location
     FieldAssertion.assertThat(fooProjectionClass, "location").isType(ProjectionField.class)
         .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "location");
-
     // enumFoo
     FieldAssertion.assertThat(fooProjectionClass, "enumFoo").isType(ProjectionField.class)
         .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "enumFoo");
-
     // bar
     FieldAssertion.assertThat(fooProjectionClass, "bar").isType("com.sample.PBar").isNotFinal()
         .isNotStatic().hasAnnotation(DocumentField.class, "name", "bar");
@@ -275,12 +280,128 @@ public class LambdamaticAnnotationProcessorTest {
         .isParameterizedType(ProjectionArray.class,
             TypeUtils.parameterize(QueryField.class, EnumBar.class))
         .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "enumBarArray");
+    // stringArray
+    FieldAssertion.assertThat(fooProjectionClass, "stringArray")
+        .isParameterizedType(ProjectionArray.class,
+            TypeUtils.parameterize(QueryField.class, String.class))
+        .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "stringArray");
+    // stringList
+    FieldAssertion.assertThat(fooProjectionClass, "stringList")
+        .isParameterizedType(ProjectionArray.class,
+            TypeUtils.parameterize(QueryField.class, String.class))
+        .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "stringList");
     // stringSet
     FieldAssertion.assertThat(fooProjectionClass, "stringSet")
         .isParameterizedType(ProjectionArray.class,
             TypeUtils.parameterize(QueryField.class, String.class))
         .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "stringSet");
+    // bytes
+    FieldAssertion.assertThat(fooProjectionClass, "bytes")
+        .isParameterizedType(ProjectionArray.class,
+            TypeUtils.parameterize(QueryField.class, Byte.class))
+        .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "bytes");
+    // bytesList
+    FieldAssertion.assertThat(fooProjectionClass, "bytesList")
+        .isParameterizedType(ProjectionArray.class,
+            TypeUtils.parameterize(QueryArray.class,
+                TypeUtils.parameterize(QueryField.class, Byte.class)))
+        .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "bytesList");
+  }
 
+  @Test
+  @WithDomainClass(Foo.class)
+  @WithDomainClass(Bar.class)
+  public void shouldProcessFooClassAndGenerateUpdateMetadataClass()
+      throws URISyntaxException, ClassNotFoundException, NoSuchFieldException, SecurityException,
+      IllegalArgumentException, IllegalAccessException, InstantiationException {
+    // verification
+    final Class<?> fooUpdateClass = Class.forName("com.sample.UFoo");
+    ClassAssertion.assertThat(fooUpdateClass).isAbstract()
+        .isImplementing(UpdateMetadata.class, Foo.class).isExtending("java.lang.Object");
+    // id
+    FieldAssertion.assertThat(fooUpdateClass, "id").isType(ObjectId.class).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "_id");
+    // stringField: *custom name in the @DocumentField annotation*
+    FieldAssertion.assertThat(fooUpdateClass, "stringField").isType(String.class).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "stringField_");
+    // transientStringField: annotated with @Transient, should not be here
+    ClassAssertion.assertThat(fooUpdateClass).hasNoField("transientStringField");
+    // primitiveByteField
+    FieldAssertion.assertThat(fooUpdateClass, "primitiveByteField").isType(byte.class).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "primitiveByteField");
+    // primitiveShortField
+    FieldAssertion.assertThat(fooUpdateClass, "primitiveShortField").isType(short.class)
+        .isNotFinal().isNotStatic()
+        .hasAnnotation(DocumentField.class, "name", "primitiveShortField");
+    // primitiveIntField
+    FieldAssertion.assertThat(fooUpdateClass, "primitiveIntField").isType(int.class).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "primitiveIntField");
+    // primitiveLongField
+    FieldAssertion.assertThat(fooUpdateClass, "primitiveLongField").isType(long.class).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "primitiveLongField");
+    // primitiveFloatField
+    FieldAssertion.assertThat(fooUpdateClass, "primitiveFloatField").isType(float.class)
+        .isNotFinal().isNotStatic()
+        .hasAnnotation(DocumentField.class, "name", "primitiveFloatField");
+    // primitiveDoubleField
+    FieldAssertion.assertThat(fooUpdateClass, "primitiveDoubleField").isType(double.class)
+        .isNotFinal().isNotStatic()
+        .hasAnnotation(DocumentField.class, "name", "primitiveDoubleField");
+    // primitiveBooleanField
+    FieldAssertion.assertThat(fooUpdateClass, "primitiveBooleanField").isType(boolean.class)
+        .isNotFinal().isNotStatic()
+        .hasAnnotation(DocumentField.class, "name", "primitiveBooleanField");
+    // primitiveCharField
+    FieldAssertion.assertThat(fooUpdateClass, "primitiveCharField").isType(char.class).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "primitiveCharField");
+    // location
+    FieldAssertion.assertThat(fooUpdateClass, "location").isType(Location.class).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "location");
+    // enumFoo
+    FieldAssertion.assertThat(fooUpdateClass, "enumFoo").isType(EnumFoo.class).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "enumFoo");
+    // bar
+    FieldAssertion.assertThat(fooUpdateClass, "bar").isType("com.sample.UBar").isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "bar");
+    // embedded PBar Projection class
+    final Class<?> barUpdateClass = Class.forName("com.sample.UBar");
+    ClassAssertion.assertThat(barUpdateClass).isImplementing(UpdateMetadata.class, Bar.class);
+    // barList
+    FieldAssertion.assertThat(fooUpdateClass, "barList")
+        .isParameterizedType(UpdateArray.class, Class.forName("com.sample.Bar")).isNotFinal().isNotStatic()
+        .hasAnnotation(DocumentField.class, "name", "barList");
+    // barMap
+    FieldAssertion.assertThat(fooUpdateClass, "barMap")
+        .isParameterizedType(UpdateMap.class, String.class, Class.forName("com.sample.QBar")).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "barMap");
+    // barArray
+    FieldAssertion.assertThat(fooUpdateClass, "barArray")
+        .isParameterizedType(UpdateArray.class, Class.forName("com.sample.Bar")).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "barArray");
+    // enumBarArray
+    FieldAssertion.assertThat(fooUpdateClass, "enumBarArray")
+        .isParameterizedType(UpdateArray.class, EnumBar.class)
+        .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "enumBarArray");
+    // stringArray
+    FieldAssertion.assertThat(fooUpdateClass, "stringArray")
+        .isParameterizedType(UpdateArray.class, String.class)
+        .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "stringArray");
+    // stringList
+    FieldAssertion.assertThat(fooUpdateClass, "stringList")
+        .isParameterizedType(UpdateArray.class, String.class).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "stringList");
+    // stringSet
+    FieldAssertion.assertThat(fooUpdateClass, "stringSet")
+        .isParameterizedType(UpdateArray.class, String.class).isNotFinal()
+        .isNotStatic().hasAnnotation(DocumentField.class, "name", "stringSet");
+    // bytes
+    FieldAssertion.assertThat(fooUpdateClass, "bytes")
+        .isParameterizedType(UpdateArray.class, Byte.class)
+        .isNotFinal().isNotStatic().hasAnnotation(DocumentField.class, "name", "bytes");
+    // bytesList
+    FieldAssertion.assertThat(fooUpdateClass, "bytesList")
+        .isParameterizedType(UpdateArray.class, byte[].class).isNotFinal().isNotStatic()
+        .hasAnnotation(DocumentField.class, "name", "bytesList");
   }
 
   @Test
@@ -352,17 +473,9 @@ public class LambdamaticAnnotationProcessorTest {
 
   @Ignore
   @Test
-  // @WithDomainClass(BikeStation.class)
+  // @WithDomainClass(Foo.class)
   public void shouldAllowOnlyStringOrObjectIdForDocumentId() {
     fail("Not implemented yet");
-  }
-
-  @Ignore
-  @Test
-  // @WithDomainClass(BikeStation.class)
-  public void shouldUseDocumentFieldNameInDomainClass() {
-    fail(
-        "Not implemented yet - need to use custom mapping name and verify they are included in the generated metaclasses");
   }
 
 }

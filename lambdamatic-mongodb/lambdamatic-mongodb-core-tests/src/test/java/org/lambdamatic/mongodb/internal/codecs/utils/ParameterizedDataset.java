@@ -17,7 +17,7 @@ import java.util.List;
  * @author xcoulon
  *
  */
-public class ParameterizedDataset<T> {
+public class ParameterizedDataset<DomainType, ExpectationType> {
 
   private final List<Object[]> data = new ArrayList<>();
 
@@ -26,20 +26,20 @@ public class ParameterizedDataset<T> {
    * 
    * @param title the test title
    * @param object the domain object to encode
-   * @param bson the expected result
+   * @param expectation the expected result
    */
-  public void match(final String title, final T object, final String bson) {
-    data.add(new Object[] {title, object, bson});
+  public void match(final String title, final DomainType object, final ExpectationType expectation) {
+    data.add(new Object[] {title, object, expectation});
   }
 
   /**
    * Utility method that makes the JUnit parameters declaration much more readable.
    * 
    * @param object the domain object to encode
-   * @param bson the expected result
+   * @param expectation the expected result
    */
-  public void match(final T object, final String bson) {
-    data.add(new Object[] {object, bson});
+  public void match(final DomainType object, final ExpectationType expectation) {
+    data.add(new Object[] {object, expectation});
   }
 
   public Object[][] toArray() {

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -68,6 +69,8 @@ public class Foo {
     private Map<String, String> stringMap;
     
     private byte[] bytes;
+
+    private List<byte[]> bytesList;
 
     public FooBuilder withId(final ObjectId id) {
       this.id = id;
@@ -174,8 +177,13 @@ public class Foo {
       return this;
     }
 
-    public FooBuilder withBinary(byte[] bytes) {
+    public FooBuilder withBytes(byte[] bytes) {
       this.bytes = bytes;
+      return this;
+    }
+    
+    public FooBuilder withBytesList(List<byte[]> bytesList) {
+      this.bytesList = bytesList;
       return this;
     }
     
@@ -245,6 +253,9 @@ public class Foo {
   @DocumentField(name = "raw_content")
   private byte[] bytes;
 
+  @DocumentField(name = "raw_contents")
+  private List<byte[]> bytesList;
+  
   public Foo() {
 
   }
@@ -277,102 +288,55 @@ public class Foo {
     this.stringArray = fooBuilder.stringArray;
     this.stringMap = fooBuilder.stringMap;
     this.bytes = fooBuilder.bytes;
+    this.bytesList = fooBuilder.bytesList;
   }
 
   public ObjectId getId() {
     return id;
   }
 
-  public void setId(ObjectId id) {
-    this.id = id;
-  }
-
   public String getStringField() {
     return stringField;
-  }
-
-  public void setStringField(String stringField) {
-    this.stringField = stringField;
   }
 
   public byte getPrimitiveByteField() {
     return primitiveByteField;
   }
 
-  public void setPrimitiveByteField(byte primitiveByteField) {
-    this.primitiveByteField = primitiveByteField;
-  }
-
   public short getPrimitiveShortField() {
     return primitiveShortField;
-  }
-
-  public void setPrimitiveShortField(short primitiveShortField) {
-    this.primitiveShortField = primitiveShortField;
   }
 
   public int getPrimitiveIntField() {
     return primitiveIntField;
   }
 
-  public void setPrimitiveIntField(int primitiveIntField) {
-    this.primitiveIntField = primitiveIntField;
-  }
-
   public long getPrimitiveLongField() {
     return primitiveLongField;
-  }
-
-  public void setPrimitiveLongField(long primitiveLongField) {
-    this.primitiveLongField = primitiveLongField;
   }
 
   public float getPrimitiveFloatField() {
     return primitiveFloatField;
   }
 
-  public void setPrimitiveFloatField(float primitiveFloatField) {
-    this.primitiveFloatField = primitiveFloatField;
-  }
-
   public double getPrimitiveDoubleField() {
     return primitiveDoubleField;
-  }
-
-  public void setPrimitiveDoubleField(double primitiveDoubleField) {
-    this.primitiveDoubleField = primitiveDoubleField;
   }
 
   public boolean isPrimitiveBooleanField() {
     return primitiveBooleanField;
   }
 
-  public void setPrimitiveBooleanField(boolean primitiveBooleanField) {
-    this.primitiveBooleanField = primitiveBooleanField;
-  }
-
   public char getPrimitiveCharField() {
     return primitiveCharField;
-  }
-
-  public void setPrimitiveCharField(char primitiveCharField) {
-    this.primitiveCharField = primitiveCharField;
   }
 
   public EnumFoo getEnumFoo() {
     return enumFoo;
   }
 
-  public void setEnumFoo(EnumFoo enumFoo) {
-    this.enumFoo = enumFoo;
-  }
-
   public Location getLocation() {
     return location;
-  }
-
-  public void setLocation(Location location) {
-    this.location = location;
   }
 
   public Bar getBar() {
@@ -387,16 +351,8 @@ public class Foo {
     return barMap;
   }
 
-  public void setBar(Bar bar) {
-    this.bar = bar;
-  }
-
   public EnumBar[] getEnumBarArray() {
     return enumBarArray;
-  }
-
-  public void setEnumBarArray(EnumBar[] enumBarArray) {
-    this.enumBarArray = enumBarArray;
   }
 
   public List<String> getStringList() {
@@ -411,34 +367,18 @@ public class Foo {
     return stringSet;
   }
 
-  public void setStringList(List<String> stringList) {
-    this.stringList = stringList;
-  }
-
-  public void setStringArray(String[] stringArray) {
-    this.stringArray = stringArray;
-  }
-
-  public void setStringSet(Set<String> stringSet) {
-    this.stringSet = stringSet;
-  }
-
   public Map<String, String> getStringMap() {
     return stringMap;
-  }
-
-  public void setStringMap(Map<String, String> stringMap) {
-    this.stringMap = stringMap;
   }
 
   public byte[] getBytes() {
     return bytes;
   }
   
-  public void setBytes(byte[] bytes) {
-    this.bytes = bytes;
+  public List<byte[]> getBytesList() {
+    return bytesList;
   }
-  
+
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -446,6 +386,8 @@ public class Foo {
     result = prime * result + ((bar == null) ? 0 : bar.hashCode());
     result = prime * result + ((barList == null) ? 0 : barList.hashCode());
     result = prime * result + ((barMap == null) ? 0 : barMap.hashCode());
+    result = prime * result + Arrays.hashCode(bytes);
+    result = prime * result + ((bytesList == null) ? 0 : bytesList.hashCode());
     result = prime * result + ((date == null) ? 0 : date.hashCode());
     result = prime * result + Arrays.hashCode(enumBarArray);
     result = prime * result + ((enumFoo == null) ? 0 : enumFoo.hashCode());
@@ -502,6 +444,16 @@ public class Foo {
     } else if (!barMap.equals(other.barMap)) {
       return false;
     }
+    if (!Arrays.equals(bytes, other.bytes)) {
+      return false;
+    }
+    if (bytesList == null) {
+      if (other.bytesList != null) {
+        return false;
+      }
+    } else if (Objects.deepEquals(bytesList, other.bytesList)) {
+      return false;
+    }
     if (date == null) {
       if (other.date != null) {
         return false;
@@ -538,7 +490,7 @@ public class Foo {
     if (primitiveCharField != other.primitiveCharField) {
       return false;
     }
-    if (Double.doubleToLongBits(primitiveDoubleField) != Double 
+    if (Double.doubleToLongBits(primitiveDoubleField) != Double
         .doubleToLongBits(other.primitiveDoubleField)) {
       return false;
     }
@@ -558,7 +510,7 @@ public class Foo {
     if (!Arrays.equals(stringArray, other.stringArray)) {
       return false;
     }
-    if (stringField == null) {
+    if (stringField == null) { 
       if (other.stringField != null) {
         return false;
       }
@@ -588,5 +540,6 @@ public class Foo {
     }
     return true;
   }
+  
 
 }

@@ -9,6 +9,7 @@
 package org.lambdamatic.mongodb.internal.codecs;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.bson.BsonBinary;
 import org.bson.BsonWriter;
 import org.bson.codecs.Codec;
 import org.bson.codecs.EncoderContext;
@@ -263,8 +265,7 @@ public class EncoderUtils {
     final Map<String, Field> bindings =
         BindingService.getInstance().getBindings(domainObject.getClass());
     // write the "_id" attribute first if the domainObject class is annotated with @Document
-    // (embedded documents
-    // don't have such an '_id' field)
+    // (embedded documents don't have such an '_id' field)
     if (domainObject.getClass().getAnnotation(Document.class) != null) {
       final Optional<Entry<String, Field>> idBinding = bindings.entrySet().stream()
           .filter(e -> BindingService.isIdBinding(e.getValue())).findFirst();
@@ -347,6 +348,18 @@ public class EncoderUtils {
       final Collection<?> values = (Collection<?>) value;
       values.stream().forEach(v -> writeValue(writer, v, encoderContext, codecRegistry));
       writer.writeEndArray();
+    } else if (value instanceof byte[]) {
+      // binary format
+      writer.writeBinaryData(new BsonBinary((byte[]) value));
+    } else if (value.getClass().isArray()) {
+      writer.writeStartDocument();
+      Arrays.asList(value);
+      if (value instanceof boolean[]) {
+        for (boolean b : (boolean[]) value) {
+          writer.writeBoolean(b);
+        }
+      }
+      writer.writeEndDocument();
     } else {
       // FIXME: complete the switches to cover all writer.writeXXX methods
       final String attributeValueClassName = value.getClass().getName();
@@ -455,6 +468,10 @@ public class EncoderUtils {
         writer.writeEndDocument();
       });
       writer.writeEndArray();
+    } else if (value instanceof byte[]) {
+      // special case for Binary data stored in byte[]
+      final byte[] bytes = (byte[]) value;
+      writer.writeBinaryData(name, new BsonBinary(bytes));
     } else if (value.getClass().isArray()) {
       // Arrays
       writer.writeStartArray(name);

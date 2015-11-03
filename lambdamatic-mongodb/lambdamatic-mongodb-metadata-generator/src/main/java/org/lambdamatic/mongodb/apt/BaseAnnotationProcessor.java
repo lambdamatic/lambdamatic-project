@@ -16,6 +16,7 @@ import java.io.Writer;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -99,6 +100,13 @@ public abstract class BaseAnnotationProcessor extends AbstractProcessor {
    */
   private Mustache getTemplate(final String templateName) {
     return this.mf.compile("templates" + File.separator + templateName);
+  }
+  
+  /**
+   * @return the underlying {@link ProcessingEnvironment}.
+   */
+  public ProcessingEnvironment getProcessingEnvironment() {
+    return this.processingEnv;
   }
 
 }

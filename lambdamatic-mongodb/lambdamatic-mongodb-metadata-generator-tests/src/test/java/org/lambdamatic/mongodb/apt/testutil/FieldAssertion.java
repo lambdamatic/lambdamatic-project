@@ -28,6 +28,13 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
     super(field, FieldAssertion.class);
   }
 
+  /**
+   * Constructor.
+   * 
+   * @param targetClass the target class containing the field to test
+   * @param fieldName the actual field name to test
+   * @return a {@link FieldAssertion}
+   */
   public static FieldAssertion assertThat(final Class<?> targetClass, final String fieldName) {
     try {
       return new FieldAssertion(targetClass.getDeclaredField(fieldName));
@@ -36,6 +43,13 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
     }
   }
 
+  /**
+   * Checks that the actual field is parameterized.
+   * 
+   * @param expectedRawType the expected raw type
+   * @param expectedTypeArguments the expected type arguments
+   * @return this {@link FieldAssertion} for fluent linking
+   */
   public FieldAssertion isParameterizedType(final Class<?> expectedRawType,
       final Type... expectedTypeArguments) {
     isNotNull();
@@ -53,10 +67,22 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
     return this;
   }
 
+  /**
+   * Checks that the actual field is of the given type.
+   * 
+   * @param expectedType the expected type
+   * @return this {@link FieldAssertion} for fluent linking
+   */
   public FieldAssertion isType(final Class<?> expectedType) {
     return isType(expectedType.getName());
   }
 
+  /**
+   * Checks that the actual field is of the given type.
+   * 
+   * @param expectedTypeName the fully qualified name of the expected type
+   * @return this {@link FieldAssertion} for fluent linking
+   */
   public FieldAssertion isType(final String expectedTypeName) {
     isNotNull();
     final String actualTypeName = actual.getType().getName();
@@ -67,6 +93,11 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
     return this;
   }
 
+  /**
+   * Checks that the actual field has a 'static' modifier.
+   * 
+   * @return this {@link FieldAssertion} for fluent linking
+   */
   public FieldAssertion isStatic() {
     isNotNull();
     if (!isStatic(actual)) {
@@ -75,6 +106,15 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
     return this;
   }
 
+  private static final boolean isStatic(final Field field) {
+    return (field.getModifiers() & Modifier.STATIC) == Modifier.STATIC;
+  }
+
+  /**
+   * Checks that the actual field has no 'static' modifier.
+   * 
+   * @return this {@link FieldAssertion} for fluent linking
+   */
   public FieldAssertion isNotStatic() {
     isNotNull();
     if (isStatic(actual)) {
@@ -83,10 +123,11 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
     return this;
   }
 
-  private static final boolean isStatic(final Field field) {
-    return (field.getModifiers() & Modifier.STATIC) == Modifier.STATIC;
-  }
-
+  /**
+   * Checks that the actual field has a 'final' modifier.
+   * 
+   * @return this {@link FieldAssertion} for fluent linking
+   */
   public FieldAssertion isFinal() {
     isNotNull();
     if ((actual.getModifiers() & Modifier.FINAL) == 0) {
@@ -95,6 +136,11 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
     return this;
   }
 
+  /**
+   * Checks that the actual field has no 'final' modifier.
+   * 
+   * @return this {@link FieldAssertion} for fluent linking
+   */
   public FieldAssertion isNotFinal() {
     isNotNull();
     if ((actual.getModifiers() & Modifier.FINAL) > 0) {
@@ -103,18 +149,13 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
     return this;
   }
 
-  public FieldAssertion hasNoAnnotation() {
-    isNotNull();
-    if (actual.getAnnotations().length > 0) {
-      failWithMessage("Expected no annotation on field <%s>", actual.getName());
-    }
-    return this;
-  }
-
-  public <T extends Annotation> AnnotationAssertion hasAnnotation(final Class<T> annotationClass) {
-    return new AnnotationAssertion(actual.getAnnotation(annotationClass));
-  }
-
+  /**
+   * Checks that the actual field has the given annotation with the given attribute name and value.
+   * @param annotationClass the class of the annotation
+   * @param attributeName the name of the expected attribute
+   * @param expectedValue the value of the expected attribute
+   * @return a new {@link FieldAssertion} for fluent linking
+   */
   public <T extends Annotation> FieldAssertion hasAnnotation(final Class<T> annotationClass,
       final String attributeName, final Object expectedValue) {
     new AnnotationAssertion(actual.getAnnotation(annotationClass)).isNotNull()
@@ -122,6 +163,11 @@ public class FieldAssertion extends AbstractAssert<FieldAssertion, Field> {
     return this;
   }
 
+  /**
+   * Checks that the actual field has the given default value.
+   * @param expectedValue the expected default value
+   * @return a new {@link FieldAssertion} for fluent linking
+   */
   public FieldAssertion hasDefaultValueEquals(final Object expectedValue) {
     isNotNull();
     final Class<?> declaringClass = actual.getDeclaringClass();

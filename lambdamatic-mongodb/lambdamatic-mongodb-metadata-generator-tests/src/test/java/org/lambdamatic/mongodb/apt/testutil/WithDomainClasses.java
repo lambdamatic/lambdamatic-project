@@ -5,9 +5,6 @@
  *
  * Contributors: Red Hat - Initial Contribution
  *******************************************************************************/
-/**
- * 
- */
 
 package org.lambdamatic.mongodb.apt.testutil;
 
@@ -19,7 +16,7 @@ import java.lang.annotation.Target;
 
 /**
  * Containing annotation to indicate the classes that should be processed by the
- * {@link CompilationAndAnnotationProcessingRule}
+ * {@link CompilationAndAnnotationProcessingRule}.
  * 
  * @author Xavier Coulon
  *
@@ -27,6 +24,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface WithDomainClasses {
+  
+  /** Names of the classes to process before test. */
   WithDomainClass[] value();
 }
 

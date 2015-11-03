@@ -172,8 +172,25 @@ public class DocumentDecoder {
       // Set of embedded values/documents
       return (Map<?, ?>) value;
     } else if (targetType.isArray()) {
+      switch (targetType.getComponentType().getName()) {
+        case "boolean":
+          return (boolean[]) value;
+        case "byte":
+          return (byte[]) value;
+        case "short":
+          return (short[]) value;
+        case "int":
+          return (int[]) value;
+        case "long":
+          return (long[]) value;
+        case "double":
+          return (double[]) value;
+        case "float":
+          return (float[]) value;
+        default:
+          return (Object[]) value;
+      }
       // array of embedded values/documents
-      return (Object[]) value;
     } else {
       // other types of fields.
       // FIXME: missing switches. Can we write it differently ?
@@ -206,6 +223,8 @@ public class DocumentDecoder {
           return value.toString();
         case "org.bson.types.ObjectId":
           return new ObjectId(value.toString());
+        case "java.util.Date":
+          return new Date((long) value);
         case "org.lambdamatic.mongodb.types.geospatial.Location":
           if (value instanceof Location) {
             return value;
@@ -213,9 +232,10 @@ public class DocumentDecoder {
           try (final BsonDocumentReader reader = new BsonDocumentReader((BsonDocument) value)) {
             return new LocationCodec(this.codecRegistry).decode(reader,
                 DecoderContext.builder().build());
+          } catch (Exception e) {
+            // let's fall back to throwing ConversionException below
           }
-        case "java.util.Date":
-          return new Date((long) value);
+          break;
         default:
           // will throw ConversionException
           break;

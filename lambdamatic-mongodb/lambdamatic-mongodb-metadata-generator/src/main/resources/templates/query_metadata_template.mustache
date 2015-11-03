@@ -16,24 +16,27 @@ import {{.}};
  *
  * <p><strong>Note:</strong> This class is not meant to be extended by the user.</p>
  */
-@Generated(value="{{processorClassName}}")
+@Generated(value = "{{processorClassName}}")
 {{#annotations}}
     {{{.}}}
 {{/annotations}}
 public abstract class {{simpleClassName}} implements QueryMetadata<{{domainClassName}}> {
 
 {{#fields}}
+    /**
+     * the query field for the '{{javaFieldName}}' domain class field.
+     */
 {{#annotations}}
     {{{.}}}
 {{/annotations}}
- 	public {{& javaFieldType.simpleName}} {{javaFieldName}};
+    public {{& javaFieldType.simpleName}} {{javaFieldName}};
 
 {{/fields}}  
 {{#methods}}
 {{#annotations}}
- 	{{{.}}}
+    {{{.}}}
 {{/annotations}}
- 	public abstract {{{returnType.simpleName}}} {{methodName}}({{{parameterType.simpleName}}} {{parameterName}});
+    public abstract {{{returnType.simpleName}}} {{methodName}}({{{parameterType.simpleName}}} {{parameterName}});
 
 {{/methods}}  
 

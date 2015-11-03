@@ -65,7 +65,7 @@ public class FilterExpressionCodecTest {
         new Location(1, 1), new Location(1, 0), new Location(0, 0));
     final List<String> namesList = Arrays.asList("John", "Jack");
     final List<EnumFoo> enumList = Arrays.asList(EnumFoo.FOO, EnumFoo.BAR);
-    final ParameterizedDataset<SerializablePredicate<QFoo>> data = new ParameterizedDataset<>();
+    final ParameterizedDataset<SerializablePredicate<QFoo>, String> data = new ParameterizedDataset<>();
 
     // $eq
     data.match(foo -> foo.primitiveByteField.equals(1), "{primitiveByteField: 1}");

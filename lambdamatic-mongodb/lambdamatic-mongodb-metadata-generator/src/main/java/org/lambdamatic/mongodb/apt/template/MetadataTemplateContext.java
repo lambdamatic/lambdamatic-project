@@ -9,10 +9,12 @@
 package org.lambdamatic.mongodb.apt.template;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -132,7 +134,7 @@ public class MetadataTemplateContext extends BaseTemplateContext {
    */
   private MetadataTemplateContext(final TypeElement domainElement,
       final BaseAnnotationProcessor annotationProcessor,
-      final Function<VariableElement, TemplateField> templateFieldBuildFunction,
+      final BiFunction<VariableElement, ProcessingEnvironment, TemplateField> templateFieldBuildFunction,
       final Function<DeclaredType, String> simpleClassNameBuilder, final String templateFileName) {
     super((DeclaredType) domainElement.asType(), annotationProcessor);
     this.domainTypeFields =
@@ -140,7 +142,7 @@ public class MetadataTemplateContext extends BaseTemplateContext {
             .filter(e -> e.getAnnotation(TransientField.class) == null)
             .map(e -> (VariableElement) e).collect(Collectors.toList());
     this.templateFields = this.domainTypeFields.stream().map(f -> {
-      return templateFieldBuildFunction.apply(f);
+      return templateFieldBuildFunction.apply(f, annotationProcessor.getProcessingEnvironment());
     }).collect(Collectors.toList());
     this.simpleClassName = simpleClassNameBuilder.apply(this.domainType);
     this.fullyQualifiedClassName = getPackageName() + '.' + this.simpleClassName;

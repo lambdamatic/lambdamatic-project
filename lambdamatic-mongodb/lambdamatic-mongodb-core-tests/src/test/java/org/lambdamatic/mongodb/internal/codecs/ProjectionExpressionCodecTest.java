@@ -75,7 +75,7 @@ public class ProjectionExpressionCodecTest {
    */
   @Parameters(name = "[{index}] {1}")
   public static Object[][] data() {
-    final ParameterizedDataset<SerializableConsumer<PFoo>> data = new ParameterizedDataset<>();
+    final ParameterizedDataset<SerializableConsumer<PFoo>, String> data = new ParameterizedDataset<>();
 
     data.match(foo -> Projection.include(foo.stringField), "{stringField: 1, _id: 0}");
     data.match(foo -> Projection.include(foo.stringField, foo.id), "{stringField: 1, _id: 1}");

@@ -43,6 +43,9 @@ public class BlogEntry {
 
   /** list of comments. */
   private List<BlogEntryComment> comments;
+  
+  /** attached photos. */
+  private List<byte[]> photos;
 
   public String getId() {
     return id;
@@ -115,5 +118,14 @@ public class BlogEntry {
   public void setComments(List<BlogEntryComment> comments) {
     this.comments = comments;
   }
+  
+  public List<byte[]> getPhotos() {
+    return photos;
+  }
+  
+  public void setPhotos(List<byte[]> photos) {
+    this.photos = photos;
+  }
+  
 
 }

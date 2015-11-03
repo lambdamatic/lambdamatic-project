@@ -23,10 +23,12 @@ public class AnnotationAssertion extends AbstractAssert<AnnotationAssertion, Ann
     super(actual, AnnotationAssertion.class);
   }
 
-  public static AnnotationAssertion assertThat(final Annotation actual) {
-    return new AnnotationAssertion(actual);
-  }
-
+  /**
+   * Constructor.
+   * @param attributeName name of the annotation attribute to lookup
+   * @param expectedValue value of the annotation attribute to assert
+   * @return chaining on {@link AnnotationAssertion} for fluent API
+   */
   public AnnotationAssertion hasAttributeValue(final String attributeName,
       final Object expectedValue) {
     isNotNull();

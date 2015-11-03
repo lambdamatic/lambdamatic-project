@@ -94,7 +94,7 @@ public class DocumentCodecTest {
   @Parameters(name = "[{index}] {0}")
   public static Object[][] data() {
     final Date date = new Date();
-    final ParameterizedDataset<Object> data = new ParameterizedDataset<>();
+    final ParameterizedDataset<Object, String> data = new ParameterizedDataset<>();
     data.match("Basic document",
         new FooBuilder().withId(new ObjectId("5459fed60986a72813eb2d59")).withStringField("jdoe")
             .withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).withLocation(40.1, -70.2)
@@ -155,7 +155,6 @@ public class DocumentCodecTest {
             + "primitiveIntField:1}}, "
             + "{baz:{_targetClass: 'com.sample.Bar', stringField:'BAZ' , primitiveIntField:2}},"
             + "{foo:{_targetClass: 'com.sample.Bar', stringField:'FOO' , primitiveIntField:3}}]}");
-
     return data.toArray();
   }
 

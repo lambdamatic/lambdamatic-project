@@ -8,19 +8,19 @@
 
 package org.lambdamatic.mongodb.apt.template;
 
-import static org.lambdamatic.mongodb.apt.template.ElementUtils.isCollection;
-import static org.lambdamatic.mongodb.apt.template.ElementUtils.isMap;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -44,6 +44,7 @@ import org.lambdamatic.mongodb.metadata.QueryMetadata;
 import org.lambdamatic.mongodb.metadata.UpdateArray;
 import org.lambdamatic.mongodb.metadata.UpdateMap;
 import org.lambdamatic.mongodb.metadata.UpdateMetadata;
+import org.lambdamatic.mongodb.types.geospatial.Location;
 
 /**
  * A type (or parameterized) type to be used in the class templates. Provides the simple Java type
@@ -58,17 +59,17 @@ import org.lambdamatic.mongodb.metadata.UpdateMetadata;
  */
 public class TemplateType extends TemplateElement {
 
-  private static final Function<TypeMirror, TemplateType> primitiveTypeToQueryType =
-      variableType -> Builder.with(QueryField.class)
-          .withTypeParameters(ElementUtils.getSimilarDeclaredType((PrimitiveType) variableType))
+  private static final BiFunction<PrimitiveType, ProcessingEnvironment, TemplateType> primitiveTypeToQueryType =
+      (variableType, processingEnv) -> Builder.with(QueryField.class)
+          .withTypeParameters(processingEnv.getTypeUtils().boxedClass(variableType).getQualifiedName().toString())
           .build();
 
-  private static final Function<TypeMirror, TemplateType> primitiveTypeToProjectionType =
-      variableType -> Builder.with(ProjectionField.class).build();
+  private static final BiFunction<PrimitiveType, ProcessingEnvironment, TemplateType> primitiveTypeToProjectionType =
+      (variableType, processingEnv) -> Builder.with(ProjectionField.class).build();
 
-  private static final Function<TypeMirror, TemplateType> primitiveTypeToUpdateType =
-      variableType -> Builder
-          .with(ElementUtils.getSimilarDeclaredType((PrimitiveType) variableType)).build();
+  private static final BiFunction<PrimitiveType, ProcessingEnvironment, TemplateType> primitiveTypeToUpdateType =
+      (variableType, processingEnv) -> Builder
+          .with(variableType.toString()).build();
 
   private static final Function<DeclaredType, TemplateType> embeddedDocumentToQueryType =
       declaredType -> Builder
@@ -88,43 +89,42 @@ public class TemplateType extends TemplateElement {
               + MetadataTemplateContext.elementToUpdateSimpleClassNameFunction.apply(declaredType))
           .build();
 
-  private static final Function<TypeMirror, TemplateType> collectionToQueryType =
-      collectionType -> Builder.with(QueryArray.class)
-          .withTypeParameters(getQueryMetadataFieldType(collectionType)).build();
+  private static final BiFunction<TypeMirror, ProcessingEnvironment, TemplateType> collectionToQueryType =
+      (collectionType, processingEnv) -> Builder.with(QueryArray.class)
+          .withTypeParameters(getQueryMetadataFieldType(collectionType, processingEnv)).build();
 
-  private static final Function<TypeMirror, TemplateType> collectionToProjectionType =
-      collectionType -> Builder.with(ProjectionArray.class)
-          .withTypeParameters(getQueryMetadataFieldType(collectionType)).build();
+  private static final BiFunction<TypeMirror, ProcessingEnvironment, TemplateType> collectionToProjectionType =
+      (collectionType, processingEnv) -> Builder.with(ProjectionArray.class)
+          .withTypeParameters(getQueryMetadataFieldType(collectionType, processingEnv)).build();
 
-  private static final Function<TypeMirror, TemplateType> collectionToUpdateType =
-      collectionType -> Builder.with(UpdateArray.class).parameterTypes(collectionType.toString())
+  private static final BiFunction<TypeMirror, ProcessingEnvironment, TemplateType> collectionToUpdateType =
+      (collectionType, processingEnv) -> Builder.with(UpdateArray.class).withTypeParameters(collectionType.toString())
           .build();
 
-  private static final Function<DeclaredType, TemplateType> mapToQueryType =
-      mapType -> Builder.with(QueryMap.class)
+  private static final BiFunction<DeclaredType, ProcessingEnvironment, TemplateType> mapToQueryType =
+      (mapType, processingEnv) -> Builder.with(QueryMap.class)
           .withTypeParameters(Builder.with(mapType.getTypeArguments().get(0).toString()).build(),
-              getQueryMetadataFieldType(mapType.getTypeArguments().get(1)))
+              getQueryMetadataFieldType(mapType.getTypeArguments().get(1), processingEnv))
           .build();
 
-  private static final Function<DeclaredType, TemplateType> mapToProjectionType =
-      mapType -> Builder.with(ProjectionMap.class)
+  private static final BiFunction<DeclaredType, ProcessingEnvironment, TemplateType> mapToProjectionType =
+      (mapType, processingEnv) -> Builder.with(ProjectionMap.class)
           .withTypeParameters(Builder.with(mapType.getTypeArguments().get(0).toString()).build(),
-              getQueryMetadataFieldType(mapType.getTypeArguments().get(1)))
+              getQueryMetadataFieldType(mapType.getTypeArguments().get(1), processingEnv))
           .build();
 
-  private static final Function<DeclaredType, TemplateType> mapToUpdateType =
-      mapType -> Builder.with(UpdateMap.class)
+  private static final BiFunction<DeclaredType, ProcessingEnvironment, TemplateType> mapToUpdateType =
+      (mapType, processingEnv) -> Builder.with(UpdateMap.class)
           .withTypeParameters(Builder.with(mapType.getTypeArguments().get(0).toString()).build(),
-              getQueryMetadataFieldType(mapType.getTypeArguments().get(1)))
+              getQueryMetadataFieldType(mapType.getTypeArguments().get(1), processingEnv))
           .build();
 
   private static final Function<DeclaredType, TemplateType> declaredTypeToQueryType =
       declaredType -> {
-        switch (declaredType.toString()) {
-          case "org.lambdamatic.mongodb.types.geospatial.Location":
+        if (declaredType.toString().equals(Location.class.getName())) {
             return Builder.with(LocationField.class).build();
-          default:
-            return Builder.with(QueryField.class).parameterTypes(declaredType.toString()).build();
+        } else {
+            return Builder.with(QueryField.class).withTypeParameters(declaredType.toString()).build();
         }
       };
 
@@ -133,10 +133,9 @@ public class TemplateType extends TemplateElement {
 
   private static final Function<DeclaredType, TemplateType> declaredTypeToUpdateType =
       declaredType -> {
-        switch (declaredType.toString()) {
-          case "org.lambdamatic.mongodb.types.geospatial.Location":
-            return Builder.with(LocationField.class).build();
-          default:
+        if (declaredType.toString().equals(Location.class.getName())) {
+            return Builder.with(Location.class).build();
+        } else {
             return Builder.with(declaredType.toString()).build();
         }
       };
@@ -146,13 +145,15 @@ public class TemplateType extends TemplateElement {
    * {@link MetadataGenerationException} if it was not a known or supported type.
    * 
    * @param variableType the variable to analyze
+   * @param processingEnv the processing environment
    * @return the {@link TemplateType} to use in the {@link QueryMetadata} implementation
    * @throws MetadataGenerationException if the given variable type is not supported
    */
-  public static TemplateType getQueryMetadataFieldType(final TypeMirror variableType)
+  public static TemplateType getQueryMetadataFieldType(final TypeMirror variableType,
+      final ProcessingEnvironment processingEnv)
       throws MetadataGenerationException {
     return getMetadataFieldType(variableType, primitiveTypeToQueryType, embeddedDocumentToQueryType,
-        collectionToQueryType, mapToQueryType, declaredTypeToQueryType);
+        collectionToQueryType, mapToQueryType, declaredTypeToQueryType, processingEnv);
   }
 
   /**
@@ -160,13 +161,15 @@ public class TemplateType extends TemplateElement {
    * {@code null} if it was not a known or supported type.
    * 
    * @param variableType the variable type to analyze
+   * @param processingEnv the processing environment
    * @return the {@link TemplateType} to use in the {@link ProjectionMetadata} implementation
    * @throws MetadataGenerationException if the given variable type is not supported
    */
-  public static TemplateType getProjectionMetadataFieldType(final TypeMirror variableType) {
+  public static TemplateType getProjectionMetadataFieldType(final TypeMirror variableType,
+      final ProcessingEnvironment processingEnv) {
     return getMetadataFieldType(variableType, primitiveTypeToProjectionType,
         embeddedDocumentToProjectionType, collectionToProjectionType, mapToProjectionType,
-        declaredTypeToProjectionType);
+        declaredTypeToProjectionType, processingEnv);
   }
 
   /**
@@ -174,14 +177,16 @@ public class TemplateType extends TemplateElement {
    * {@code null} if it was not a known or supported type.
    * 
    * @param variableType the variable to analyze
+   * @param processingEnv the processing environment
    * @return the {@link TemplateType} to use in the {@link UpdateMetadata} implementation
    * @throws MetadataGenerationException if the given variable type is not supported
    */
-  public static TemplateType getUpdateMetadataFieldType(final TypeMirror variableType)
+  public static TemplateType getUpdateMetadataFieldType(final TypeMirror variableType,
+      final ProcessingEnvironment processingEnv)
       throws MetadataGenerationException {
     return getMetadataFieldType(variableType, primitiveTypeToUpdateType,
         embeddedDocumentToUpdateType, collectionToUpdateType, mapToUpdateType,
-        declaredTypeToUpdateType);
+        declaredTypeToUpdateType, processingEnv);
   }
 
   /**
@@ -193,32 +198,39 @@ public class TemplateType extends TemplateElement {
    * @throws MetadataGenerationException if the given variable type is not supported
    */
   private static TemplateType getMetadataFieldType(final TypeMirror variableType,
-      final Function<TypeMirror, TemplateType> primitiveTypeToTemplateType,
+      final BiFunction<PrimitiveType, ProcessingEnvironment, TemplateType> primitiveTypeToTemplateType,
       final Function<DeclaredType, TemplateType> embeddedDocumentToTemplateType,
-      final Function<TypeMirror, TemplateType> collectionToTemplateType,
-      final Function<DeclaredType, TemplateType> mapToTemplateType,
-      final Function<DeclaredType, TemplateType> declaredTypeToTemplateType)
+      final BiFunction<TypeMirror, ProcessingEnvironment, TemplateType> collectionToTemplateType,
+      final BiFunction<DeclaredType, ProcessingEnvironment, TemplateType> mapToTemplateType,
+      final Function<DeclaredType, TemplateType> declaredTypeToTemplateType,
+      final ProcessingEnvironment processingEnv)
           throws MetadataGenerationException {
     if (variableType instanceof PrimitiveType) {
-      return primitiveTypeToTemplateType.apply(variableType);
+      return primitiveTypeToTemplateType.apply((PrimitiveType) variableType, processingEnv);
     } else if (variableType instanceof DeclaredType) {
       final DeclaredType declaredType = (DeclaredType) variableType;
       final TypeElement declaredElement = (TypeElement) declaredType.asElement();
       if (declaredElement.getAnnotation(EmbeddedDocument.class) != null) {
         // embedded documents
         return embeddedDocumentToTemplateType.apply(declaredType);
-      } else if (isCollection(declaredElement)) {
+      } else if (ElementUtils.isAssignable(declaredType, Collection.class)) {
         // collections (list/set)
-        return collectionToTemplateType.apply(declaredType.getTypeArguments().get(0));
-      } else if (isMap(declaredElement)) {
+        return collectionToTemplateType.apply(declaredType.getTypeArguments().get(0), processingEnv);
+      } else if (ElementUtils.isAssignable(declaredType, Map.class)) {
         // map
-        return mapToTemplateType.apply(declaredType);
+        return mapToTemplateType.apply(declaredType, processingEnv);
       } else {
         return declaredTypeToTemplateType.apply(declaredType);
       }
     } else if (variableType.getKind() == TypeKind.ARRAY) {
       final TypeMirror componentType = ((ArrayType) variableType).getComponentType();
-      return collectionToTemplateType.apply(componentType);
+      if (componentType instanceof PrimitiveType) {
+        final PrimitiveType primitiveType = (PrimitiveType) componentType;
+        final TypeElement boxedClass = processingEnv.getTypeUtils().boxedClass(primitiveType);
+        return collectionToTemplateType
+            .apply(boxedClass.asType(), processingEnv);
+      }
+      return collectionToTemplateType.apply(componentType, processingEnv);
     }
     throw new MetadataGenerationException("Unexpected variable type: " + variableType);
   }
@@ -256,7 +268,7 @@ public class TemplateType extends TemplateElement {
       return this;
     }
 
-    Builder parameterTypes(final String... parameterTypeNames) {
+    Builder withTypeParameters(final String... parameterTypeNames) {
       this.parameterTypes = Stream.of(parameterTypeNames)
           .map(t -> new TemplateType(t, Collections.emptyList())).collect(Collectors.toList());
       return this;
@@ -305,7 +317,13 @@ public class TemplateType extends TemplateElement {
     this.requiredTypes = parameterTypes.stream().flatMap(p -> {
       return p.getRequiredJavaTypes().stream();
     }).collect(Collectors.toSet());
-    if (!ClassUtils.isPrimitiveOrWrapper(ElementUtils.getVariableType(fullyQualifiedName))) {
+    final Class<?> javaType = ElementUtils.toClass(fullyQualifiedName);
+    if (javaType != null && javaType.isArray()) {
+      final Class<?> componentType = javaType.getComponentType();
+      if (!ClassUtils.isPrimitiveOrWrapper(componentType)) {
+        this.requiredTypes.add(componentType.getName());
+      }
+    } else if (!ClassUtils.isPrimitiveOrWrapper(javaType)) {
       this.requiredTypes.add(fullyQualifiedName);
     }
   }

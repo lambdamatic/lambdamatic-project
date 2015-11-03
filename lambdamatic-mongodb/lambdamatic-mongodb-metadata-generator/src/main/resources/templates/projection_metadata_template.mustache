@@ -15,14 +15,17 @@ import {{.}};
  *
  * <p><strong>Note:</strong> This class is not meant to be extended by the user.</p>
  */
-@Generated(value="{{processorClassName}}")
+@Generated(value = "{{processorClassName}}")
 public abstract class {{simpleClassName}} implements ProjectionMetadata<{{domainClassName}}> {
 
 {{#fields}}
+    /**
+     * the projection field for the '{{javaFieldName}}' domain class field.
+     */
 {{#annotations}}
     {{{.}}}
 {{/annotations}}
- 	public {{& javaFieldType.simpleName}} {{javaFieldName}};
+    public {{& javaFieldType.simpleName}} {{javaFieldName}};
 
 {{/fields}}  
 }

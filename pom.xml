@@ -183,7 +183,7 @@
 							<goal>check</goal>
 						</goals>
 					</execution>
-					<execution>
+					<!-- execution>
 						<id>validate-aggregate</id>
 						<phase>validate</phase>
 						<configuration>
@@ -196,7 +196,7 @@
 						<goals>
 							<goal>checkstyle-aggregate</goal>
 						</goals>
-					</execution>
+					</execution -->
 				</executions>
 				<configuration>
 					<linkXRef>false</linkXRef>

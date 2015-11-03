@@ -9,20 +9,17 @@
 package org.lambdamatic.mongodb.apt.template;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.apache.commons.lang3.ClassUtils;
-import org.lambdamatic.mongodb.exceptions.ConversionException;
 
 /**
  * Utility class related to {@link TypeMirror} and {@link TypeElement}.
@@ -58,75 +55,32 @@ public class ElementUtils {
   }
 
   /**
-   * Checks if the given {@link Element} corresponds to a {@link List} type.
+   * Checks if the given {@link Element} is, implements or extends the given target type.
    * 
-   * @param element the element to analyze
+   * @param type the element to analyze
+   * @param targetType the type to check
    * @return <code>true</code> if the given {@link Element} corresponds to a type that implements
    *         {@link List}, <code>false</code> otherwise.
    */
-  // FIXME: refactor with Stream and pass the Collection.class in parameter
-  public static boolean isList(final TypeElement element) {
-    if (element.toString().equals(List.class.getName())) {
+  public static boolean isAssignable(final DeclaredType type, final Class<?> targetType) {
+    if (type instanceof NoType) {
+      return false;
+    }
+    if (type.asElement().toString().equals(targetType.getName())) {
       return true;
     }
-    final List<? extends TypeMirror> interfaceMirrors = ((TypeElement) element).getInterfaces();
-    for (TypeMirror interfaceMirror : interfaceMirrors) {
-      if (interfaceMirror.getKind() == TypeKind.DECLARED) {
-        final DeclaredType declaredInterface = (DeclaredType) interfaceMirror;
-        if (declaredInterface.asElement().toString().equals(List.class.getName())) {
-          return true;
-        }
-      }
+    final TypeElement element = (TypeElement) type.asElement();
+    final boolean implementation = element.getInterfaces().stream()
+        .filter(interfaceMirror -> interfaceMirror.getKind() == TypeKind.DECLARED)
+        .map(interfaceMirror -> (DeclaredType) interfaceMirror)
+        .map(declaredInterface -> declaredInterface.asElement())
+        .anyMatch(declaredElement -> declaredElement.toString().equals(targetType.getName()));
+    if (implementation) {
+      return true;
     }
-    return false;
-  }
-
-  /**
-   * Checks if the given {@link Element} corresponds to a {@link Collection} type.
-   * 
-   * @param element the element to analyze
-   * @return <code>true</code> if the given {@link Element} corresponds to a type that implements
-   *         {@link Collection}, <code>false</code> otherwise.
-   */
-  // FIXME: refactor with Stream and pass the Collection.class in parameter
-  public static boolean isCollection(final TypeElement element) {
-    if (element instanceof TypeElement) {
-      final List<? extends TypeMirror> interfaceMirrors = ((TypeElement) element).getInterfaces();
-      for (TypeMirror interfaceMirror : interfaceMirrors) {
-        if (interfaceMirror.getKind() == TypeKind.DECLARED) {
-          final DeclaredType declaredInterface = (DeclaredType) interfaceMirror;
-          if (declaredInterface.asElement().toString().equals(Collection.class.getName())) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
-
-  /**
-   * 
-   * @param element the element to analyze
-   * @return <code>true</code> if the given element is a {@link TypeElement} that implements
-   *         {@link Collection}, <code>false</code> otherwise.
-   */
-  // FIXME: remove this method and use the one above with argument 'Map.class'
-  public static boolean isMap(final TypeElement element) {
-    if (element instanceof TypeElement) {
-      final TypeElement typeElement = (TypeElement) element;
-      if (typeElement.getQualifiedName().contentEquals(Map.class.getName())) {
-        return true;
-      }
-      final List<? extends TypeMirror> interfaceMirrors = typeElement.getInterfaces();
-      for (TypeMirror interfaceMirror : interfaceMirrors) {
-        if (interfaceMirror.getKind() == TypeKind.DECLARED) {
-          final DeclaredType declaredInterface = (DeclaredType) interfaceMirror;
-          if (declaredInterface.asElement().toString().equals(Map.class.getName())) {
-            return true;
-          }
-        }
-      }
-    }
+    if (element.getSuperclass().getKind() == TypeKind.DECLARED) {
+      return isAssignable((DeclaredType)(element.getSuperclass()), targetType);
+    } 
     return false;
   }
 
@@ -154,42 +108,11 @@ public class ElementUtils {
    * @param className the fully qualified name of the class to load.
    * @return the Java {@link Class} or <code>null</code> if it could not be loaded.
    */
-  public static Class<?> getVariableType(final String className) {
+  public static Class<?> toClass(final String className) {
     try {
       return ClassUtils.getClass(className);
     } catch (ClassNotFoundException e) {
       return null;
-    }
-  }
-
-  /**
-   * Returns the wrapper associated with the given {@link PrimitiveType}.
-   * 
-   * @param variableType the primitive type to analyze
-   * @return the associate primitive wrapper
-   */
-  public static Class<?> getSimilarDeclaredType(final PrimitiveType variableType) {
-    final TypeKind variableTypeKind = variableType.getKind();
-    switch (variableTypeKind) {
-      case BOOLEAN:
-        return Boolean.class;
-      case BYTE:
-        return Byte.class;
-      case SHORT:
-        return Short.class;
-      case INT:
-        return Integer.class;
-      case LONG:
-        return Long.class;
-      case FLOAT:
-        return Float.class;
-      case DOUBLE:
-        return Double.class;
-      case CHAR:
-        return Character.class;
-      default:
-        throw new ConversionException("Failed to provide a declared type equivalent to '"
-            + variableTypeKind.name().toLowerCase() + "'");
     }
   }
 

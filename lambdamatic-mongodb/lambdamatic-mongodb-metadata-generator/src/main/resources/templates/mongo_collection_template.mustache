@@ -13,14 +13,21 @@ import com.mongodb.MongoClient;
  * domain class and with support for functional @{FilterExpression}. 
  *
  */
-@Generated(value="{{processorClassName}}")
+@Generated(value = "{{processorClassName}}")
 public class {{simpleClassName}} extends LambdamaticMongoCollectionImpl<{{domainClassName}}, {{queryMetadataClassName}}, {{projectionMetadataClassName}}, {{updateMetadataClassName}}> {
 
-	/** The collection name, retrieved from the {@link Document} annotation on the {@link {{domainClassName}}} class. */
-	public static final String NAME = "{{collectionName}}";
-	
-	public {{simpleClassName}}(final MongoClient mongoClient, final String databaseName) {
-		super(mongoClient, databaseName, NAME, {{domainClassName}}.class);
-	}
+    /** 
+     * The collection name, retrieved from the {@link Document} annotation on the {@link {{domainClassName}}} class. 
+     */
+    public static final String NAME = "{{collectionName}}";
+
+    /**
+     * Constructor.
+     * @param mongoClient the underlying {@link MongoClient}
+     * @param databaseName the name of the database containing this collection
+     */
+    public {{simpleClassName}}(final MongoClient mongoClient, final String databaseName) {
+        super(mongoClient, databaseName, NAME, {{domainClassName}}.class);
+    }
 
 }

@@ -495,7 +495,7 @@ public class LambdaExpressionReader {
     switch (insnNode.getOpcode()) {
       // return a reference from a method
       case Opcodes.ARETURN:
-        // return an integer from a method
+      // return an integer from a method
       case Opcodes.IRETURN:
         statements.add(new ReturnStatement(expressionStack.pop()));
         break;
@@ -567,13 +567,13 @@ public class LambdaExpressionReader {
         break;
       // compare two longs values
       case Opcodes.LCMP:
-        // compare two doubles
+      // compare two doubles
       case Opcodes.DCMPL:
-        // compare two doubles
+      // compare two doubles
       case Opcodes.DCMPG:
-        // compare two floats
+      // compare two floats
       case Opcodes.FCMPL:
-        // compare two floats
+      // compare two floats
       case Opcodes.FCMPG:
         statements.addAll(readJumpInstruction(insnCursor.next(), expressionStack, capturedArguments,
             localVariables));

@@ -5,9 +5,6 @@
  *
  * Contributors: Red Hat - Initial Contribution
  *******************************************************************************/
-/**
- * 
- */
 
 package org.lambdamatic.mongodb.apt.testutil;
 
@@ -32,6 +29,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
+import org.junit.Rule;
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
@@ -41,6 +39,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * JUnit {@link Rule} to compile and generate derived classes for the classes provided in the
+ * {@link WithDomainClass} annotations on the test method.
+ * 
  * @author Xavier Coulon
  *
  */
@@ -51,15 +52,15 @@ public class CompilationAndAnnotationProcessingRule implements MethodRule {
       LoggerFactory.getLogger(CompilationAndAnnotationProcessingRule.class);
 
   /** The "src/test/java" folder in which all test sources should be found. */
-  private final static File SRC_TEST_JAVA_FOLDER = toFolder("src/test/java");
+  private static final File SRC_TEST_JAVA_FOLDER = toFolder("src/test/java");
   /**
    * The "target/generated-test-sources/test-annotations" folder in which all test sources should be
    * found.
    */
-  private final static File TARGET_GENERATED_TEST_SOURCES_FOLDER =
+  private static final File TARGET_GENERATED_TEST_SOURCES_FOLDER =
       toFolder("target/generated-test-sources/test-annotations");
   /** The "target/test-classes/" folder in which all test sources should be found. */
-  private final static File TARGET_TEST_CLASSES_FOLDER = toFolder("target/test-classes");
+  private static final File TARGET_TEST_CLASSES_FOLDER = toFolder("target/test-classes");
 
   /**
    * Converts the given {@code pathFragments} into a file relative to
@@ -100,7 +101,7 @@ public class CompilationAndAnnotationProcessingRule implements MethodRule {
   /**
    * Clean the {@code TARGET_GENERATED_TEST_SOURCES_FOLDER folder} before running the test.
    * 
-   * @throws IOException
+   * @throws IOException in case of problem when cleaning the directories
    */
   private void cleanGeneratedSources() throws IOException {
     if (TARGET_GENERATED_TEST_SOURCES_FOLDER.exists()) {
@@ -123,7 +124,8 @@ public class CompilationAndAnnotationProcessingRule implements MethodRule {
    * Generated the meta classes before the given {@code domainClass} is compiled.
    * 
    * @param domainClass the domain class with relevant annotations
-   * @throws IOException
+   * @throws IOException if location is an output location and path does not represent an existing
+   *         directory
    */
   private void processAndCompile(final List<Class<?>> domainClasses) throws IOException {
     // configuration
@@ -157,10 +159,8 @@ public class CompilationAndAnnotationProcessingRule implements MethodRule {
   }
 
   /**
-   * Listens to annotation processing and compilation events and logs the relevant bits
+   * Listens to annotation processing and compilation events and logs the relevant bits.
    * 
-   * @author Xavier Coulon
-   *
    */
   public class CompilationDiagnosticListener implements DiagnosticListener<JavaFileObject> {
 

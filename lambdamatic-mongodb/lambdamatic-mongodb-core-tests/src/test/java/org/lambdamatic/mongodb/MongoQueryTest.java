@@ -11,7 +11,11 @@ import static org.lambdamatic.mongodb.Projection.include;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
+import javax.swing.plaf.ListUI;
 
 import org.assertj.core.api.Condition;
 import org.assertj.core.description.TextDescription;
@@ -151,4 +155,28 @@ public class MongoQueryTest extends MongoBaseTest {
     }.as(new TextDescription("only a 'id' and 'authorName' fields initialized")));
   }
 
+  @Test
+  @UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
+  public void shouldFindOneFooWithBinaryFieldInclusionProjection() throws IOException {
+    // given
+    final BlogEntry blogEntry = new BlogEntry();
+    blogEntry.setId("1");
+    blogEntry.setAuthorName("jdoe");
+    final List<byte[]> photos = Arrays.asList(new byte[] {1, 2, 3, 4}, new byte[] {5, 6, 7, 8});
+    blogEntry.setPhotos(photos);
+    blogEntryCollection.add(blogEntry);
+    // when
+    final BlogEntry foundBlogEntry = blogEntryCollection.filter(e -> e.id.equals("1"))
+        .projection(e -> include(e.id, e.authorName, e.photos)).first();
+    // then
+    assertThat(foundBlogEntry).isNotNull().has(new Condition<BlogEntry>() {
+      @Override
+      public boolean matches(final BlogEntry blogEntry) {
+        return blogEntry.getId().equals("1") && blogEntry.getAuthorName().equals("jdoe")
+            && blogEntry.getComments() == null && blogEntry.getContent() == null
+            && Objects.deepEquals(blogEntry.getPhotos().toArray(), photos.toArray());
+      }
+    }.as(new TextDescription("only a 'id', 'authorName' and 'photos' fields initialized")));
+  }
+  
 }

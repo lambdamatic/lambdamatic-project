@@ -73,7 +73,7 @@ public class UpdateExpressionCodecTest {
   @Parameters(name = "[{index}] {1}")
   public static Object[][] data() {
     final Bar bar = new Bar("javaObject", 1);
-    final ParameterizedDataset<SerializableConsumer<UFoo>> data = new ParameterizedDataset<>();
+    final ParameterizedDataset<SerializableConsumer<UFoo>, String> data = new ParameterizedDataset<>();
     data.match(foo -> {
       foo.stringField = "javaObject";
     } , "{$set: {stringField: 'javaObject'}}");

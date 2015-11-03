@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 
 import org.bson.Document;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,7 +63,7 @@ public class MongoInsertionTest extends MongoBaseTest {
 
   @Test
   @UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
-  public void shouldInsertOneDocument() throws IOException {
+  public void shouldInsertOneDocumentWithEmbeddedDocument() throws IOException {
     // given
     final Bar bar = new BarBuilder().withStringField("jbar").withPrimitiveIntField(21)
         .withEnumBar(EnumBar.BAR).build();
@@ -82,6 +83,27 @@ public class MongoInsertionTest extends MongoBaseTest {
     assertThat(barSubdoc.get("_id")).as("Check embedded doc has no '_id' field").isNull();
   }
 
+  @Test
+  @UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
+  public void shouldInsertOneDocumentWithBinaryData() throws IOException {
+    // given
+    final byte[] bytes = new byte[]{0,1,2,3,4,5,6,7,9};
+    final Foo foo = new FooBuilder().withStringField("jdoe").withPrimitiveIntField(42)
+        .withEnumFoo(EnumFoo.FOO).withBytes(bytes).build();
+    // when
+    fooCollection.add(foo);
+    // then
+    assertThat(foo.getId()).isNotNull();
+    assertThat(
+        getMongoClient().getDatabase(DATABASE_NAME).getCollection(getCollectionName()).count())
+            .isEqualTo(1);
+    final Document createdDoc = getMongoClient().getDatabase(DATABASE_NAME)
+        .getCollection(getCollectionName()).find().first();
+    final Binary retrievedBinaryContent = (Binary) createdDoc.get("raw_content");
+    assertThat(retrievedBinaryContent).isNotNull();
+    assertThat(retrievedBinaryContent.getData()).as("Check insertion of byte[]").isEqualTo(bytes);
+  }
+  
   @Test
   @UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
   public void shouldInsertTwoDocuments() throws IOException {
@@ -124,17 +146,38 @@ public class MongoInsertionTest extends MongoBaseTest {
   public void shouldUpsertOneFooTwice() throws IOException {
     // given
     // when
-    Foo foo = new FooBuilder().withId(new ObjectId("54c28b0b0f2dacc85ede5286"))
+    final Foo foo = new FooBuilder().withId(new ObjectId("54c28b0b0f2dacc85ede5286"))
         .withStringField("jdoe").withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).build();
     fooCollection.upsert(foo);
-    foo = new FooBuilder().withId(new ObjectId("54c28b0b0f2dacc85ede5286")).withStringField("j.doe")
+    final Foo foo2 = new FooBuilder().withId(new ObjectId("54c28b0b0f2dacc85ede5286")).withStringField("j.doe")
         .withPrimitiveIntField(42).withEnumFoo(EnumFoo.FOO).build();
-    fooCollection.upsert(foo);
+    fooCollection.upsert(foo2);
     // then
     assertThat(
         getMongoClient().getDatabase(DATABASE_NAME).getCollection(getCollectionName()).count())
             .isEqualTo(1);
-    assertThat(foo.getStringField()).isNotNull().isEqualTo("j.doe");
+    final Document createdDoc = getMongoClient().getDatabase(DATABASE_NAME)
+        .getCollection(getCollectionName()).find().first();
+    assertThat(createdDoc.get("stringField")).isNotNull().isEqualTo("j.doe");
   }
 
+  @Test
+  @UsingDataSet(loadStrategy = LoadStrategyEnum.DELETE_ALL)
+  public void shouldInsertDocumentWithBinaryField() throws IOException {
+    // given
+    // when
+    final Foo foo = new FooBuilder().withId(new ObjectId("54c28b0b0f2dacc85ede5286"))
+        .withBytes(new byte[]{1,2,3,4}).build();
+    fooCollection.add(foo);
+    // then
+    assertThat(
+        getMongoClient().getDatabase(DATABASE_NAME).getCollection(getCollectionName()).count())
+            .isEqualTo(1);
+    final Document createdDoc = getMongoClient().getDatabase(DATABASE_NAME)
+        .getCollection(getCollectionName()).find().first();
+    assertThat(createdDoc.get("raw_content")).isNotNull().isEqualTo(new Binary(new byte[]{1,2,3,4}));
+    final Foo foundFoo = fooCollection.all().first();
+    assertThat(foundFoo.getBytes()).isNotNull().isEqualTo(new byte[]{1,2,3,4});
+  }
+  
 }

@@ -27,7 +27,7 @@ Checkstyle configurartion that checks the Google coding conventions (https://goo
     </module>
     <module name="LineLength">
       <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
-      <property name="max" value="100"/>
+      <property name="max" value="120"/>
     </module>
     <module name="AvoidStarImport"/>
     <module name="OneTopLevelClass"/>
@@ -77,6 +77,7 @@ Checkstyle configurartion that checks the Google coding conventions (https://goo
       <property name="severity" value="ignore"/>
       <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
       <message key="name.invalidPattern" value="Package name ''{0}'' must match pattern ''{1}''."/>
+      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
     </module>
     <module name="TypeName">
       <property name="severity" value="ignore"/>

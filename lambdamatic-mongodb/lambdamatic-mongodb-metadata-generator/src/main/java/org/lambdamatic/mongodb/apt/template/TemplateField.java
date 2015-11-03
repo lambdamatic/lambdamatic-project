@@ -15,9 +15,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.VariableElement;
 
 import org.lambdamatic.mongodb.annotations.DocumentField;
@@ -42,8 +44,9 @@ public class TemplateField extends TemplateElement {
    * from the given field annotated with {@link DocumentId} or optionally {@link DocumentField}.
    * 
    */
-  public static Function<VariableElement, TemplateField> createQueryFieldFunction =
-      field -> createTemplateField(field, f -> TemplateType.getQueryMetadataFieldType(f.asType()));
+  public static BiFunction<VariableElement, ProcessingEnvironment, TemplateField> createQueryFieldFunction =
+      (field, processingEnv) -> createTemplateField(field,
+          f -> TemplateType.getQueryMetadataFieldType(f.asType(), processingEnv));
 
   /**
    * {@link Function} to create a {@link TemplateField} for the {@link ProjectionMetadata}
@@ -51,17 +54,18 @@ public class TemplateField extends TemplateElement {
    * {@link DocumentField}.
    * 
    */
-  public static Function<VariableElement, TemplateField> createProjectionFieldFunction =
-      field -> createTemplateField(field,
-          f -> TemplateType.getProjectionMetadataFieldType(f.asType()));
+  public static BiFunction<VariableElement, ProcessingEnvironment, TemplateField> createProjectionFieldFunction =
+      (field, processingEnv) -> createTemplateField(field,
+          f -> TemplateType.getProjectionMetadataFieldType(f.asType(), processingEnv));
 
   /**
    * {@link Function} to create a {@link TemplateField} for the {@link UpdateMetadata}
    * implementation from the given field annotated with {@link DocumentId} or optionally
    * {@link DocumentField}.
    */
-  public static Function<VariableElement, TemplateField> createUpdateFieldFunction =
-      field -> createTemplateField(field, f -> TemplateType.getUpdateMetadataFieldType(f.asType()));
+  public static BiFunction<VariableElement, ProcessingEnvironment, TemplateField> createUpdateFieldFunction =
+      (field, processingEnv) -> createTemplateField(field,
+          f -> TemplateType.getUpdateMetadataFieldType(f.asType(), processingEnv));
 
   /**
    * Creates a {@link TemplateField} from the given field annotated with {@link DocumentId} or

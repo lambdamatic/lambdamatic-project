@@ -7,7 +7,7 @@
 package com.sample;
 
 /**
- * @author Xavier Coulon
+ * EnumFoo sample enum.
  *
  */
 public enum EnumFoo {
