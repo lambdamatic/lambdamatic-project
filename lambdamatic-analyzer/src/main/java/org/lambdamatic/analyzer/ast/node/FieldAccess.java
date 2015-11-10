@@ -105,11 +105,6 @@ public class FieldAccess extends ComplexExpression {
   }
 
   @Override
-  public FieldAccess duplicate() {
-    return duplicate(generateId());
-  }
-
-  @Override
   public FieldAccess duplicate(int id) {
     return new FieldAccess(id, getSource().duplicate(), getFieldName(), isInverted());
   }

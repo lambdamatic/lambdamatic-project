@@ -228,16 +228,6 @@ public class CompoundExpression extends ComplexExpression {
   }
 
   /**
-   * {@inheritDoc}
-   * 
-   * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
-   */
-  @Override
-  public CompoundExpression duplicate() {
-    return duplicate(generateId());
-  }
-
-  /**
    * Computes the complexity of this {@link CompoundExpression} using the following rule:
    * <ul>
    * <li>Perform the sum of all operands'complexity</li>

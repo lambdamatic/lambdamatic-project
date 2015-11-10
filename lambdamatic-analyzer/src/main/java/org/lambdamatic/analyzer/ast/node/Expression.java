@@ -167,7 +167,10 @@ public abstract class Expression extends Node implements Comparable<Expression> 
    * 
    * @return the duplicate {@link Expression}.
    */
-  public abstract Expression duplicate();
+  public Expression duplicate() {
+    return duplicate(generateId());
+  }
+
 
   /**
    * @return the {@code absolute} version of this {@link Expression}, ie, the non-inverted form if

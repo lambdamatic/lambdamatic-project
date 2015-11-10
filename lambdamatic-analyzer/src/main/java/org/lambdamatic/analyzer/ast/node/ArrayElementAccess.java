@@ -99,11 +99,6 @@ public class ArrayElementAccess extends Expression {
   }
 
   @Override
-  public Expression duplicate() {
-    return duplicate(generateId());
-  }
-
-  @Override
   public String toString() {
     return this.sourceField.toString() + ".get(" + this.index + ")";
   }

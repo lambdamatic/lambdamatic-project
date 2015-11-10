@@ -125,11 +125,6 @@ public class LambdaExpression extends Expression {
     return new LambdaExpression(id, duplicateStatements, this.argumentType, this.argumentName);
   }
 
-  @Override
-  public LambdaExpression duplicate() {
-    return this.duplicate(generateId());
-  }
-
   /**
    * @return The AST form of the {@link List} of {@link Statement} defined in the Lambda Expression
    *         (with captured arguments).

@@ -163,14 +163,6 @@ public class ArrayVariable extends ComplexExpression {
     return arrayVariable;
   }
 
-  /**
-   * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
-   */
-  @Override
-  public Expression duplicate() {
-    return duplicate(generateId());
-  }
-
   @Override
   public void accept(final ExpressionVisitor visitor) {
     if (visitor.visit(this)) {

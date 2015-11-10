@@ -51,11 +51,6 @@ public class CapturedArgument extends Expression {
   }
 
   @Override
-  public CapturedArgument duplicate() {
-    return duplicate(generateId());
-  }
-
-  @Override
   public Object getValue() {
     return this.value;
   }

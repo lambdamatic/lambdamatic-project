@@ -89,32 +89,12 @@ public class MethodInvocation extends ComplexExpression {
     this.source.setParent(this);
   }
 
-  /**
-   * {@inheritDoc}
-   * 
-   * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)
-   */
   @Override
   public MethodInvocation duplicate(int id) {
     return new MethodInvocation(id, getSource().duplicate(), this.javaMethod, this.returnType,
         Expression.duplicateExpressions(this.arguments), isInverted());
   }
 
-  /**
-   * {@inheritDoc}
-   * 
-   * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
-   */
-  @Override
-  public MethodInvocation duplicate() {
-    return duplicate(generateId());
-  }
-
-  /**
-   * {@inheritDoc}
-   * 
-   * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
-   */
   @Override
   public ExpressionType getExpressionType() {
     return ExpressionType.METHOD_INVOCATION;
@@ -144,11 +124,6 @@ public class MethodInvocation extends ComplexExpression {
     return this.returnType;
   }
 
-  /**
-   * {@inheritDoc}
-   * 
-   * @see org.lambdamatic.analyzer.ast.node.Expression#getParent()
-   */
   @Override
   public ComplexExpression getParent() {
     return (ComplexExpression) super.getParent();

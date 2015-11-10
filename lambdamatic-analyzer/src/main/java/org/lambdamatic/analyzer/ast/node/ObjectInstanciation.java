@@ -143,17 +143,6 @@ public class ObjectInstanciation extends Expression {
     return duplicateVariable;
   }
 
-  /**
-   * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
-   */
-  @Override
-  public Expression duplicate() {
-    final ObjectInstanciation duplicateVariable =
-        new ObjectInstanciation(this.instanceType, isInverted());
-    duplicateVariable.setInitArguments(this.arguments);
-    return duplicateVariable;
-  }
-
   @Override
   public String toString() {
     return this.instanceType.getName() + "(" + this.arguments + ")";

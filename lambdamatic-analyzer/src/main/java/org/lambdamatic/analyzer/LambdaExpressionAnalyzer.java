@@ -210,7 +210,7 @@ public class LambdaExpressionAnalyzer {
         }
         // we need to return a duplicate of the expression to be sure the original is kept
         // *unchanged*
-        return this.cache.get(methodImplementationId).duplicate();
+        return (LambdaExpression) this.cache.get(methodImplementationId).duplicate();
       }
     } catch (IOException e) {
       throw new AnalyzeException("Failed to analyze lambda expression", e);

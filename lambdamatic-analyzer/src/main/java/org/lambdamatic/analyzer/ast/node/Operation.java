@@ -123,11 +123,6 @@ public class Operation extends ComplexExpression {
         this.rightOperand.duplicate(), isInverted());
   }
 
-  @Override
-  public Expression duplicate() {
-    return duplicate(generateId());
-  }
-
   /**
    * @return the value of {@code this} Expression.
    */

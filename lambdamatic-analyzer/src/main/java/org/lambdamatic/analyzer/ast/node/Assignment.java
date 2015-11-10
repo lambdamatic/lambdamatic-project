@@ -97,11 +97,6 @@ public class Assignment extends ComplexExpression {
   }
 
   @Override
-  public Expression duplicate() {
-    return new Assignment(this.source.duplicate(), this.assignedValue.duplicate());
-  }
-
-  @Override
   public void accept(final ExpressionVisitor visitor) {
     if (visitor.visit(this)) {
       this.source.accept(visitor);

@@ -69,11 +69,6 @@ public class CapturedArgumentRef extends Expression {
   }
 
   @Override
-  public CapturedArgumentRef duplicate() {
-    return duplicate(generateId());
-  }
-
-  @Override
   public Object getValue() {
     throw new AnalyzeException("Capture Argument reference does not hold any value by itself.");
   }

@@ -94,11 +94,6 @@ public class ExpressionVisitorUtil {
     }
 
     @Override
-    public Expression duplicate() {
-      return null;
-    }
-
-    @Override
     public String toString() {
       return this.expression.toString() + " (wrapped)";
     }

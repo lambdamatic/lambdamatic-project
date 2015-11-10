@@ -68,11 +68,6 @@ public class ObjectInstance extends Expression {
   }
 
   @Override
-  public Expression duplicate() {
-    return duplicate(generateId());
-  }
-
-  @Override
   public String toString() {
     return this.value != null ? this.value.toString() : "null";
   }

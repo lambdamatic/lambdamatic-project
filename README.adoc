@@ -149,7 +149,7 @@ The following data types are supported by Lambdamatic:
   as BSON arrays of documents
 - `Map` of classes annotated with `@EmbeddedDocument` are mapped
   as BSON arrays of documents indexed with a key (limited to `java.lang.String` or any number)
-- BSON binary types are mapped on Java `byte[]`.
+
 == Managing Documents in MongoDB
 
 For each domin class annotated with `@Document`, a class with the same name and suffixed
@@ -169,46 +169,33 @@ Using such a technique provides a well-defined API for each type of operation.
 
 ==== Inserting
 
-Inserting documents in MongoDB is done with the `add(T... documents)` method.
-Documents that have no value for their `@DocumentId` field automatically get a
-random `ObjectId` as their identifier.
-
-Example:
-
-[source,java]
-----
-bikeStationCollection.add(bikeStation);
-----
+Inserting documents in MongoDB is done with the 
 
 ==== Upserting
 
-MongoDB also provides an `upsert` operation, meaning that the database collection
-does not already contain a document with the same id then the given document is
-does not exist it is created, otherwise it is updated in the databse.
+MongoDB also provides an `upsert` operation, meaning that if a document with the same id
+does not exist it is created, otherwise it is updated.
 
-[source,java]
-----
-bikeStationCollection.upsert(bikeStation);
-----
+*TODO*
 
 === Querying Documents in MongoDB
 
 ==== Queries
 
-Queries are written in the very same form as Java 8 `Predicate` as in the `Stream` API.
+Queries are written in the form of `Predicate`
 
-For example, the following query finds all `BikeStation` that are `IN_SERVICE`:
+Users can write queries as follow to find all `BikeStation` that are `IN_SERVICE`:
 
 [source,java]
 ----
 public List<BikeStation> findWithin(final List<Location> corners) {
   return bikeStationCollection.filter(
-    s -> s.status == BikeStationStatus.IN_SERVICE).toList();
+    s -> s.status == BikeStationStatus.IN_SERVICE
+      && s.location.geoWithin(corners)).toList();
 }
 ----
 
 ===== Operators
-
 
 ===== Geo-searching
 
@@ -234,29 +221,12 @@ See the https://github.com/lambdamatic/lambdamatic-mongodb-citibikesnyc[NYC Bike
 
 ===== Combining Operators
 
-Expression operators `&&` and '||' as well as parenthesis can be used to combine conditions inside
-a single predicate.
 
-For example, the following query finds all `BikeStation` that
+===== Queries on Collections
 
-[source,java]
-----
-public List<BikeStation> findWithin(final List<Location> corners) {
-  return bikeStationCollection.filter(
-    s -> s.status == BikeStationStatus.IN_SERVICE
-        && s.).toList();
-}
-----
+*TODO*
 
-===== Queries on Java List, Sets and Arrays
-
-Since MongoDB is a document-oriented datastore, it is possible to have
-nested (or embedded) documents inside a "root" document. And since it is also
- possible to store such embedded documents in BSON arrays in MongoDB, it becomes
- possible to map such arrays on `java.util.List`, `java.util.Set` or arrays
- in the domain model.
-
-===== Queries on Java Maps
+===== Queries on Maps
 
 *TODO*
 
@@ -282,7 +252,7 @@ return bikeStationCollection.filter(s -> s.status.equals(BikeStationStatus.IN_SE
 The `projection` is defined by a second Lambda Expression where _all_ the fields to be included
 or excluded are specified (all other fields including the `@DocumentId` are excluded or included, respectively).
 
-===== Projections on Lists and Sets
+===== Projections on Collections
 
 *TODO*
 
@@ -331,11 +301,11 @@ blogEntryCollection.filter(e -> e.id.equals("1")).forEach(e -> {
  - `commentsNumber` field is incremented by `1`
  - the given `comment` sub-document is appended in the `comments` array.
 
-==== Updating on Java Lists and Sets
+==== Updating on Collections
 
 *TODO*
 
-==== Updating on Java Maps
+==== Updating on Maps
 
 This feature is not implemented yet.
 

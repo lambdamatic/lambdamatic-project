@@ -67,11 +67,6 @@ public class LocalVariable extends Expression {
     return new LocalVariable(id, this.index, this.name, this.type, isInverted());
   }
 
-  @Override
-  public LocalVariable duplicate() {
-    return duplicate(generateId());
-  }
-
   /**
    * @return index the variable index (as defined in the bytecode).
    */

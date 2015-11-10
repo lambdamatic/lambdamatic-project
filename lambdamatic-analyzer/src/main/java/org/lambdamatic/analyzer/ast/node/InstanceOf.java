@@ -50,38 +50,18 @@ public class InstanceOf extends Expression {
     this.type = type;
   }
 
-  /**
-   * {@inheritDoc}
-   * 
-   * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)
-   */
   @Override
   public InstanceOf duplicate(int id) {
     return new InstanceOf(id, getExpression(), getType(), isInverted());
   }
 
-  /**
-   * {@inheritDoc}
-   * 
-   * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate()
-   */
-  @Override
-  public InstanceOf duplicate() {
-    return duplicate(generateId());
-  }
-
-  /**
-   * {@inheritDoc}
-   * 
-   * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
-   */
   @Override
   public ExpressionType getExpressionType() {
     return ExpressionType.INSTANCE_OF;
   }
 
   /**
-   * {@link InstanceOf} return a {@link Boolean} type. {@inheritDoc}
+   * {@link InstanceOf} return a {@link Boolean} type. 
    * 
    * @see org.lambdamatic.analyzer.ast.node.Expression#getJavaType()
    */
