@@ -2,9 +2,22 @@ sudo: false
 cache:
   directories:
   - $HOME/.m2
-  
 language: java
 jdk:
   - oraclejdk8
 services:
   - mongodb
+env:
+  global:
+    # SONATYPE_USERNAME
+    - secure: PbCDSmfCx9bAqJTsyBUuptGUfyvpm1rjfUgsfuJUzMSdiOWSHwaji5Egh8XhC7EKeB7mvI7zeVNOs/J1Uomt6xu1NYIaOSYOaiXVjH4ZVErnK6KuuoM0/bimZNrzoNFiPOb9Fs7Egz+5KKeC27vsxhzDLO1mhj3GbJyOq7oJQ3A=
+    # SONATYPE_PASSWORD
+    - secure: dcH2q9ZgOaNb3Vz2MwSqNRIdYLjlthd+nt2BLKNVt7xCVmJjaRZJUrbGwOmjvfqf0OjksEZdWVl/EkrjTQlMp/aOqMHUGWfAtp0CKPv7UZ1EI//MRimIeMZoQh0JKTslcUAHme1qFd7nqpC7s3eg/4p3DvqVLsk+cNKaR5ZJLAg=
+    
+before_install: "
+if [ ${TRAVIS_PULL_REQUEST} = 'false' ];
+then 
+    openssl aes-256-cbc -K $encrypted_23d075cc9c8d_key -iv $encrypted_23d075cc9c8d_iv -in 79A6709B.gpg.enc -out .travis/79A6709B.gpg -d;
+else 
+    echo \"Skipping jar signature\";
+fi"  
